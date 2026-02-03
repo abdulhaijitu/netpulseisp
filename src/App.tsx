@@ -7,6 +7,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import Dashboard from "@/pages/Dashboard";
 import Customers from "@/pages/Customers";
 import Packages from "@/pages/Packages";
+import Billing from "@/pages/Billing";
 import Payments from "@/pages/Payments";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/customers" element={<Customers />} />
             <Route path="/dashboard/packages" element={<Packages />} />
+            <Route path="/dashboard/billing" element={<Billing />} />
             <Route path="/dashboard/payments" element={<Payments />} />
             <Route path="/dashboard/settings" element={<Settings />} />
           </Route>
