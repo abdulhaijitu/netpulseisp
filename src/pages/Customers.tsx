@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, Filter, Download } from "lucide-react";
+import { Plus, Search, Filter, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,99 +13,17 @@ import { CustomerTable, type CustomerTableData } from "@/components/customers/Cu
 import { CustomerFormDialog, type CustomerFormData } from "@/components/customers/CustomerFormDialog";
 import { ConnectionStatusDialog } from "@/components/customers/ConnectionStatusDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useCustomers, useCreateCustomer, useUpdateCustomer } from "@/hooks/useCustomers";
+import { useCurrentTenant } from "@/hooks/useTenant";
 import type { ConnectionStatus } from "@/types";
-
-// Mock data - will be replaced with database queries
-const mockCustomers: CustomerTableData[] = [
-  {
-    id: "CUS001",
-    name: "Rahim Ahmed",
-    email: "rahim@email.com",
-    phone: "01712345678",
-    address: "House 12, Road 5, Dhanmondi",
-    package: "30 Mbps Pro",
-    packageId: "pkg2",
-    status: "active",
-    dueAmount: 0,
-    advanceAmount: 1500,
-    joinDate: "2023-06-15",
-    lastPayment: "2024-01-15",
-  },
-  {
-    id: "CUS002",
-    name: "Karim Hossain",
-    email: "karim@email.com",
-    phone: "01812345678",
-    address: "Flat 4B, Gulshan Avenue",
-    package: "20 Mbps Basic",
-    packageId: "pkg1",
-    status: "active",
-    dueAmount: 1500,
-    advanceAmount: 0,
-    joinDate: "2023-08-20",
-    lastPayment: "2023-12-20",
-  },
-  {
-    id: "CUS003",
-    name: "Nasir Khan",
-    email: "nasir@email.com",
-    phone: "01912345678",
-    address: "789 Banani DOHS",
-    package: "50 Mbps Premium",
-    packageId: "pkg3",
-    status: "suspended",
-    dueAmount: 4500,
-    advanceAmount: 0,
-    joinDate: "2023-03-10",
-    lastPayment: "2023-11-10",
-  },
-  {
-    id: "CUS004",
-    name: "Jamal Uddin",
-    email: "jamal@email.com",
-    phone: "01612345678",
-    address: "321 Mirpur-10",
-    package: "30 Mbps Pro",
-    packageId: "pkg2",
-    status: "active",
-    dueAmount: 0,
-    advanceAmount: 0,
-    joinDate: "2023-09-01",
-    lastPayment: "2024-01-20",
-  },
-  {
-    id: "CUS005",
-    name: "Faruk Ahmed",
-    email: "faruk@email.com",
-    phone: "01512345678",
-    address: "567 Uttara Sector-7",
-    package: "20 Mbps Basic",
-    packageId: "pkg1",
-    status: "pending",
-    dueAmount: 750,
-    advanceAmount: 0,
-    joinDate: "2024-01-05",
-    lastPayment: "2024-01-05",
-  },
-  {
-    id: "CUS006",
-    name: "Salma Begum",
-    email: "salma@email.com",
-    phone: "01712345679",
-    address: "89 Mohammadpur",
-    package: "50 Mbps Premium",
-    packageId: "pkg3",
-    status: "active",
-    dueAmount: 0,
-    advanceAmount: 3000,
-    joinDate: "2022-11-15",
-    lastPayment: "2024-01-18",
-  },
-];
 
 export default function Customers() {
   const { toast } = useToast();
-  const [customers, setCustomers] = useState<CustomerTableData[]>(mockCustomers);
+  const { data: tenant } = useCurrentTenant();
+  const { data: customers, isLoading, error } = useCustomers(tenant?.id);
+  const createCustomer = useCreateCustomer();
+  const updateCustomer = useUpdateCustomer();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -119,7 +37,23 @@ export default function Customers() {
   const [statusDialogCustomer, setStatusDialogCustomer] = useState<CustomerTableData | null>(null);
   const [targetStatus, setTargetStatus] = useState<ConnectionStatus>("active");
 
-  const filteredCustomers = customers.filter((customer) => {
+  // Transform database customers to table format
+  const tableData: CustomerTableData[] = (customers ?? []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    email: c.email ?? "",
+    phone: c.phone,
+    address: c.address ?? "",
+    package: c.package?.name ?? "No package",
+    packageId: c.package_id ?? "",
+    status: c.connection_status ?? "pending",
+    dueAmount: c.due_balance ?? 0,
+    advanceAmount: c.advance_balance ?? 0,
+    joinDate: c.join_date,
+    lastPayment: c.last_payment_date ?? c.join_date,
+  }));
+
+  const filteredCustomers = tableData.filter((customer) => {
     const matchesSearch =
       customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       customer.phone.includes(searchQuery) ||
@@ -152,57 +86,59 @@ export default function Customers() {
   };
 
   const handleFormSubmit = async (data: CustomerFormData) => {
-    // Mock package mapping
-    const packageNames: Record<string, string> = {
-      pkg1: "20 Mbps Basic",
-      pkg2: "30 Mbps Pro",
-      pkg3: "50 Mbps Premium",
-      pkg4: "100 Mbps Ultra",
-    };
+    if (!tenant?.id) {
+      toast({
+        title: "ত্রুটি",
+        description: "টেন্যান্ট তথ্য পাওয়া যায়নি।",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    if (formMode === "add") {
-      const newCustomer: CustomerTableData = {
-        id: `CUS${String(customers.length + 1).padStart(3, "0")}`,
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        address: data.address,
-        package: packageNames[data.packageId] || data.packageId,
-        packageId: data.packageId,
-        status: "pending",
-        dueAmount: 0,
-        advanceAmount: 0,
-        joinDate: new Date().toISOString().split("T")[0],
-        lastPayment: new Date().toISOString().split("T")[0],
-      };
-      setCustomers([newCustomer, ...customers]);
+    try {
+      if (formMode === "add") {
+        await createCustomer.mutateAsync({
+          tenant_id: tenant.id,
+          name: data.name,
+          email: data.email || null,
+          phone: data.phone,
+          address: data.address || null,
+          package_id: data.packageId || null,
+          connection_status: "pending",
+          due_balance: 0,
+          advance_balance: 0,
+        });
+        toast({
+          title: "কাস্টমার যুক্ত হয়েছে",
+          description: `${data.name} সফলভাবে যুক্ত হয়েছে।`,
+        });
+      } else {
+        await updateCustomer.mutateAsync({
+          id: data.id!,
+          updates: {
+            name: data.name,
+            email: data.email || null,
+            phone: data.phone,
+            address: data.address || null,
+            package_id: data.packageId || null,
+            connection_status: data.connectionStatus,
+            due_balance: data.dueBalance,
+            advance_balance: data.advanceBalance,
+          },
+        });
+        toast({
+          title: "কাস্টমার আপডেট হয়েছে",
+          description: `${data.name} এর তথ্য আপডেট হয়েছে।`,
+        });
+      }
+    } catch (err) {
+      console.error("Error saving customer:", err);
       toast({
-        title: "Customer Added",
-        description: `${data.name} has been added successfully.`,
+        title: "ত্রুটি",
+        description: "কাস্টমার সেভ করতে সমস্যা হয়েছে।",
+        variant: "destructive",
       });
-    } else {
-      setCustomers(
-        customers.map((c) =>
-          c.id === data.id
-            ? {
-                ...c,
-                name: data.name,
-                email: data.email,
-                phone: data.phone,
-                address: data.address,
-                package: packageNames[data.packageId] || data.packageId,
-                packageId: data.packageId,
-                status: data.connectionStatus,
-                dueAmount: data.dueBalance,
-                advanceAmount: data.advanceBalance,
-              }
-            : c
-        )
-      );
-      toast({
-        title: "Customer Updated",
-        description: `${data.name}'s information has been updated.`,
-      });
+      throw err;
     }
   };
 
@@ -223,53 +159,71 @@ export default function Customers() {
     newStatus: ConnectionStatus,
     reason?: string
   ) => {
-    setCustomers(
-      customers.map((c) =>
-        c.id === customerId ? { ...c, status: newStatus } : c
-      )
-    );
-
-    const customer = customers.find((c) => c.id === customerId);
-    toast({
-      title: newStatus === "active" ? "Connection Activated" : "Connection Suspended",
-      description: `${customer?.name}'s connection has been ${newStatus === "active" ? "activated" : "suspended"}.`,
-    });
+    try {
+      await updateCustomer.mutateAsync({
+        id: customerId,
+        updates: { connection_status: newStatus },
+      });
+      const customer = tableData.find((c) => c.id === customerId);
+      toast({
+        title: newStatus === "active" ? "সংযোগ সক্রিয়" : "সংযোগ স্থগিত",
+        description: `${customer?.name} এর সংযোগ ${newStatus === "active" ? "সক্রিয়" : "স্থগিত"} করা হয়েছে।`,
+      });
+    } catch (err) {
+      console.error("Error updating status:", err);
+      toast({
+        title: "ত্রুটি",
+        description: "সংযোগ স্ট্যাটাস পরিবর্তন করতে সমস্যা হয়েছে।",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleViewDetails = (customer: CustomerTableData) => {
     toast({
-      title: "Coming Soon",
-      description: "Customer details view will be implemented soon.",
+      title: "শীঘ্রই আসছে",
+      description: "কাস্টমার বিস্তারিত ভিউ শীঘ্রই যুক্ত হবে।",
     });
   };
 
   const handleRecordPayment = (customer: CustomerTableData) => {
     toast({
-      title: "Coming Soon",
-      description: "Payment recording will be implemented soon.",
+      title: "শীঘ্রই আসছে",
+      description: "পেমেন্ট রেকর্ড শীঘ্রই যুক্ত হবে।",
     });
   };
 
   const handleGenerateBill = (customer: CustomerTableData) => {
     toast({
-      title: "Coming Soon",
-      description: "Bill generation will be implemented soon.",
+      title: "শীঘ্রই আসছে",
+      description: "বিল জেনারেট শীঘ্রই যুক্ত হবে।",
     });
   };
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-destructive">কাস্টমার তথ্য লোড করতে সমস্যা হয়েছে।</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          পুনরায় চেষ্টা করুন
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Customers</h1>
+          <h1 className="text-2xl font-bold tracking-tight">কাস্টমার</h1>
           <p className="text-muted-foreground">
-            Manage your customer base and connections
+            আপনার কাস্টমার এবং সংযোগ ম্যানেজ করুন
           </p>
         </div>
         <Button className="gap-2" onClick={handleAddCustomer}>
           <Plus className="h-4 w-4" />
-          Add Customer
+          নতুন কাস্টমার
         </Button>
       </div>
 
@@ -278,7 +232,7 @@ export default function Customers() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by name, phone, or ID..."
+            placeholder="নাম, ফোন বা ID দিয়ে খুঁজুন..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -288,13 +242,13 @@ export default function Customers() {
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[140px]">
               <Filter className="mr-2 h-4 w-4" />
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="স্ট্যাটাস" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="suspended">Suspended</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="all">সব স্ট্যাটাস</SelectItem>
+              <SelectItem value="active">সক্রিয়</SelectItem>
+              <SelectItem value="suspended">স্থগিত</SelectItem>
+              <SelectItem value="pending">অপেক্ষমান</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon">
@@ -304,27 +258,33 @@ export default function Customers() {
       </div>
 
       {/* Customer Table */}
-      <CustomerTable
-        customers={filteredCustomers}
-        onEdit={handleEditCustomer}
-        onViewDetails={handleViewDetails}
-        onSuspend={handleSuspendConnection}
-        onActivate={handleActivateConnection}
-        onRecordPayment={handleRecordPayment}
-        onGenerateBill={handleGenerateBill}
-      />
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <CustomerTable
+          customers={filteredCustomers}
+          onEdit={handleEditCustomer}
+          onViewDetails={handleViewDetails}
+          onSuspend={handleSuspendConnection}
+          onActivate={handleActivateConnection}
+          onRecordPayment={handleRecordPayment}
+          onGenerateBill={handleGenerateBill}
+        />
+      )}
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Showing {filteredCustomers.length} of {customers.length} customers
+          মোট {tableData.length} কাস্টমারের মধ্যে {filteredCustomers.length} জন দেখানো হচ্ছে
         </p>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" disabled>
-            Previous
+            আগের
           </Button>
-          <Button variant="outline" size="sm">
-            Next
+          <Button variant="outline" size="sm" disabled={filteredCustomers.length <= 10}>
+            পরের
           </Button>
         </div>
       </div>
@@ -336,6 +296,7 @@ export default function Customers() {
         customer={selectedCustomer}
         onSubmit={handleFormSubmit}
         mode={formMode}
+        tenantId={tenant?.id}
       />
 
       {/* Connection Status Dialog */}

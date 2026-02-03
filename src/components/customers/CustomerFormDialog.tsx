@@ -19,15 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, User, Phone, Mail, MapPin, Package, Wifi } from "lucide-react";
+import { usePackages } from "@/hooks/usePackages";
 import type { ConnectionStatus } from "@/types";
-
-// Mock packages - will be replaced with database data
-const mockPackages = [
-  { id: "pkg1", name: "20 Mbps Basic", speedLabel: "20 Mbps", monthlyPrice: 750 },
-  { id: "pkg2", name: "30 Mbps Pro", speedLabel: "30 Mbps", monthlyPrice: 1000 },
-  { id: "pkg3", name: "50 Mbps Premium", speedLabel: "50 Mbps", monthlyPrice: 1500 },
-  { id: "pkg4", name: "100 Mbps Ultra", speedLabel: "100 Mbps", monthlyPrice: 2500 },
-];
 
 export interface CustomerFormData {
   id?: string;
@@ -47,6 +40,7 @@ interface CustomerFormDialogProps {
   customer?: CustomerFormData | null;
   onSubmit: (data: CustomerFormData) => Promise<void>;
   mode: "add" | "edit";
+  tenantId?: string;
 }
 
 const initialFormData: CustomerFormData = {
@@ -66,10 +60,14 @@ export function CustomerFormDialog({
   customer,
   onSubmit,
   mode,
+  tenantId,
 }: CustomerFormDialogProps) {
   const [formData, setFormData] = useState<CustomerFormData>(initialFormData);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof CustomerFormData, string>>>({});
+
+  // Fetch packages from database
+  const { data: packages, isLoading: packagesLoading } = usePackages(tenantId);
 
   useEffect(() => {
     if (customer && mode === "edit") {
@@ -84,23 +82,23 @@ export function CustomerFormDialog({
     const newErrors: Partial<Record<keyof CustomerFormData, string>> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = "নাম আবশ্যক";
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
+      newErrors.name = "নাম কমপক্ষে ২ অক্ষরের হতে হবে";
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = "Phone is required";
+      newErrors.phone = "ফোন নম্বর আবশ্যক";
     } else if (!/^01[3-9]\d{8}$/.test(formData.phone.replace(/\s/g, ""))) {
-      newErrors.phone = "Enter a valid Bangladesh phone number";
+      newErrors.phone = "সঠিক বাংলাদেশি ফোন নম্বর দিন";
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Enter a valid email address";
+      newErrors.email = "সঠিক ইমেইল ঠিকানা দিন";
     }
 
     if (!formData.packageId) {
-      newErrors.packageId = "Please select a package";
+      newErrors.packageId = "প্যাকেজ নির্বাচন করুন";
     }
 
     setErrors(newErrors);
@@ -129,7 +127,7 @@ export function CustomerFormDialog({
     }
   };
 
-  const selectedPackage = mockPackages.find((p) => p.id === formData.packageId);
+  const selectedPackage = packages?.find((p) => p.id === formData.packageId);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -137,12 +135,12 @@ export function CustomerFormDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            {mode === "add" ? "Add New Customer" : "Edit Customer"}
+            {mode === "add" ? "নতুন কাস্টমার যোগ করুন" : "কাস্টমার সম্পাদনা"}
           </DialogTitle>
           <DialogDescription>
             {mode === "add"
-              ? "Fill in the details to add a new customer to your network."
-              : "Update customer information and connection settings."}
+              ? "আপনার নেটওয়ার্কে নতুন কাস্টমার যোগ করতে তথ্য পূরণ করুন।"
+              : "কাস্টমারের তথ্য ও সংযোগ সেটিংস আপডেট করুন।"}
           </DialogDescription>
         </DialogHeader>
 
@@ -151,11 +149,11 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="name" className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
-              Full Name *
+              পূর্ণ নাম *
             </Label>
             <Input
               id="name"
-              placeholder="Enter customer name"
+              placeholder="কাস্টমারের নাম লিখুন"
               value={formData.name}
               onChange={(e) => handleChange("name", e.target.value)}
               className={errors.name ? "border-destructive" : ""}
@@ -169,7 +167,7 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="phone" className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
-              Phone Number *
+              ফোন নম্বর *
             </Label>
             <Input
               id="phone"
@@ -187,7 +185,7 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              Email
+              ইমেইল
             </Label>
             <Input
               id="email"
@@ -206,11 +204,11 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="address" className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
-              Address
+              ঠিকানা
             </Label>
             <Textarea
               id="address"
-              placeholder="Enter full address"
+              placeholder="পূর্ণ ঠিকানা লিখুন"
               value={formData.address}
               onChange={(e) => handleChange("address", e.target.value)}
               rows={2}
@@ -221,26 +219,32 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="package" className="flex items-center gap-2">
               <Package className="h-4 w-4 text-muted-foreground" />
-              Internet Package *
+              ইন্টারনেট প্যাকেজ *
             </Label>
             <Select
               value={formData.packageId}
               onValueChange={(value) => handleChange("packageId", value)}
+              disabled={packagesLoading}
             >
               <SelectTrigger className={errors.packageId ? "border-destructive" : ""}>
-                <SelectValue placeholder="Select a package" />
+                <SelectValue placeholder={packagesLoading ? "লোড হচ্ছে..." : "প্যাকেজ নির্বাচন করুন"} />
               </SelectTrigger>
               <SelectContent>
-                {mockPackages.map((pkg) => (
+                {packages?.filter(p => p.is_active).map((pkg) => (
                   <SelectItem key={pkg.id} value={pkg.id}>
                     <div className="flex items-center justify-between w-full gap-4">
-                      <span>{pkg.name}</span>
+                      <span>{pkg.name} ({pkg.speed_label})</span>
                       <span className="text-muted-foreground">
-                        ৳{pkg.monthlyPrice}/mo
+                        ৳{pkg.monthly_price}/মাস
                       </span>
                     </div>
                   </SelectItem>
                 ))}
+                {(!packages || packages.filter(p => p.is_active).length === 0) && !packagesLoading && (
+                  <SelectItem value="" disabled>
+                    কোন প্যাকেজ পাওয়া যায়নি
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
             {errors.packageId && (
@@ -248,7 +252,7 @@ export function CustomerFormDialog({
             )}
             {selectedPackage && (
               <p className="text-xs text-muted-foreground">
-                Monthly fee: ৳{selectedPackage.monthlyPrice.toLocaleString()}
+                মাসিক ফি: ৳{selectedPackage.monthly_price.toLocaleString()}
               </p>
             )}
           </div>
@@ -258,7 +262,7 @@ export function CustomerFormDialog({
             <div className="space-y-2">
               <Label htmlFor="status" className="flex items-center gap-2">
                 <Wifi className="h-4 w-4 text-muted-foreground" />
-                Connection Status
+                সংযোগ স্ট্যাটাস
               </Label>
               <Select
                 value={formData.connectionStatus}
@@ -270,9 +274,9 @@ export function CustomerFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="active">সক্রিয়</SelectItem>
+                  <SelectItem value="suspended">স্থগিত</SelectItem>
+                  <SelectItem value="pending">অপেক্ষমান</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -282,7 +286,7 @@ export function CustomerFormDialog({
           {mode === "edit" && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="dueBalance">Due Balance (৳)</Label>
+                <Label htmlFor="dueBalance">বকেয়া (৳)</Label>
                 <Input
                   id="dueBalance"
                   type="number"
@@ -294,7 +298,7 @@ export function CustomerFormDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="advanceBalance">Advance Balance (৳)</Label>
+                <Label htmlFor="advanceBalance">অগ্রিম (৳)</Label>
                 <Input
                   id="advanceBalance"
                   type="number"
@@ -315,11 +319,11 @@ export function CustomerFormDialog({
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
-            Cancel
+            বাতিল
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === "add" ? "Add Customer" : "Save Changes"}
+            {mode === "add" ? "কাস্টমার যোগ করুন" : "সংরক্ষণ করুন"}
           </Button>
         </DialogFooter>
       </DialogContent>
