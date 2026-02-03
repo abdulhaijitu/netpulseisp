@@ -6,7 +6,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PortalLayout } from "@/components/portal/PortalLayout";
 import { SuperAdminLayout } from "@/components/admin/SuperAdminLayout";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { StaffRoute } from "@/components/StaffRoute";
+import { CustomerRoute } from "@/components/CustomerRoute";
+import { SuperAdminRoute } from "@/components/SuperAdminRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 // Dashboard Pages
@@ -21,6 +23,7 @@ import NotFound from "@/pages/NotFound";
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
+import TenantOnboarding from "@/pages/auth/TenantOnboarding";
 
 // Portal Pages
 import Login from "@/pages/portal/Login";
@@ -52,13 +55,14 @@ const App = () => (
             {/* Staff Auth Routes */}
             <Route path="/login" element={<StaffLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/register" element={<TenantOnboarding />} />
             
-            {/* Admin Dashboard Routes (ISP Staff) - Protected */}
+            {/* Admin Dashboard Routes (ISP Staff) - Protected by role */}
             <Route
               element={
-                <ProtectedRoute redirectTo="/login">
+                <StaffRoute>
                   <DashboardLayout />
-                </ProtectedRoute>
+                </StaffRoute>
               }
             >
               <Route path="/dashboard" element={<Dashboard />} />
@@ -74,9 +78,9 @@ const App = () => (
             <Route path="/portal/signup" element={<Signup />} />
             <Route
               element={
-                <ProtectedRoute>
+                <CustomerRoute>
                   <PortalLayout />
-                </ProtectedRoute>
+                </CustomerRoute>
               }
             >
               <Route path="/portal" element={<PortalDashboard />} />
@@ -89,9 +93,9 @@ const App = () => (
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               element={
-                <ProtectedRoute redirectTo="/admin/login">
+                <SuperAdminRoute>
                   <SuperAdminLayout />
-                </ProtectedRoute>
+                </SuperAdminRoute>
               }
             >
               <Route path="/admin" element={<AdminDashboard />} />

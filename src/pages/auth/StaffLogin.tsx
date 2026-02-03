@@ -91,6 +91,12 @@ export default function StaffLogin() {
             </Button>
             <div className="text-sm text-muted-foreground text-center space-y-1">
               <p>
+                New ISP?{" "}
+                <Link to="/register" className="text-primary hover:underline">
+                  Register your organization
+                </Link>
+              </p>
+              <p>
                 Customer?{" "}
                 <Link to="/portal/login" className="text-primary hover:underline">
                   Go to customer portal

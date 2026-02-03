@@ -393,6 +393,10 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
       }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -400,7 +404,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_isp_staff: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      onboard_tenant: {
+        Args: { _subdomain: string; _tenant_name: string; _user_id: string }
+        Returns: string
+      }
       user_tenant_id: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
