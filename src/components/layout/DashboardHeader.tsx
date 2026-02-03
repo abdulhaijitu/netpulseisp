@@ -1,4 +1,4 @@
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -11,15 +11,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { TenantSwitcher } from "./TenantSwitcher";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardHeaderProps {
   onMenuClick?: () => void;
 }
 
 export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
+  const initials = user?.email?.slice(0, 2).toUpperCase() || "AD";
+
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border bg-card px-4 md:px-6">
       <SidebarTrigger className="md:hidden" />
+      
+      {/* Tenant Switcher for Super Admin */}
+      <TenantSwitcher />
       
       <div className="hidden md:flex md:flex-1">
         <div className="relative w-full max-w-sm">
@@ -73,7 +89,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             <Button variant="ghost" size="icon" className="rounded-full">
               <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-xs font-medium text-primary-foreground">
-                  AD
+                  {initials}
                 </span>
               </div>
             </Button>
@@ -85,7 +101,11 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuItem>Support</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem 
+              className="text-destructive"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

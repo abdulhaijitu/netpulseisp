@@ -10,6 +10,7 @@ import { StaffRoute } from "@/components/StaffRoute";
 import { CustomerRoute } from "@/components/CustomerRoute";
 import { SuperAdminRoute } from "@/components/SuperAdminRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { TenantProvider } from "@/contexts/TenantContext";
 
 // Dashboard Pages
 import Dashboard from "@/pages/Dashboard";
@@ -44,70 +45,72 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Redirect root to login */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            
-            {/* Staff Auth Routes */}
-            <Route path="/login" element={<StaffLogin />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/register" element={<TenantOnboarding />} />
-            
-            {/* Admin Dashboard Routes (ISP Staff) - Protected by role */}
-            <Route
-              element={
-                <StaffRoute>
-                  <DashboardLayout />
-                </StaffRoute>
-              }
-            >
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/customers" element={<Customers />} />
-              <Route path="/dashboard/packages" element={<Packages />} />
-              <Route path="/dashboard/billing" element={<Billing />} />
-              <Route path="/dashboard/payments" element={<Payments />} />
-              <Route path="/dashboard/settings" element={<Settings />} />
-            </Route>
+      <TenantProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Redirect root to login */}
+              <Route path="/" element={<Navigate to="/login" replace />} />
+              
+              {/* Staff Auth Routes */}
+              <Route path="/login" element={<StaffLogin />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/register" element={<TenantOnboarding />} />
+              
+              {/* Admin Dashboard Routes (ISP Staff) - Protected by role */}
+              <Route
+                element={
+                  <StaffRoute>
+                    <DashboardLayout />
+                  </StaffRoute>
+                }
+              >
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/customers" element={<Customers />} />
+                <Route path="/dashboard/packages" element={<Packages />} />
+                <Route path="/dashboard/billing" element={<Billing />} />
+                <Route path="/dashboard/payments" element={<Payments />} />
+                <Route path="/dashboard/settings" element={<Settings />} />
+              </Route>
 
-            {/* Customer Portal Routes */}
-            <Route path="/portal/login" element={<Login />} />
-            <Route path="/portal/signup" element={<Signup />} />
-            <Route
-              element={
-                <CustomerRoute>
-                  <PortalLayout />
-                </CustomerRoute>
-              }
-            >
-              <Route path="/portal" element={<PortalDashboard />} />
-              <Route path="/portal/bills" element={<PortalBills />} />
-              <Route path="/portal/payments" element={<PortalPayments />} />
-              <Route path="/portal/profile" element={<PortalProfile />} />
-            </Route>
+              {/* Customer Portal Routes */}
+              <Route path="/portal/login" element={<Login />} />
+              <Route path="/portal/signup" element={<Signup />} />
+              <Route
+                element={
+                  <CustomerRoute>
+                    <PortalLayout />
+                  </CustomerRoute>
+                }
+              >
+                <Route path="/portal" element={<PortalDashboard />} />
+                <Route path="/portal/bills" element={<PortalBills />} />
+                <Route path="/portal/payments" element={<PortalPayments />} />
+                <Route path="/portal/profile" element={<PortalProfile />} />
+              </Route>
 
-            {/* Super Admin Routes */}
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route
-              element={
-                <SuperAdminRoute>
-                  <SuperAdminLayout />
-                </SuperAdminRoute>
-              }
-            >
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/tenants" element={<AdminTenants />} />
-              <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
-            </Route>
+              {/* Super Admin Routes */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route
+                element={
+                  <SuperAdminRoute>
+                    <SuperAdminLayout />
+                  </SuperAdminRoute>
+                }
+              >
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/tenants" element={<AdminTenants />} />
+                <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
+              </Route>
 
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+              {/* 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </TenantProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

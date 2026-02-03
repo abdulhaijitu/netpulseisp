@@ -17,15 +17,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { usePackages, useCreatePackage, useUpdatePackage, type Package } from "@/hooks/usePackages";
-import { useCurrentTenant } from "@/hooks/useTenant";
+import { useTenantContext } from "@/contexts/TenantContext";
 import { useCustomers } from "@/hooks/useCustomers";
 import { PackageFormDialog } from "@/components/packages/PackageFormDialog";
 import { toast } from "sonner";
 
 export default function Packages() {
-  const { data: tenant } = useCurrentTenant();
-  const { data: packages = [], isLoading } = usePackages(tenant?.id);
-  const { data: customers = [] } = useCustomers(tenant?.id);
+  const { currentTenant } = useTenantContext();
+  const { data: packages = [], isLoading } = usePackages(currentTenant?.id);
+  const { data: customers = [] } = useCustomers(currentTenant?.id);
   const createPackage = useCreatePackage();
   const updatePackage = useUpdatePackage();
 
@@ -65,13 +65,13 @@ export default function Packages() {
         });
         toast.success("প্যাকেজ আপডেট হয়েছে");
       } else {
-        if (!tenant?.id) {
+        if (!currentTenant?.id) {
           toast.error("টেন্যান্ট পাওয়া যায়নি");
           return;
         }
         await createPackage.mutateAsync({
           ...data,
-          tenant_id: tenant.id,
+          tenant_id: currentTenant.id,
         });
         toast.success("নতুন প্যাকেজ তৈরি হয়েছে");
       }
