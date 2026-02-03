@@ -50,84 +50,132 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { InvoiceDetailDialog, type InvoiceDetail } from "@/components/billing/InvoiceDetailDialog";
+import { useToast } from "@/hooks/use-toast";
 import type { Bill, PaymentStatus } from "@/types";
 
-// Mock data for bills
-const mockBills: (Bill & { customerName: string; customerPhone: string })[] = [
+// Extended mock data for bills with line items and payments
+const mockBillsData: InvoiceDetail[] = [
   {
     id: "INV-2024-001",
     customerId: "1",
     customerName: "Md. Karim Uddin",
     customerPhone: "+880 1712-345678",
-    tenantId: "tenant-1",
+    customerEmail: "karim@email.com",
+    customerAddress: "House 12, Road 5, Dhanmondi, Dhaka",
+    packageName: "Premium 50 Mbps",
     amount: 1200,
     dueDate: new Date("2024-02-15"),
     status: "paid",
     billingPeriod: {
-      start: new Date("2024-01-01"),
-      end: new Date("2024-01-31"),
+      start: new Date("2023-12-31"),
+      end: new Date("2024-01-30"),
     },
     createdAt: new Date("2024-01-01"),
+    paidAmount: 1200,
+    lineItems: [
+      { id: "li1", description: "Monthly Internet Subscription - Premium 50 Mbps", quantity: 1, unitPrice: 1200, total: 1200 },
+    ],
+    payments: [
+      { id: "pay1", date: new Date("2024-01-10"), amount: 1200, method: "cash", receivedBy: "Staff Admin" },
+    ],
   },
   {
     id: "INV-2024-002",
     customerId: "2",
     customerName: "Fatema Begum",
     customerPhone: "+880 1812-456789",
-    tenantId: "tenant-1",
+    customerEmail: "fatema@email.com",
+    customerAddress: "Flat 4B, Gulshan Avenue, Dhaka",
+    packageName: "Standard 30 Mbps",
     amount: 1500,
     dueDate: new Date("2024-02-15"),
     status: "due",
     billingPeriod: {
-      start: new Date("2024-01-01"),
-      end: new Date("2024-01-31"),
+      start: new Date("2023-12-31"),
+      end: new Date("2024-01-30"),
     },
     createdAt: new Date("2024-01-01"),
+    paidAmount: 0,
+    lineItems: [
+      { id: "li2", description: "Monthly Internet Subscription - Standard 30 Mbps", quantity: 1, unitPrice: 1000, total: 1000 },
+      { id: "li3", description: "Router Rental Fee", quantity: 1, unitPrice: 300, total: 300 },
+      { id: "li4", description: "Static IP Add-on", quantity: 1, unitPrice: 200, total: 200 },
+    ],
+    payments: [],
   },
   {
     id: "INV-2024-003",
     customerId: "3",
     customerName: "Rahim Sheikh",
     customerPhone: "+880 1912-567890",
-    tenantId: "tenant-1",
+    customerAddress: "789 Banani DOHS, Dhaka",
+    packageName: "Basic 20 Mbps",
     amount: 800,
     dueDate: new Date("2024-02-10"),
     status: "overdue",
     billingPeriod: {
-      start: new Date("2024-01-01"),
-      end: new Date("2024-01-31"),
+      start: new Date("2023-12-31"),
+      end: new Date("2024-01-30"),
     },
     createdAt: new Date("2024-01-01"),
+    paidAmount: 0,
+    lineItems: [
+      { id: "li5", description: "Monthly Internet Subscription - Basic 20 Mbps", quantity: 1, unitPrice: 800, total: 800 },
+    ],
+    payments: [],
+    notes: "Customer contacted on 2024-02-12. Promised to pay by end of week.",
   },
   {
     id: "INV-2024-004",
     customerId: "4",
     customerName: "Jamal Hossain",
     customerPhone: "+880 1612-678901",
-    tenantId: "tenant-1",
+    customerEmail: "jamal@email.com",
+    customerAddress: "321 Mirpur-10, Dhaka",
+    packageName: "Premium 50 Mbps",
     amount: 2000,
     dueDate: new Date("2024-02-20"),
     status: "partial",
     billingPeriod: {
-      start: new Date("2024-01-01"),
-      end: new Date("2024-01-31"),
+      start: new Date("2023-12-31"),
+      end: new Date("2024-01-30"),
     },
     createdAt: new Date("2024-01-01"),
+    paidAmount: 1000,
+    lineItems: [
+      { id: "li6", description: "Monthly Internet Subscription - Premium 50 Mbps", quantity: 1, unitPrice: 1500, total: 1500 },
+      { id: "li7", description: "Installation Fee (New Connection)", quantity: 1, unitPrice: 500, total: 500 },
+    ],
+    payments: [
+      { id: "pay2", date: new Date("2024-01-15"), amount: 1000, method: "online", reference: "TRX-78234", receivedBy: "System" },
+    ],
   },
   {
     id: "INV-2024-005",
     customerId: "5",
     customerName: "Salma Akter",
     customerPhone: "+880 1512-789012",
-    tenantId: "tenant-1",
+    customerEmail: "salma@email.com",
+    customerAddress: "567 Uttara Sector-7, Dhaka",
+    packageName: "Standard 30 Mbps",
     amount: 1200,
     dueDate: new Date("2024-02-15"),
     status: "paid",
     billingPeriod: {
-      start: new Date("2024-01-01"),
-      end: new Date("2024-01-31"),
+      start: new Date("2023-12-31"),
+      end: new Date("2024-01-30"),
     },
     createdAt: new Date("2024-01-01"),
+    paidAmount: 1200,
+    lineItems: [
+      { id: "li8", description: "Monthly Internet Subscription - Standard 30 Mbps", quantity: 1, unitPrice: 1000, total: 1000 },
+      { id: "li9", description: "Late Payment Fee (Previous Month)", quantity: 1, unitPrice: 200, total: 200 },
+    ],
+    payments: [
+      { id: "pay3", date: new Date("2024-01-05"), amount: 700, method: "cash", receivedBy: "Collector A" },
+      { id: "pay4", date: new Date("2024-01-18"), amount: 500, method: "bank_transfer", reference: "BNK-45678", receivedBy: "System" },
+    ],
   },
 ];
 
@@ -142,11 +190,14 @@ const statusConfig: Record<
 };
 
 export default function Billing() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDetail | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
-  const filteredBills = mockBills.filter((bill) => {
+  const filteredBills = mockBillsData.filter((bill) => {
     const matchesSearch =
       bill.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bill.id.toLowerCase().includes(searchTerm.toLowerCase());
@@ -155,14 +206,10 @@ export default function Billing() {
     return matchesSearch && matchesStatus;
   });
 
-  const totalBilled = mockBills.reduce((sum, bill) => sum + bill.amount, 0);
-  const totalPaid = mockBills
-    .filter((b) => b.status === "paid")
-    .reduce((sum, bill) => sum + bill.amount, 0);
-  const totalDue = mockBills
-    .filter((b) => b.status !== "paid")
-    .reduce((sum, bill) => sum + bill.amount, 0);
-  const overdueCount = mockBills.filter((b) => b.status === "overdue").length;
+  const totalBilled = mockBillsData.reduce((sum, bill) => sum + bill.amount, 0);
+  const totalPaid = mockBillsData.reduce((sum, bill) => sum + bill.paidAmount, 0);
+  const totalDue = totalBilled - totalPaid;
+  const overdueCount = mockBillsData.filter((b) => b.status === "overdue").length;
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-GB", {
@@ -174,6 +221,18 @@ export default function Billing() {
 
   const formatCurrency = (amount: number) => {
     return `৳${amount.toLocaleString()}`;
+  };
+
+  const handleViewInvoice = (invoice: InvoiceDetail) => {
+    setSelectedInvoice(invoice);
+    setIsDetailDialogOpen(true);
+  };
+
+  const handleRecordPayment = (invoiceId: string) => {
+    toast({
+      title: "Coming Soon",
+      description: "Payment recording will be implemented soon.",
+    });
   };
 
   return (
@@ -365,7 +424,11 @@ export default function Billing() {
                   {filteredBills.map((bill) => {
                     const StatusIcon = statusConfig[bill.status].icon;
                     return (
-                      <TableRow key={bill.id}>
+                      <TableRow 
+                        key={bill.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleViewInvoice(bill)}
+                      >
                         <TableCell className="font-medium">{bill.id}</TableCell>
                         <TableCell>
                           <div>
@@ -396,26 +459,32 @@ export default function Billing() {
                         </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                               <Button variant="ghost" size="icon">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewInvoice(bill);
+                              }}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 View Invoice
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
                                 <Download className="mr-2 h-4 w-4" />
                                 Download PDF
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
                                 <Send className="mr-2 h-4 w-4" />
                                 Send to Customer
                               </DropdownMenuItem>
                               {bill.status !== "paid" && (
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRecordPayment(bill.id);
+                                }}>
                                   <Receipt className="mr-2 h-4 w-4" />
                                   Record Payment
                                 </DropdownMenuItem>
@@ -452,6 +521,14 @@ export default function Billing() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Invoice Detail Dialog */}
+      <InvoiceDetailDialog
+        open={isDetailDialogOpen}
+        onOpenChange={setIsDetailDialogOpen}
+        invoice={selectedInvoice}
+        onRecordPayment={handleRecordPayment}
+      />
     </div>
   );
 }
