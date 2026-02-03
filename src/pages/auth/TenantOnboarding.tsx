@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,11 +12,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Building2, ArrowRight, Check } from "lucide-react";
+import { Loader2, Building2, ArrowRight, Check, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-type Step = "account" | "organization" | "complete";
+type Step = "account" | "verify_email" | "organization" | "complete";
 
 export default function TenantOnboarding() {
   const [step, setStep] = useState<Step>("account");
@@ -31,6 +31,30 @@ export default function TenantOnboarding() {
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
 
+  // Check if user is already logged in with a confirmed email
+  useEffect(() => {
+    if (user?.email_confirmed_at) {
+      // User is logged in and email is confirmed
+      // Check if they already have a tenant
+      const checkTenant = async () => {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("tenant_id")
+          .eq("id", user.id)
+          .single();
+        
+        if (profile?.tenant_id) {
+          // Already has a tenant, redirect to dashboard
+          navigate("/dashboard");
+        } else {
+          // Needs to complete organization setup
+          setStep("organization");
+        }
+      };
+      checkTenant();
+    }
+  }, [user, navigate]);
+
   const handleAccountSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -42,7 +66,8 @@ export default function TenantOnboarding() {
       setError(error.message);
       setLoading(false);
     } else {
-      setStep("organization");
+      // Move to email verification step
+      setStep("verify_email");
       setLoading(false);
     }
   };
@@ -115,6 +140,7 @@ export default function TenantOnboarding() {
           <CardTitle className="text-2xl">Register Your ISP</CardTitle>
           <CardDescription>
             {step === "account" && "Create your admin account to get started"}
+            {step === "verify_email" && "Check your email to continue"}
             {step === "organization" && "Set up your organization details"}
             {step === "complete" && "You're all set!"}
           </CardDescription>
@@ -124,31 +150,59 @@ export default function TenantOnboarding() {
         <div className="px-6 pb-4">
           <div className="flex items-center justify-center gap-2">
             <div
-              className={`h-2 w-16 rounded-full ${
-                step === "account"
+              className={`h-2 w-12 rounded-full ${
+                step === "account" || step === "verify_email" || step === "organization" || step === "complete"
                   ? "bg-primary"
-                  : "bg-primary"
+                  : "bg-muted"
               }`}
             />
             <div
-              className={`h-2 w-16 rounded-full ${
+              className={`h-2 w-12 rounded-full ${
+                step === "verify_email" || step === "organization" || step === "complete"
+                  ? "bg-primary"
+                  : "bg-muted"
+              }`}
+            />
+            <div
+              className={`h-2 w-12 rounded-full ${
                 step === "organization" || step === "complete"
                   ? "bg-primary"
                   : "bg-muted"
               }`}
             />
             <div
-              className={`h-2 w-16 rounded-full ${
+              className={`h-2 w-12 rounded-full ${
                 step === "complete" ? "bg-primary" : "bg-muted"
               }`}
             />
           </div>
           <div className="mt-2 flex justify-between text-xs text-muted-foreground">
             <span>Account</span>
+            <span>Verify</span>
             <span>Organization</span>
             <span>Complete</span>
           </div>
         </div>
+
+        {step === "verify_email" && (
+          <CardContent className="text-center py-8">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Check your email</h3>
+            <p className="text-muted-foreground mb-4">
+              We've sent a verification link to <strong>{email}</strong>.
+              <br />
+              Click the link in the email to verify your account and continue setup.
+            </p>
+            <Alert className="text-left">
+              <AlertDescription>
+                After verifying your email, return to this page to complete your organization setup.
+                The page will automatically detect when you're verified.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        )}
 
         {step === "account" && (
           <form onSubmit={handleAccountSubmit}>
