@@ -8,7 +8,8 @@ import {
   Building2,
   BarChart3,
   Bell,
-  FileText
+  FileText,
+  Loader2
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -25,6 +26,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const mainNavItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -40,10 +45,40 @@ const systemNavItems = [
   { title: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
+// Role display names
+const roleDisplayNames: Record<string, string> = {
+  super_admin: "সুপার অ্যাডমিন",
+  isp_owner: "ISP মালিক",
+  admin: "অ্যাডমিন",
+  manager: "ম্যানেজার",
+  staff: "স্টাফ",
+  accountant: "হিসাবরক্ষক",
+  marketing: "মার্কেটিং",
+  member: "সদস্য",
+};
+
 export function DashboardSidebar() {
   const location = useLocation();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+  const { user } = useAuth();
+  const { data: role, isLoading: roleLoading } = useUserRole();
+
+  // Fetch user profile
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["profile", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -51,6 +86,15 @@ export function DashboardSidebar() {
     }
     return location.pathname.startsWith(href);
   };
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+  const roleLabel = role ? roleDisplayNames[role] || role : "...";
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -136,18 +180,22 @@ export function DashboardSidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center">
-            <span className="text-xs font-medium text-sidebar-accent-foreground">
-              AD
-            </span>
+          <div className="h-8 w-8 rounded-full bg-sidebar-primary flex items-center justify-center">
+            {profileLoading || roleLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-sidebar-primary-foreground" />
+            ) : (
+              <span className="text-xs font-medium text-sidebar-primary-foreground">
+                {initials}
+              </span>
+            )}
           </div>
           {!collapsed && (
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-sidebar-foreground">
-                Admin User
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-medium text-sidebar-foreground truncate">
+                {profileLoading ? "লোড হচ্ছে..." : displayName}
               </span>
-              <span className="text-xs text-sidebar-foreground/60">
-                ISP Owner
+              <span className="text-xs text-sidebar-foreground/60 truncate">
+                {roleLoading ? "..." : roleLabel}
               </span>
             </div>
           )}
