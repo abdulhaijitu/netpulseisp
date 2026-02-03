@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Plus, Search, Filter, Download, MoreHorizontal, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Filter, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -10,40 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
+import { CustomerTable, type CustomerTableData } from "@/components/customers/CustomerTable";
+import { CustomerFormDialog, type CustomerFormData } from "@/components/customers/CustomerFormDialog";
+import { ConnectionStatusDialog } from "@/components/customers/ConnectionStatusDialog";
+import { useToast } from "@/hooks/use-toast";
 import type { ConnectionStatus } from "@/types";
 
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  package: string;
-  status: ConnectionStatus;
-  dueAmount: number;
-  advanceAmount: number;
-  joinDate: string;
-  lastPayment: string;
-}
-
-const customers: Customer[] = [
+// Mock data - will be replaced with database queries
+const mockCustomers: CustomerTableData[] = [
   {
     id: "CUS001",
     name: "Rahim Ahmed",
@@ -51,6 +24,7 @@ const customers: Customer[] = [
     phone: "01712345678",
     address: "House 12, Road 5, Dhanmondi",
     package: "30 Mbps Pro",
+    packageId: "pkg2",
     status: "active",
     dueAmount: 0,
     advanceAmount: 1500,
@@ -64,6 +38,7 @@ const customers: Customer[] = [
     phone: "01812345678",
     address: "Flat 4B, Gulshan Avenue",
     package: "20 Mbps Basic",
+    packageId: "pkg1",
     status: "active",
     dueAmount: 1500,
     advanceAmount: 0,
@@ -77,6 +52,7 @@ const customers: Customer[] = [
     phone: "01912345678",
     address: "789 Banani DOHS",
     package: "50 Mbps Premium",
+    packageId: "pkg3",
     status: "suspended",
     dueAmount: 4500,
     advanceAmount: 0,
@@ -90,6 +66,7 @@ const customers: Customer[] = [
     phone: "01612345678",
     address: "321 Mirpur-10",
     package: "30 Mbps Pro",
+    packageId: "pkg2",
     status: "active",
     dueAmount: 0,
     advanceAmount: 0,
@@ -103,6 +80,7 @@ const customers: Customer[] = [
     phone: "01512345678",
     address: "567 Uttara Sector-7",
     package: "20 Mbps Basic",
+    packageId: "pkg1",
     status: "pending",
     dueAmount: 750,
     advanceAmount: 0,
@@ -116,6 +94,7 @@ const customers: Customer[] = [
     phone: "01712345679",
     address: "89 Mohammadpur",
     package: "50 Mbps Premium",
+    packageId: "pkg3",
     status: "active",
     dueAmount: 0,
     advanceAmount: 3000,
@@ -124,21 +103,21 @@ const customers: Customer[] = [
   },
 ];
 
-const statusStyles: Record<ConnectionStatus, string> = {
-  active: "status-active",
-  suspended: "status-suspended",
-  pending: "status-pending",
-};
-
-const statusLabels: Record<ConnectionStatus, string> = {
-  active: "Active",
-  suspended: "Suspended",
-  pending: "Pending",
-};
-
 export default function Customers() {
+  const { toast } = useToast();
+  const [customers, setCustomers] = useState<CustomerTableData[]>(mockCustomers);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  // Form dialog state
+  const [formDialogOpen, setFormDialogOpen] = useState(false);
+  const [formMode, setFormMode] = useState<"add" | "edit">("add");
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerFormData | null>(null);
+
+  // Connection status dialog state
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [statusDialogCustomer, setStatusDialogCustomer] = useState<CustomerTableData | null>(null);
+  const [targetStatus, setTargetStatus] = useState<ConnectionStatus>("active");
 
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch =
@@ -150,6 +129,134 @@ export default function Customers() {
     return matchesSearch && matchesStatus;
   });
 
+  const handleAddCustomer = () => {
+    setFormMode("add");
+    setSelectedCustomer(null);
+    setFormDialogOpen(true);
+  };
+
+  const handleEditCustomer = (customer: CustomerTableData) => {
+    setFormMode("edit");
+    setSelectedCustomer({
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address,
+      packageId: customer.packageId,
+      connectionStatus: customer.status,
+      dueBalance: customer.dueAmount,
+      advanceBalance: customer.advanceAmount,
+    });
+    setFormDialogOpen(true);
+  };
+
+  const handleFormSubmit = async (data: CustomerFormData) => {
+    // Mock package mapping
+    const packageNames: Record<string, string> = {
+      pkg1: "20 Mbps Basic",
+      pkg2: "30 Mbps Pro",
+      pkg3: "50 Mbps Premium",
+      pkg4: "100 Mbps Ultra",
+    };
+
+    if (formMode === "add") {
+      const newCustomer: CustomerTableData = {
+        id: `CUS${String(customers.length + 1).padStart(3, "0")}`,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        address: data.address,
+        package: packageNames[data.packageId] || data.packageId,
+        packageId: data.packageId,
+        status: "pending",
+        dueAmount: 0,
+        advanceAmount: 0,
+        joinDate: new Date().toISOString().split("T")[0],
+        lastPayment: new Date().toISOString().split("T")[0],
+      };
+      setCustomers([newCustomer, ...customers]);
+      toast({
+        title: "Customer Added",
+        description: `${data.name} has been added successfully.`,
+      });
+    } else {
+      setCustomers(
+        customers.map((c) =>
+          c.id === data.id
+            ? {
+                ...c,
+                name: data.name,
+                email: data.email,
+                phone: data.phone,
+                address: data.address,
+                package: packageNames[data.packageId] || data.packageId,
+                packageId: data.packageId,
+                status: data.connectionStatus,
+                dueAmount: data.dueBalance,
+                advanceAmount: data.advanceBalance,
+              }
+            : c
+        )
+      );
+      toast({
+        title: "Customer Updated",
+        description: `${data.name}'s information has been updated.`,
+      });
+    }
+  };
+
+  const handleSuspendConnection = (customer: CustomerTableData) => {
+    setStatusDialogCustomer(customer);
+    setTargetStatus("suspended");
+    setStatusDialogOpen(true);
+  };
+
+  const handleActivateConnection = (customer: CustomerTableData) => {
+    setStatusDialogCustomer(customer);
+    setTargetStatus("active");
+    setStatusDialogOpen(true);
+  };
+
+  const handleStatusChange = async (
+    customerId: string,
+    newStatus: ConnectionStatus,
+    reason?: string
+  ) => {
+    setCustomers(
+      customers.map((c) =>
+        c.id === customerId ? { ...c, status: newStatus } : c
+      )
+    );
+
+    const customer = customers.find((c) => c.id === customerId);
+    toast({
+      title: newStatus === "active" ? "Connection Activated" : "Connection Suspended",
+      description: `${customer?.name}'s connection has been ${newStatus === "active" ? "activated" : "suspended"}.`,
+    });
+  };
+
+  const handleViewDetails = (customer: CustomerTableData) => {
+    toast({
+      title: "Coming Soon",
+      description: "Customer details view will be implemented soon.",
+    });
+  };
+
+  const handleRecordPayment = (customer: CustomerTableData) => {
+    toast({
+      title: "Coming Soon",
+      description: "Payment recording will be implemented soon.",
+    });
+  };
+
+  const handleGenerateBill = (customer: CustomerTableData) => {
+    toast({
+      title: "Coming Soon",
+      description: "Bill generation will be implemented soon.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -160,7 +267,7 @@ export default function Customers() {
             Manage your customer base and connections
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={handleAddCustomer}>
           <Plus className="h-4 w-4" />
           Add Customer
         </Button>
@@ -196,125 +303,18 @@ export default function Customers() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border border-border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead>
-                <Button variant="ghost" size="sm" className="-ml-3 h-8">
-                  Customer
-                  <ArrowUpDown className="ml-2 h-3.5 w-3.5" />
-                </Button>
-              </TableHead>
-              <TableHead>Package</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Due</TableHead>
-              <TableHead className="text-right">Advance</TableHead>
-              <TableHead>Last Payment</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCustomers.map((customer, index) => (
-              <TableRow
-                key={customer.id}
-                className="data-table-row animate-fade-in"
-                style={{ animationDelay: `${index * 30}ms` }}
-              >
-                <TableCell className="font-mono text-xs text-muted-foreground">
-                  {customer.id}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
-                      <span className="text-xs font-medium">
-                        {customer.name.split(" ").map((n) => n[0]).join("")}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium">{customer.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {customer.phone}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">{customer.package}</span>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={cn("text-xs font-medium", statusStyles[customer.status])}
-                  >
-                    {statusLabels[customer.status]}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <span
-                    className={cn(
-                      "font-medium",
-                      customer.dueAmount > 0 ? "text-destructive" : "text-muted-foreground"
-                    )}
-                  >
-                    ৳{customer.dueAmount.toLocaleString()}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">
-                  <span
-                    className={cn(
-                      "font-medium",
-                      customer.advanceAmount > 0 ? "text-success" : "text-muted-foreground"
-                    )}
-                  >
-                    ৳{customer.advanceAmount.toLocaleString()}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(customer.lastPayment).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit Customer</DropdownMenuItem>
-                      <DropdownMenuItem>Record Payment</DropdownMenuItem>
-                      <DropdownMenuItem>Generate Bill</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      {customer.status === "active" ? (
-                        <DropdownMenuItem className="text-destructive">
-                          Suspend Connection
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem className="text-success">
-                          Activate Connection
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      {/* Customer Table */}
+      <CustomerTable
+        customers={filteredCustomers}
+        onEdit={handleEditCustomer}
+        onViewDetails={handleViewDetails}
+        onSuspend={handleSuspendConnection}
+        onActivate={handleActivateConnection}
+        onRecordPayment={handleRecordPayment}
+        onGenerateBill={handleGenerateBill}
+      />
 
-      {/* Pagination placeholder */}
+      {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           Showing {filteredCustomers.length} of {customers.length} customers
@@ -328,6 +328,28 @@ export default function Customers() {
           </Button>
         </div>
       </div>
+
+      {/* Add/Edit Customer Dialog */}
+      <CustomerFormDialog
+        open={formDialogOpen}
+        onOpenChange={setFormDialogOpen}
+        customer={selectedCustomer}
+        onSubmit={handleFormSubmit}
+        mode={formMode}
+      />
+
+      {/* Connection Status Dialog */}
+      {statusDialogCustomer && (
+        <ConnectionStatusDialog
+          open={statusDialogOpen}
+          onOpenChange={setStatusDialogOpen}
+          customerName={statusDialogCustomer.name}
+          customerId={statusDialogCustomer.id}
+          currentStatus={statusDialogCustomer.status}
+          targetStatus={targetStatus}
+          onConfirm={handleStatusChange}
+        />
+      )}
     </div>
   );
 }
