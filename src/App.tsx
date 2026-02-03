@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PortalLayout } from "@/components/portal/PortalLayout";
+import { SuperAdminLayout } from "@/components/admin/SuperAdminLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -24,6 +25,12 @@ import PortalBills from "@/pages/portal/PortalBills";
 import PortalPayments from "@/pages/portal/PortalPayments";
 import PortalProfile from "@/pages/portal/PortalProfile";
 
+// Super Admin Pages
+import AdminLogin from "@/pages/admin/AdminLogin";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminTenants from "@/pages/admin/AdminTenants";
+import AdminSubscriptions from "@/pages/admin/AdminSubscriptions";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -37,7 +44,7 @@ const App = () => (
             {/* Redirect root to dashboard */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
-            {/* Admin Dashboard Routes */}
+            {/* Admin Dashboard Routes (ISP Staff) */}
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/customers" element={<Customers />} />
@@ -60,6 +67,20 @@ const App = () => (
               <Route path="/portal/bills" element={<PortalBills />} />
               <Route path="/portal/payments" element={<PortalPayments />} />
               <Route path="/portal/profile" element={<PortalProfile />} />
+            </Route>
+
+            {/* Super Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              element={
+                <ProtectedRoute redirectTo="/admin/login">
+                  <SuperAdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/tenants" element={<AdminTenants />} />
+              <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
             </Route>
 
             {/* 404 */}
