@@ -18,8 +18,13 @@ import Payments from "@/pages/Payments";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
 
+// Auth Pages
+import StaffLogin from "@/pages/auth/StaffLogin";
+import ForgotPassword from "@/pages/auth/ForgotPassword";
+
 // Portal Pages
 import Login from "@/pages/portal/Login";
+import Signup from "@/pages/portal/Signup";
 import PortalDashboard from "@/pages/portal/PortalDashboard";
 import PortalBills from "@/pages/portal/PortalBills";
 import PortalPayments from "@/pages/portal/PortalPayments";
@@ -41,11 +46,21 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Redirect root to dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* Redirect root to login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
             
-            {/* Admin Dashboard Routes (ISP Staff) */}
-            <Route element={<DashboardLayout />}>
+            {/* Staff Auth Routes */}
+            <Route path="/login" element={<StaffLogin />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            
+            {/* Admin Dashboard Routes (ISP Staff) - Protected */}
+            <Route
+              element={
+                <ProtectedRoute redirectTo="/login">
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/customers" element={<Customers />} />
               <Route path="/dashboard/packages" element={<Packages />} />
@@ -56,6 +71,7 @@ const App = () => (
 
             {/* Customer Portal Routes */}
             <Route path="/portal/login" element={<Login />} />
+            <Route path="/portal/signup" element={<Signup />} />
             <Route
               element={
                 <ProtectedRoute>
