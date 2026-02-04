@@ -2,3 +2,6 @@ project_id = "fjtwjcnfsghcbgomepdm"
 
 [functions.isp-api]
 verify_jwt = false
+
+[functions.network-sync]
+verify_jwt = false
