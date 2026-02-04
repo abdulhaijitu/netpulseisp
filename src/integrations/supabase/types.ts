@@ -918,6 +918,105 @@ export type Database = {
           },
         ]
       }
+      proration_items: {
+        Row: {
+          addon_id: string | null
+          created_at: string
+          days_remaining: number
+          description: string
+          effective_date: string
+          id: string
+          invoice_id: string | null
+          item_type: string
+          metadata: Json | null
+          new_plan_id: string | null
+          old_plan_id: string | null
+          original_price: number
+          period_end: string
+          period_start: string
+          prorated_amount: number
+          status: string
+          tenant_id: string
+          total_days: number
+        }
+        Insert: {
+          addon_id?: string | null
+          created_at?: string
+          days_remaining: number
+          description: string
+          effective_date?: string
+          id?: string
+          invoice_id?: string | null
+          item_type: string
+          metadata?: Json | null
+          new_plan_id?: string | null
+          old_plan_id?: string | null
+          original_price?: number
+          period_end: string
+          period_start: string
+          prorated_amount: number
+          status?: string
+          tenant_id: string
+          total_days: number
+        }
+        Update: {
+          addon_id?: string | null
+          created_at?: string
+          days_remaining?: number
+          description?: string
+          effective_date?: string
+          id?: string
+          invoice_id?: string | null
+          item_type?: string
+          metadata?: Json | null
+          new_plan_id?: string | null
+          old_plan_id?: string | null
+          original_price?: number
+          period_end?: string
+          period_start?: string
+          prorated_amount?: number
+          status?: string
+          tenant_id?: string
+          total_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proration_items_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "platform_addons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proration_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "platform_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proration_items_new_plan_id_fkey"
+            columns: ["new_plan_id"]
+            isOneToOne: false
+            referencedRelation: "platform_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proration_items_old_plan_id_fkey"
+            columns: ["old_plan_id"]
+            isOneToOne: false
+            referencedRelation: "platform_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proration_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_addon_subscriptions: {
         Row: {
           activated_at: string
@@ -1130,9 +1229,41 @@ export type Database = {
         Args: { _addon_id: string; _customer_count: number }
         Returns: number
       }
+      calculate_proration: {
+        Args: {
+          _effective_date?: string
+          _original_price: number
+          _period_end: string
+          _period_start: string
+        }
+        Returns: {
+          daily_rate: number
+          days_remaining: number
+          prorated_amount: number
+          total_days: number
+        }[]
+      }
       can_access_tenant: {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
+      }
+      create_addon_proration: {
+        Args: {
+          _addon_id: string
+          _effective_date?: string
+          _is_activation?: boolean
+          _tenant_id: string
+        }
+        Returns: string
+      }
+      create_plan_proration: {
+        Args: {
+          _effective_date?: string
+          _new_plan_id: string
+          _old_plan_id: string
+          _tenant_id: string
+        }
+        Returns: string
       }
       get_tenant_billing_estimate: {
         Args: { _tenant_id: string }
