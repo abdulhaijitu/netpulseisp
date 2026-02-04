@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Download, CreditCard } from "lucide-react";
+import { ArrowLeft, Calendar, Download, CreditCard, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { Bill } from "@/hooks/usePortalData";
 import { usePortalCustomer } from "@/hooks/usePortalData";
+import { useInitiatePayment } from "@/hooks/usePaymentGateway";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 interface MobileBillDetailProps {
   bill: Bill;
@@ -19,8 +23,16 @@ const billStatusConfig = {
 
 export default function MobileBillDetail({ bill, onBack }: MobileBillDetailProps) {
   const { data: customer } = usePortalCustomer();
+  const { initiatePayment, isProcessing, error } = useInitiatePayment();
   const formatCurrency = (amount: number) => `৳${amount.toLocaleString()}`;
   const status = bill.status || "due";
+
+  const handlePayNow = () => {
+    initiatePayment({
+      billId: bill.id,
+      amount: Number(bill.amount),
+    });
+  };
 
   return (
     <div className="space-y-5">
@@ -34,6 +46,14 @@ export default function MobileBillDetail({ bill, onBack }: MobileBillDetailProps
           <p className="text-sm text-muted-foreground">Bill Details</p>
         </div>
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+      )}
 
       {/* Amount Card */}
       <Card className={`${
@@ -99,9 +119,22 @@ export default function MobileBillDetail({ bill, onBack }: MobileBillDetailProps
       {/* Actions */}
       <div className="space-y-3 pt-4">
         {status !== "paid" && (
-          <Button className="w-full h-14 text-lg font-semibold gap-2">
-            <CreditCard className="w-5 h-5" />
-            Pay Now
+          <Button 
+            className="w-full h-14 text-lg font-semibold gap-2"
+            onClick={handlePayNow}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <CreditCard className="w-5 h-5" />
+                Pay Now • {formatCurrency(Number(bill.amount))}
+              </>
+            )}
           </Button>
         )}
         <Button variant="outline" className="w-full h-12 gap-2">

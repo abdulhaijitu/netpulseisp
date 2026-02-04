@@ -2,11 +2,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Receipt, Calendar, ChevronRight, FileText } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Receipt, Calendar, ChevronRight, FileText, CreditCard, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { usePortalBills, usePortalCustomer } from "@/hooks/usePortalData";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import MobileBillDetail from "@/components/mobile/MobileBillDetail";
 import type { Bill } from "@/hooks/usePortalData";
+import { useInitiatePayment } from "@/hooks/usePaymentGateway";
 
 const billStatusConfig = {
   paid: { label: "Paid", variant: "default" as const, color: "text-green-600" },
@@ -17,18 +20,49 @@ const billStatusConfig = {
 
 export default function MobileBills() {
   const { data: customer } = usePortalCustomer();
-  const { data: bills, isLoading } = usePortalBills();
+  const { data: bills, isLoading, refetch } = usePortalBills();
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { initiatePayment, isProcessing } = useInitiatePayment();
+
+  // Handle payment status from redirect
+  const paymentStatus = searchParams.get("status");
+  const [showPaymentResult, setShowPaymentResult] = useState(false);
+
+  useEffect(() => {
+    if (paymentStatus) {
+      setShowPaymentResult(true);
+      // Refetch bills after payment
+      refetch();
+      // Clear the status param after showing
+      const timer = setTimeout(() => {
+        setShowPaymentResult(false);
+        setSearchParams({});
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [paymentStatus, refetch, setSearchParams]);
 
   const formatCurrency = (amount: number) => `৳${amount.toLocaleString()}`;
 
   // Calculate totals
-  const totalDue = bills?.reduce((sum, bill) => {
-    if (bill.status === "due" || bill.status === "overdue" || bill.status === "partial") {
-      return sum + Number(bill.amount);
+  const unpaidBills = bills?.filter(bill => 
+    bill.status === "due" || bill.status === "overdue" || bill.status === "partial"
+  ) || [];
+  
+  const totalDue = unpaidBills.reduce((sum, bill) => sum + Number(bill.amount), 0);
+
+  // Get oldest unpaid bill for "Pay All" (pay one at a time actually)
+  const oldestUnpaidBill = unpaidBills.length > 0 ? unpaidBills[unpaidBills.length - 1] : null;
+
+  const handlePayAll = () => {
+    if (oldestUnpaidBill) {
+      initiatePayment({
+        billId: oldestUnpaidBill.id,
+        amount: Number(oldestUnpaidBill.amount),
+      });
     }
-    return sum;
-  }, 0) || 0;
+  };
 
   if (selectedBill) {
     return <MobileBillDetail bill={selectedBill} onBack={() => setSelectedBill(null)} />;
@@ -42,6 +76,24 @@ export default function MobileBills() {
         <p className="text-muted-foreground">Your billing history</p>
       </div>
 
+      {/* Payment Result Alert */}
+      {showPaymentResult && paymentStatus === "success" && (
+        <Alert className="bg-green-500/10 border-green-500/30">
+          <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-700">
+            Payment successful! Your bill has been paid.
+          </AlertDescription>
+        </Alert>
+      )}
+      {showPaymentResult && paymentStatus === "cancelled" && (
+        <Alert variant="destructive">
+          <XCircle className="h-4 w-4" />
+          <AlertDescription>
+            Payment was cancelled. Please try again.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Summary Card */}
       {totalDue > 0 && (
         <Card className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
@@ -50,9 +102,23 @@ export default function MobileBills() {
               <div>
                 <p className="text-sm opacity-80">Total Due</p>
                 <p className="text-3xl font-bold">{formatCurrency(totalDue)}</p>
+                <p className="text-xs opacity-70 mt-1">
+                  {unpaidBills.length} unpaid bill{unpaidBills.length > 1 ? "s" : ""}
+                </p>
               </div>
-              <Button variant="secondary" size="sm" className="font-semibold">
-                Pay All
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="font-semibold gap-2"
+                onClick={handlePayAll}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CreditCard className="w-4 h-4" />
+                )}
+                {unpaidBills.length > 1 ? "Pay Oldest" : "Pay Now"}
               </Button>
             </div>
           </CardContent>
