@@ -1,9 +1,12 @@
-import { CreditCard, UserPlus, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { CreditCard, UserPlus, AlertTriangle, CheckCircle, Loader2, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTenantContext } from "@/contexts/TenantContext";
 import { usePayments } from "@/hooks/usePayments";
 import { useCustomers } from "@/hooks/useCustomers";
 import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ActivityItem {
   id: string;
@@ -11,6 +14,7 @@ interface ActivityItem {
   title: string;
   description: string;
   time: string;
+  amount?: number;
 }
 
 const iconMap = {
@@ -21,13 +25,14 @@ const iconMap = {
 };
 
 const colorMap = {
-  payment: "text-success bg-success/10",
-  new_customer: "text-primary bg-primary/10",
-  suspension: "text-destructive bg-destructive/10",
-  reactivation: "text-success bg-success/10",
+  payment: "text-success bg-success/10 ring-success/20",
+  new_customer: "text-primary bg-primary/10 ring-primary/20",
+  suspension: "text-destructive bg-destructive/10 ring-destructive/20",
+  reactivation: "text-success bg-success/10 ring-success/20",
 };
 
 export function RecentActivity() {
+  const navigate = useNavigate();
   const { currentTenant } = useTenantContext();
   const { data: payments = [], isLoading: paymentsLoading } = usePayments(currentTenant?.id);
   const { data: customers = [], isLoading: customersLoading } = useCustomers(currentTenant?.id);
@@ -43,8 +48,9 @@ export function RecentActivity() {
       id: `payment-${payment.id}`,
       type: "payment",
       title: "Payment Received",
-      description: `${payment.customer?.name || "Customer"} paid ৳${Number(payment.amount).toLocaleString()}`,
+      description: payment.customer?.name || "Customer",
       time: formatDistanceToNow(new Date(payment.created_at), { addSuffix: true }),
+      amount: Number(payment.amount),
     });
   });
 
@@ -63,7 +69,7 @@ export function RecentActivity() {
       id: `customer-${customer.id}`,
       type: "new_customer",
       title: "New Customer",
-      description: `${customer.name} joined with ${customer.package?.name || "a plan"}`,
+      description: `${customer.name} - ${customer.package?.name || "Plan pending"}`,
       time: formatDistanceToNow(new Date(customer.join_date), { addSuffix: true }),
     });
   });
@@ -78,53 +84,85 @@ export function RecentActivity() {
       id: `suspended-${customer.id}`,
       type: "suspension",
       title: "Connection Suspended",
-      description: `${customer.name} - pending payment`,
+      description: customer.name,
       time: formatDistanceToNow(new Date(customer.updated_at), { addSuffix: true }),
     });
   });
 
-  // Sort by recency (we'd need actual timestamps, but for now just show as is)
   const sortedActivities = activities.slice(0, 5);
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-border bg-card p-8 flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="p-5 border-b border-border">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-48 mt-1" />
+        </div>
+        <div className="divide-y divide-border">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-4 p-4">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-40" />
+              </div>
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      <div className="border-b border-border p-4">
-        <h3 className="font-semibold">Recent Activity</h3>
-        <p className="text-sm text-muted-foreground">Latest updates from your ISP</p>
+    <div className="rounded-xl border border-border bg-card overflow-hidden h-full flex flex-col">
+      <div className="p-5 border-b border-border">
+        <h3 className="text-base font-semibold">Recent Activity</h3>
+        <p className="text-sm text-muted-foreground mt-0.5">Latest updates from your ISP</p>
       </div>
+      
       {sortedActivities.length === 0 ? (
-        <div className="p-8 text-center text-muted-foreground">
-          <p>No recent activity</p>
-          <p className="text-sm">Activity will appear here as you use the system</p>
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+            <CreditCard className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="font-medium text-muted-foreground">No recent activity</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Activity will appear here as you use the system
+          </p>
         </div>
       ) : (
-        <div className="divide-y divide-border">
+        <div className="flex-1 divide-y divide-border overflow-auto">
           {sortedActivities.map((activity, index) => {
             const Icon = iconMap[activity.type];
             return (
               <div
                 key={activity.id}
-                className="flex items-start gap-4 p-4 transition-micro hover:bg-muted/50"
+                className={cn(
+                  "flex items-center gap-4 p-4 transition-colors hover:bg-muted/30 cursor-pointer animate-fade-in",
+                )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className={cn("rounded-full p-2", colorMap[activity.type])}>
+                <div className={cn(
+                  "shrink-0 h-10 w-10 rounded-full flex items-center justify-center ring-1",
+                  colorMap[activity.type]
+                )}>
                   <Icon className="h-4 w-4" />
                 </div>
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">{activity.title}</p>
-                  <p className="text-xs text-muted-foreground">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium truncate">{activity.title}</p>
+                    {activity.amount && (
+                      <span className="text-sm font-semibold text-success shrink-0">
+                        +৳{activity.amount.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">
                     {activity.description}
                   </p>
                 </div>
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">
                   {activity.time}
                 </span>
               </div>
@@ -132,10 +170,16 @@ export function RecentActivity() {
           })}
         </div>
       )}
-      <div className="border-t border-border p-4">
-        <button className="text-sm font-medium text-primary hover:underline">
-          View all activity →
-        </button>
+      
+      <div className="p-4 border-t border-border mt-auto">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary"
+          onClick={() => navigate("/dashboard/notifications")}
+        >
+          View all activity
+          <ArrowRight className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );
