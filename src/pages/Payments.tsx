@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, Filter, Download, MoreHorizontal, CreditCard, Banknote, Globe, Loader2 } from "lucide-react";
+import { Plus, Search, Filter, Download, MoreHorizontal, CreditCard, Banknote, Globe, Loader2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import { usePayments, type Payment } from "@/hooks/usePayments";
 import { useTenantContext } from "@/contexts/TenantContext";
+import { QuickPaymentDialog } from "@/components/payments/QuickPaymentDialog";
+import { generatePaymentReceipt } from "@/lib/generatePaymentReceipt";
 
 type PaymentMethod = "cash" | "online" | "bank_transfer";
 
@@ -51,10 +53,11 @@ const methodStyles: Record<PaymentMethod, string> = {
 
 export default function Payments() {
   const { currentTenant } = useTenantContext();
-  const { data: payments = [], isLoading, error } = usePayments(currentTenant?.id);
+  const { data: payments = [], isLoading, error, refetch } = usePayments(currentTenant?.id);
   
   const [searchQuery, setSearchQuery] = useState("");
   const [methodFilter, setMethodFilter] = useState<string>("all");
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const filteredPayments = payments.filter((payment) => {
     const matchesSearch =
@@ -105,8 +108,34 @@ export default function Payments() {
     );
   }
 
+  const handlePrintReceipt = (payment: Payment) => {
+    generatePaymentReceipt({
+      receiptNumber: `RCP-${payment.id.slice(0, 8).toUpperCase()}`,
+      paymentDate: new Date(payment.created_at).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+      customerName: payment.customer?.name || "Unknown",
+      customerPhone: payment.customer?.phone || "",
+      customerAddress: payment.customer?.address || undefined,
+      amount: Number(payment.amount),
+      method: payment.method || "cash",
+      reference: payment.reference || undefined,
+      notes: payment.notes || undefined,
+      tenantName: currentTenant?.name || "ISP Provider",
+    });
+  };
+
   return (
     <div className="space-y-6">
+      {/* Payment Dialog */}
+      <QuickPaymentDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        onSuccess={() => refetch()}
+      />
+
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -115,7 +144,7 @@ export default function Payments() {
             Track and manage all payment transactions
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setPaymentDialogOpen(true)}>
           <Plus className="h-4 w-4" />
           Record Payment
         </Button>
@@ -266,8 +295,11 @@ export default function Payments() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handlePrintReceipt(payment)}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Print Receipt
+                          </DropdownMenuItem>
                           <DropdownMenuItem>View Details</DropdownMenuItem>
-                          <DropdownMenuItem>Print Receipt</DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive">
                             Void Payment
                           </DropdownMenuItem>

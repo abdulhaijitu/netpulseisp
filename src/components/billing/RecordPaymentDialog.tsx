@@ -18,9 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Receipt, Loader2, Banknote, Smartphone, CreditCard } from "lucide-react";
+import { Receipt, Loader2, Banknote, Smartphone, CreditCard, Printer } from "lucide-react";
 import { useRecordPayment } from "@/hooks/usePayments";
 import { useToast } from "@/hooks/use-toast";
+import { generatePaymentReceipt } from "@/lib/generatePaymentReceipt";
 
 interface RecordPaymentDialogProps {
   open: boolean;
@@ -29,8 +30,12 @@ interface RecordPaymentDialogProps {
   customerId: string;
   tenantId: string;
   customerName: string;
+  customerPhone?: string;
+  customerAddress?: string;
   invoiceNumber: string;
+  billingPeriod?: string;
   outstandingAmount: number;
+  tenantName?: string;
   onSuccess?: () => void;
 }
 
@@ -47,8 +52,12 @@ export function RecordPaymentDialog({
   customerId,
   tenantId,
   customerName,
+  customerPhone,
+  customerAddress,
   invoiceNumber,
+  billingPeriod,
   outstandingAmount,
+  tenantName,
   onSuccess,
 }: RecordPaymentDialogProps) {
   const { toast } = useToast();
@@ -58,6 +67,7 @@ export function RecordPaymentDialog({
   const [method, setMethod] = useState<string>("cash");
   const [reference, setReference] = useState("");
   const [notes, setNotes] = useState("");
+  const [printReceipt, setPrintReceipt] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,10 +93,34 @@ export function RecordPaymentDialog({
         notes: notes || null,
       });
 
+      const receiptNumber = `RCP-${Date.now().toString(36).toUpperCase()}`;
+
       toast({
         title: "Payment recorded",
         description: `Payment of ৳${paymentAmount.toLocaleString()} recorded successfully`,
       });
+
+      // Generate receipt if enabled
+      if (printReceipt) {
+        generatePaymentReceipt({
+          receiptNumber,
+          paymentDate: new Date().toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }),
+          customerName,
+          customerPhone: customerPhone || "",
+          customerAddress,
+          amount: paymentAmount,
+          method,
+          reference: reference || undefined,
+          notes: notes || undefined,
+          tenantName: tenantName || "ISP Provider",
+          invoiceNumber,
+          billingPeriod,
+        });
+      }
 
       onOpenChange(false);
       onSuccess?.();
@@ -200,6 +234,21 @@ export function RecordPaymentDialog({
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
             />
+          </div>
+
+          {/* Print Receipt Toggle */}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="printReceipt"
+              checked={printReceipt}
+              onChange={(e) => setPrintReceipt(e.target.checked)}
+              className="rounded border-input"
+            />
+            <Label htmlFor="printReceipt" className="flex items-center gap-2 text-sm cursor-pointer">
+              <Printer className="h-4 w-4" />
+              Generate & download receipt PDF
+            </Label>
           </div>
 
           <DialogFooter>
