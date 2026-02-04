@@ -14,6 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          revoked_at: string | null
+          revoked_by: string | null
+          scope: Database["public"]["Enums"]["api_key_scope"]
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          scope?: Database["public"]["Enums"]["api_key_scope"]
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          scope?: Database["public"]["Enums"]["api_key_scope"]
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          endpoint: string
+          error_message: string | null
+          id: string
+          method: string
+          request_ip: string | null
+          response_time_ms: number | null
+          status_code: number
+          tenant_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          endpoint: string
+          error_message?: string | null
+          id?: string
+          method: string
+          request_ip?: string | null
+          response_time_ms?: number | null
+          status_code: number
+          tenant_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          endpoint?: string
+          error_message?: string | null
+          id?: string
+          method?: string
+          request_ip?: string | null
+          response_time_ms?: number | null
+          status_code?: number
+          tenant_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bills: {
         Row: {
           amount: number
@@ -298,6 +411,7 @@ export type Database = {
       tenants: {
         Row: {
           accent_color: string | null
+          api_enabled: boolean | null
           auto_suspend_days: number | null
           created_at: string
           currency: string | null
@@ -320,6 +434,7 @@ export type Database = {
         }
         Insert: {
           accent_color?: string | null
+          api_enabled?: boolean | null
           auto_suspend_days?: number | null
           created_at?: string
           currency?: string | null
@@ -342,6 +457,7 @@ export type Database = {
         }
         Update: {
           accent_color?: string | null
+          api_enabled?: boolean | null
           auto_suspend_days?: number | null
           created_at?: string
           currency?: string | null
@@ -418,13 +534,41 @@ export type Database = {
       }
       is_isp_staff: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      log_api_request: {
+        Args: {
+          _api_key_id: string
+          _endpoint: string
+          _error_message?: string
+          _method: string
+          _request_ip?: string
+          _response_time_ms?: number
+          _status_code: number
+          _tenant_id: string
+          _user_agent?: string
+        }
+        Returns: string
+      }
       onboard_tenant: {
         Args: { _subdomain: string; _tenant_name: string; _user_id: string }
         Returns: string
       }
+      update_api_key_last_used: {
+        Args: { _api_key_id: string }
+        Returns: undefined
+      }
       user_tenant_id: { Args: { _user_id: string }; Returns: string }
+      validate_api_key: {
+        Args: { _key_hash: string }
+        Returns: {
+          api_key_id: string
+          is_valid: boolean
+          scope: Database["public"]["Enums"]["api_key_scope"]
+          tenant_id: string
+        }[]
+      }
     }
     Enums: {
+      api_key_scope: "read_only" | "read_write"
       app_role:
         | "super_admin"
         | "isp_owner"
@@ -565,6 +709,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      api_key_scope: ["read_only", "read_write"],
       app_role: [
         "super_admin",
         "isp_owner",

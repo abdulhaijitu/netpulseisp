@@ -1,4 +1,4 @@
-import { Building2, CreditCard, Bell, Palette, Mail } from "lucide-react";
+import { Building2, CreditCard, Bell, Palette, Mail, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +22,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaymentGatewaySettings } from "@/components/settings/PaymentGatewaySettings";
 import { EmailSettings } from "@/components/settings/EmailSettings";
 import { BrandingSettings } from "@/components/settings/BrandingSettings";
+import { ApiAccessSettings } from "@/components/settings/ApiAccessSettings";
+import { useUserRole } from "@/hooks/useUserRole";
+
 export default function Settings() {
+  const { data: userRole } = useUserRole();
+  const isIspOwner = userRole === "isp_owner";
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -34,7 +40,7 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="bg-muted/50">
+        <TabsList className="bg-muted/50 flex-wrap">
           <TabsTrigger value="general" className="gap-2">
             <Building2 className="h-4 w-4" />
             General
@@ -55,6 +61,12 @@ export default function Settings() {
             <Mail className="h-4 w-4" />
             Email
           </TabsTrigger>
+          {isIspOwner && (
+            <TabsTrigger value="api" className="gap-2">
+              <Key className="h-4 w-4" />
+              API Access
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
@@ -227,6 +239,12 @@ export default function Settings() {
         <TabsContent value="email" className="space-y-6">
           <EmailSettings />
         </TabsContent>
+
+        {isIspOwner && (
+          <TabsContent value="api" className="space-y-6">
+            <ApiAccessSettings />
+          </TabsContent>
+        )}
       </Tabs>
 
       <div className="flex justify-end gap-4">

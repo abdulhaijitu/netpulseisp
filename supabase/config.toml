@@ -1,1 +1,4 @@
 project_id = "fjtwjcnfsghcbgomepdm"
+
+[functions.isp-api]
+verify_jwt = false
