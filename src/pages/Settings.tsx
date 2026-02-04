@@ -1,16 +1,6 @@
-import { Building2, CreditCard, Bell, Palette, Mail, Key, Network, Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -18,268 +8,139 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SettingsSidebar, settingsSections } from "@/components/settings/SettingsSidebar";
+import { GeneralSettings } from "@/components/settings/GeneralSettings";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { PaymentGatewaySettings } from "@/components/settings/PaymentGatewaySettings";
-import { EmailSettings } from "@/components/settings/EmailSettings";
 import { BrandingSettings } from "@/components/settings/BrandingSettings";
+import { EmailSettings } from "@/components/settings/EmailSettings";
 import { ApiAccessSettings } from "@/components/settings/ApiAccessSettings";
 import { NetworkIntegrationSettings } from "@/components/settings/NetworkIntegrationSettings";
 import { SubscriptionDashboard } from "@/components/subscription/SubscriptionDashboard";
 import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Settings() {
+  const [activeSection, setActiveSection] = useState("general");
+  const isMobile = useIsMobile();
   const { data: userRole, isLoading: roleLoading } = useUserRole();
+
   const isIspOwner = userRole === "isp_owner";
   const isSuperAdmin = userRole === "super_admin";
   const canViewSubscription = isIspOwner || isSuperAdmin;
   const canViewNetwork = isSuperAdmin || isIspOwner || userRole === "admin" || userRole === "manager";
   const canViewApi = isSuperAdmin || isIspOwner;
 
+  // Build available sections based on user role
+  const availableSections = [
+    settingsSections.general,
+    ...(canViewSubscription ? [settingsSections.subscription] : []),
+    settingsSections.billing,
+    settingsSections.notifications,
+    settingsSections.branding,
+    settingsSections.email,
+    ...(canViewNetwork ? [settingsSections.network] : []),
+    ...(canViewApi ? [settingsSections.api] : []),
+  ];
+
+  const currentSection = availableSections.find(s => s.id === activeSection) || availableSections[0];
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "general":
+        return <GeneralSettings />;
+      case "subscription":
+        return canViewSubscription ? <SubscriptionDashboard /> : null;
+      case "billing":
+        return <PaymentGatewaySettings />;
+      case "notifications":
+        return <NotificationSettings />;
+      case "branding":
+        return <BrandingSettings />;
+      case "email":
+        return <EmailSettings />;
+      case "network":
+        return canViewNetwork ? <NetworkIntegrationSettings /> : null;
+      case "api":
+        return canViewApi ? <ApiAccessSettings /> : null;
+      default:
+        return <GeneralSettings />;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
+      <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">
           Manage your ISP workspace settings and preferences
         </p>
       </div>
 
-      <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="bg-muted/50 flex-wrap">
-          <TabsTrigger value="general" className="gap-2">
-            <Building2 className="h-4 w-4" />
-            General
-          </TabsTrigger>
-          {canViewSubscription && (
-            <TabsTrigger value="subscription" className="gap-2">
-              <Package className="h-4 w-4" />
-              Subscription
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="billing" className="gap-2">
-            <CreditCard className="h-4 w-4" />
-            Billing
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2">
-            <Bell className="h-4 w-4" />
-            Notifications
-          </TabsTrigger>
-          <TabsTrigger value="branding" className="gap-2">
-            <Palette className="h-4 w-4" />
-            Branding
-          </TabsTrigger>
-          <TabsTrigger value="email" className="gap-2">
-            <Mail className="h-4 w-4" />
-            Email
-          </TabsTrigger>
-          {canViewNetwork && (
-            <TabsTrigger value="network" className="gap-2">
-              <Network className="h-4 w-4" />
-              Network
-            </TabsTrigger>
-          )}
-          {canViewApi && (
-            <TabsTrigger value="api" className="gap-2">
-              <Key className="h-4 w-4" />
-              API Access
-            </TabsTrigger>
-          )}
-        </TabsList>
+      {/* Mobile Section Selector */}
+      {isMobile && (
+        <Select value={activeSection} onValueChange={setActiveSection}>
+          <SelectTrigger className="w-full">
+            <div className="flex items-center gap-2">
+              <currentSection.icon className="h-4 w-4" />
+              <SelectValue />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            {availableSections.map((section) => (
+              <SelectItem key={section.id} value={section.id}>
+                <div className="flex items-center gap-2">
+                  <section.icon className="h-4 w-4" />
+                  {section.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
-        <TabsContent value="general" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Business Information</CardTitle>
-              <CardDescription>
-                Update your ISP business details
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="businessName">Business Name</Label>
-                  <Input id="businessName" defaultValue="FastNet ISP" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="subdomain">Subdomain</Label>
-                  <div className="flex">
-                    <Input
-                      id="subdomain"
-                      defaultValue="fastnet"
-                      className="rounded-r-none"
-                    />
-                    <div className="flex items-center rounded-r-md border border-l-0 bg-muted px-3 text-sm text-muted-foreground">
-                      .ispmanager.app
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Support Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    defaultValue="support@fastnet.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Support Phone</Label>
-                  <Input id="phone" defaultValue="+880 1712-345678" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Business Address</Label>
-                <Input
-                  id="address"
-                  defaultValue="123 Tech Street, Dhaka, Bangladesh"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Regional Settings</CardTitle>
-              <CardDescription>
-                Configure regional preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Currency</Label>
-                  <Select defaultValue="bdt">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bdt">BDT (৳)</SelectItem>
-                      <SelectItem value="usd">USD ($)</SelectItem>
-                      <SelectItem value="inr">INR (₹)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Timezone</Label>
-                  <Select defaultValue="asia-dhaka">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="asia-dhaka">
-                        Asia/Dhaka (GMT+6)
-                      </SelectItem>
-                      <SelectItem value="asia-kolkata">
-                        Asia/Kolkata (GMT+5:30)
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Language</Label>
-                <Select defaultValue="en">
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="bn">বাংলা (Bangla)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {canViewSubscription && (
-          <TabsContent value="subscription" className="space-y-6">
-            <SubscriptionDashboard />
-          </TabsContent>
+      {/* Two Column Layout */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Sidebar - Desktop Only */}
+        {!isMobile && (
+          <aside className="lg:w-64 shrink-0">
+            <div className="sticky top-24 space-y-1">
+              <SettingsSidebar
+                sections={availableSections}
+                activeSection={activeSection}
+                onSectionChange={setActiveSection}
+              />
+            </div>
+          </aside>
         )}
 
-        <TabsContent value="billing" className="space-y-6">
-          <PaymentGatewaySettings />
-        </TabsContent>
-
-        <TabsContent value="notifications" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>SMS Notifications</CardTitle>
-              <CardDescription>
-                Configure SMS alerts for customers
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Bill Generated</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Send SMS when a new bill is generated
-                  </p>
+        {/* Main Content */}
+        <main className="flex-1 min-w-0">
+          <div className="space-y-6">
+            {/* Section Header - Desktop */}
+            {!isMobile && (
+              <div className="flex items-center gap-3 pb-4 border-b border-border animate-fade-in">
+                <div className={cn(
+                  "p-2 rounded-lg",
+                  "bg-primary/10"
+                )}>
+                  <currentSection.icon className="h-5 w-5 text-primary" />
                 </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Payment Received</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Send SMS confirmation on payment
-                  </p>
+                <div>
+                  <h2 className="text-lg font-semibold">{currentSection.label}</h2>
+                  {currentSection.description && (
+                    <p className="text-sm text-muted-foreground">{currentSection.description}</p>
+                  )}
                 </div>
-                <Switch defaultChecked />
               </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Due Reminder</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Send SMS reminder before due date
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Suspension Warning</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Send SMS warning before auto-suspension
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            )}
 
-        <TabsContent value="branding" className="space-y-6">
-          <BrandingSettings />
-        </TabsContent>
-
-        <TabsContent value="email" className="space-y-6">
-          <EmailSettings />
-        </TabsContent>
-
-        {canViewNetwork && (
-          <TabsContent value="network" className="space-y-6">
-            <NetworkIntegrationSettings />
-          </TabsContent>
-        )}
-
-        {canViewApi && (
-          <TabsContent value="api" className="space-y-6">
-            <ApiAccessSettings />
-          </TabsContent>
-        )}
-      </Tabs>
-
-      <div className="flex justify-end gap-4">
-        <Button variant="outline">Cancel</Button>
-        <Button>Save Changes</Button>
+            {/* Content */}
+            <div key={activeSection} className="animate-fade-in">
+              {renderContent()}
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
