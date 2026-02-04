@@ -18,6 +18,7 @@ import { useTenantContext } from "@/contexts/TenantContext";
 import { useCustomers } from "@/hooks/useCustomers";
 import { usePayments } from "@/hooks/usePayments";
 import { useBills } from "@/hooks/useBills";
+import { NetworkHealthOverview } from "@/components/admin/NetworkHealthOverview";
 
 const statusConfig = {
   active: { label: "সক্রিয়", variant: "default" as const, icon: CheckCircle },
@@ -406,6 +407,9 @@ export default function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Network Health Overview */}
+      <NetworkHealthOverview />
     </div>
   );
 }
