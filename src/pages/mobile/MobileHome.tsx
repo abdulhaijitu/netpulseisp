@@ -1,7 +1,15 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { 
   Wifi, 
   Receipt, 
@@ -12,10 +20,15 @@ import {
   Clock,
   UserX,
   Bell,
-  Package
+  Package,
+  BellRing,
+  CreditCard as PaymentIcon,
+  AlertTriangle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { usePortalCustomer, usePortalBills, usePortalPayments } from "@/hooks/usePortalData";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { formatDistanceToNow } from "date-fns";
 
 const statusConfig = {
   active: { label: "Active", color: "bg-green-500", icon: CheckCircle },
@@ -30,15 +43,25 @@ const billStatusConfig = {
   overdue: { label: "Overdue", variant: "destructive" as const },
 };
 
+const notificationIcons: Record<string, React.ElementType> = {
+  billing_reminder: AlertTriangle,
+  payment_confirmation: PaymentIcon,
+  connection_status: Wifi,
+  general: BellRing,
+};
+
 export default function MobileHome() {
   const navigate = useNavigate();
   const { data: customer, isLoading: customerLoading } = usePortalCustomer();
   const { data: bills, isLoading: billsLoading } = usePortalBills();
   const { data: payments } = usePortalPayments();
+  const { notifications, isLoadingNotifications } = usePushNotifications();
+  const [notificationSheetOpen, setNotificationSheetOpen] = useState(false);
 
   const formatCurrency = (amount: number) => `৳${amount.toLocaleString()}`;
   const currentBill = bills?.find(b => b.status !== "paid") || bills?.[0];
   const lastPayment = payments?.[0];
+  const unreadCount = notifications?.filter(n => !n.sent_at || new Date(n.sent_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)).length || 0;
 
   if (customerLoading) {
     return (
@@ -80,10 +103,62 @@ export default function MobileHome() {
             {customer.name.split(" ")[0]}
           </h1>
         </div>
-        <Button variant="ghost" size="icon" className="relative h-12 w-12 rounded-full">
-          <Bell className="h-6 w-6" />
-          <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full" />
-        </Button>
+        <Sheet open={notificationSheetOpen} onOpenChange={setNotificationSheetOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="relative h-12 w-12 rounded-full">
+              <Bell className="h-6 w-6" />
+              {unreadCount > 0 && (
+                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full" />
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-md">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notifications
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-6 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto">
+              {isLoadingNotifications ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-20 w-full rounded-lg" />
+                ))
+              ) : notifications && notifications.length > 0 ? (
+                notifications.map((notification) => {
+                  const Icon = notificationIcons[notification.notification_type] || BellRing;
+                  return (
+                    <div
+                      key={notification.id}
+                      className="flex gap-3 p-4 bg-muted/50 rounded-lg"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{notification.title}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{notification.body}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <Bell className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="font-medium">No Notifications</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    You're all caught up!
+                  </p>
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Connection Status Card */}

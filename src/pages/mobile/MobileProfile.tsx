@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { 
   User, 
   Phone, 
@@ -15,11 +16,14 @@ import {
   AlertCircle,
   Clock,
   Download,
-  Share2
+  Share2,
+  Bell,
+  BellOff
 } from "lucide-react";
 import { usePortalCustomer } from "@/hooks/usePortalData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 const statusConfig = {
   active: { label: "Active", color: "bg-green-500", icon: CheckCircle },
@@ -31,10 +35,27 @@ export default function MobileProfile() {
   const { data: customer, isLoading } = usePortalCustomer();
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const {
+    isSupported: notificationsSupported,
+    permission,
+    isSubscribed,
+    subscribe,
+    unsubscribe,
+    isSubscribing,
+    isUnsubscribing,
+  } = usePushNotifications();
 
   const handleLogout = async () => {
     await signOut();
     navigate("/app/login");
+  };
+
+  const handleNotificationToggle = () => {
+    if (isSubscribed) {
+      unsubscribe();
+    } else {
+      subscribe();
+    }
   };
 
   if (isLoading) {
@@ -189,6 +210,44 @@ export default function MobileProfile() {
           </Card>
         )}
       </div>
+
+      {/* Notification Settings */}
+      {notificationsSupported && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  {isSubscribed ? (
+                    <Bell className="w-5 h-5 text-primary" />
+                  ) : (
+                    <BellOff className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium">Push Notifications</p>
+                  <p className="text-sm text-muted-foreground">
+                    {isSubscribed 
+                      ? "Billing & payment alerts enabled"
+                      : "Get notified about bills & payments"
+                    }
+                  </p>
+                </div>
+              </div>
+              <Switch 
+                checked={isSubscribed}
+                onCheckedChange={handleNotificationToggle}
+                disabled={isSubscribing || isUnsubscribing || permission === "denied"}
+              />
+            </div>
+            {permission === "denied" && (
+              <p className="text-xs text-destructive mt-3 pl-14">
+                Notifications blocked. Please enable in browser settings.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Actions */}
       <div className="space-y-3 pt-4">
