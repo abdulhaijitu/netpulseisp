@@ -27,8 +27,16 @@ export function useInitiatePayment() {
       }
 
       const currentUrl = window.location.origin;
-      const returnUrl = `${currentUrl}/portal/payments?status=success`;
-      const cancelUrl = `${currentUrl}/portal/bills?status=cancelled`;
+      const currentPath = window.location.pathname;
+      
+      // Determine if we're in mobile app or portal
+      const isMobileApp = currentPath.startsWith("/app");
+      const returnUrl = isMobileApp 
+        ? `${currentUrl}/app/bills?status=success`
+        : `${currentUrl}/portal/payments?status=success`;
+      const cancelUrl = isMobileApp
+        ? `${currentUrl}/app/bills?status=cancelled`
+        : `${currentUrl}/portal/bills?status=cancelled`;
 
       const response = await supabase.functions.invoke<PaymentResponse>("initiate-payment", {
         body: {
