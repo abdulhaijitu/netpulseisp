@@ -662,21 +662,28 @@ export default function Billing() {
       />
 
       {/* Record Payment Dialog */}
-      {paymentDialog && currentTenant && (
-        <RecordPaymentDialog
-          open={paymentDialog.open}
-          onOpenChange={(open) => setPaymentDialog(open ? paymentDialog : null)}
-          billId={paymentDialog.billId}
-          customerId={paymentDialog.customerId}
-          tenantId={currentTenant.id}
-          customerName={paymentDialog.customerName}
-          customerPhone={bills?.find(b => b.id === paymentDialog.billId)?.customer?.phone}
-          customerAddress={bills?.find(b => b.id === paymentDialog.billId)?.customer?.address || undefined}
-          invoiceNumber={paymentDialog.invoiceNumber}
-          outstandingAmount={paymentDialog.outstandingAmount}
-          tenantName={currentTenant.name}
-        />
-      )}
+      {paymentDialog && currentTenant && (() => {
+        const bill = bills?.find(b => b.id === paymentDialog.billId);
+        const billingPeriod = bill 
+          ? `${formatDate(bill.billing_period_start)} - ${formatDate(bill.billing_period_end)}`
+          : undefined;
+        return (
+          <RecordPaymentDialog
+            open={paymentDialog.open}
+            onOpenChange={(open) => setPaymentDialog(open ? paymentDialog : null)}
+            billId={paymentDialog.billId}
+            customerId={paymentDialog.customerId}
+            tenantId={currentTenant.id}
+            customerName={paymentDialog.customerName}
+            customerPhone={bill?.customer?.phone}
+            customerAddress={bill?.customer?.address || undefined}
+            invoiceNumber={paymentDialog.invoiceNumber}
+            billingPeriod={billingPeriod}
+            outstandingAmount={paymentDialog.outstandingAmount}
+            tenantName={currentTenant.name}
+          />
+        );
+      })()}
     </div>
   );
 }

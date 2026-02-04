@@ -141,6 +141,18 @@ export function useGenerateBills() {
       billingPeriodEnd: string;
       dueDate: string;
     }) => {
+      // Check for existing bills in this billing period
+      const { data: existingBills, error: existingError } = await supabase
+        .from("bills")
+        .select("customer_id")
+        .eq("tenant_id", tenantId)
+        .eq("billing_period_start", billingPeriodStart)
+        .eq("billing_period_end", billingPeriodEnd);
+
+      if (existingError) throw existingError;
+
+      const existingCustomerIds = new Set(existingBills?.map(b => b.customer_id) || []);
+
       // Get all active customers with their packages
       const { data: customers, error: customersError } = await supabase
         .from("customers")
@@ -150,23 +162,30 @@ export function useGenerateBills() {
 
       if (customersError) throw customersError;
 
-      // Generate bills for each customer
-      const bills = customers
-        .filter((c) => c.package)
-        .map((customer, index) => ({
-          tenant_id: tenantId,
-          customer_id: customer.id,
-          amount: customer.package!.monthly_price,
-          billing_period_start: billingPeriodStart,
-          billing_period_end: billingPeriodEnd,
-          due_date: dueDate,
-          invoice_number: `INV-${new Date().getFullYear()}-${String(index + 1).padStart(4, "0")}`,
-          status: "due" as const,
-        }));
+      // Filter out customers who already have bills for this period
+      const customersTooBill = customers.filter(
+        (c) => c.package && !existingCustomerIds.has(c.id)
+      );
 
-      if (bills.length === 0) {
+      if (customersTooBill.length === 0) {
+        if (existingBills && existingBills.length > 0) {
+          throw new Error("Bills already exist for this billing period");
+        }
         throw new Error("No active customers with packages to bill");
       }
+
+      // Generate unique invoice numbers with timestamp
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const bills = customersTooBill.map((customer, index) => ({
+        tenant_id: tenantId,
+        customer_id: customer.id,
+        amount: customer.package!.monthly_price,
+        billing_period_start: billingPeriodStart,
+        billing_period_end: billingPeriodEnd,
+        due_date: dueDate,
+        invoice_number: `INV-${timestamp}-${String(index + 1).padStart(4, "0")}`,
+        status: "due" as const,
+      }));
 
       const { data, error } = await supabase
         .from("bills")
