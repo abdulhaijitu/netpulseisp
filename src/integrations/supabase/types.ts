@@ -312,6 +312,8 @@ export type Database = {
             | Database["public"]["Enums"]["subscription_status"]
             | null
           timezone: string | null
+          uddoktapay_api_key: string | null
+          uddoktapay_base_url: string | null
           updated_at: string
         }
         Insert: {
@@ -330,6 +332,8 @@ export type Database = {
             | Database["public"]["Enums"]["subscription_status"]
             | null
           timezone?: string | null
+          uddoktapay_api_key?: string | null
+          uddoktapay_base_url?: string | null
           updated_at?: string
         }
         Update: {
@@ -348,6 +352,8 @@ export type Database = {
             | Database["public"]["Enums"]["subscription_status"]
             | null
           timezone?: string | null
+          uddoktapay_api_key?: string | null
+          uddoktapay_base_url?: string | null
           updated_at?: string
         }
         Relationships: []

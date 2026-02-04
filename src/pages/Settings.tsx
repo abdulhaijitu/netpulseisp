@@ -1,4 +1,4 @@
-import { Building2, Globe, CreditCard, Bell, Shield, Palette } from "lucide-react";
+import { Building2, CreditCard, Bell, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
+import { PaymentGatewaySettings } from "@/components/settings/PaymentGatewaySettings";
 export default function Settings() {
   return (
     <div className="space-y-6">
@@ -159,93 +159,7 @@ export default function Settings() {
         </TabsContent>
 
         <TabsContent value="billing" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Billing Automation</CardTitle>
-              <CardDescription>
-                Configure automatic billing settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Auto-Generate Monthly Bills</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Automatically create bills on the 1st of each month
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Prorated Billing</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Calculate prorated charges for mid-month joins
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="space-y-2">
-                <Label>Auto-Suspend After (Days Overdue)</Label>
-                <Select defaultValue="15">
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7">7 days</SelectItem>
-                    <SelectItem value="15">15 days</SelectItem>
-                    <SelectItem value="30">30 days</SelectItem>
-                    <SelectItem value="never">Never (Manual only)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">
-                  Automatically suspend connections after this many days overdue
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Settings</CardTitle>
-              <CardDescription>
-                Configure payment options for your customers
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Enable Online Payments</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow customers to pay online through the portal
-                  </p>
-                </div>
-                <Switch />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Partial Payments</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow customers to make partial payments
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Advance Payments</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow customers to pay in advance
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-            </CardContent>
-          </Card>
+          <PaymentGatewaySettings />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
