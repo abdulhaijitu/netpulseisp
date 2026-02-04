@@ -307,6 +307,8 @@ export type Database = {
           logo_url: string | null
           name: string
           primary_color: string | null
+          resend_api_key: string | null
+          sender_email: string | null
           subdomain: string
           subscription_status:
             | Database["public"]["Enums"]["subscription_status"]
@@ -327,6 +329,8 @@ export type Database = {
           logo_url?: string | null
           name: string
           primary_color?: string | null
+          resend_api_key?: string | null
+          sender_email?: string | null
           subdomain: string
           subscription_status?:
             | Database["public"]["Enums"]["subscription_status"]
@@ -347,6 +351,8 @@ export type Database = {
           logo_url?: string | null
           name?: string
           primary_color?: string | null
+          resend_api_key?: string | null
+          sender_email?: string | null
           subdomain?: string
           subscription_status?:
             | Database["public"]["Enums"]["subscription_status"]
