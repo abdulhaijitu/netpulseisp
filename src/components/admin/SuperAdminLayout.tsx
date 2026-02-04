@@ -8,7 +8,8 @@ import {
   LogOut,
   Menu,
   X,
-  Shield
+  Shield,
+  DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ const navItems = [
   { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { title: "Tenants", href: "/admin/tenants", icon: Building2 },
   { title: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard },
+  { title: "Pricing", href: "/admin/pricing", icon: DollarSign },
   { title: "Users", href: "/admin/users", icon: Users },
   { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
