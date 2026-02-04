@@ -157,6 +157,26 @@ async function performProviderSync(
   };
 }
 
+// Helper function to send payment confirmation notification
+async function sendPaymentNotification(
+  supabase: SupabaseClient,
+  tenantId: string,
+  customerId: string,
+  amount: number
+): Promise<void> {
+  // Log the notification directly (since we're already in an edge function)
+  await supabase.from("notification_logs").insert({
+    tenant_id: tenantId,
+    customer_id: customerId,
+    notification_type: "payment_confirmation",
+    title: "পেমেন্ট সফল হয়েছে",
+    body: `৳${amount.toLocaleString()} পেমেন্ট সফলভাবে গ্রহণ করা হয়েছে। ধন্যবাদ!`,
+    data: { amount, type: "payment_confirmation" },
+    status: "sent",
+    sent_at: new Date().toISOString(),
+  });
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -287,6 +307,14 @@ Deno.serve(async (req) => {
           "enable"
         );
         console.log("Network sync result:", networkSyncResult);
+      }
+
+      // Send payment confirmation notification
+      try {
+        await sendPaymentNotification(supabase, metadata.tenant_id, metadata.customer_id, parseFloat(amount));
+      } catch (notifError) {
+        console.error("Failed to send payment notification:", notifError);
+        // Don't fail the payment verification if notification fails
       }
     }
 
