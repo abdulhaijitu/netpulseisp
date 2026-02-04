@@ -1,4 +1,4 @@
-import { Building2, CreditCard, Bell, Palette, Mail, Key } from "lucide-react";
+import { Building2, CreditCard, Bell, Palette, Mail, Key, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,11 +23,13 @@ import { PaymentGatewaySettings } from "@/components/settings/PaymentGatewaySett
 import { EmailSettings } from "@/components/settings/EmailSettings";
 import { BrandingSettings } from "@/components/settings/BrandingSettings";
 import { ApiAccessSettings } from "@/components/settings/ApiAccessSettings";
+import { NetworkIntegrationSettings } from "@/components/settings/NetworkIntegrationSettings";
 import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Settings() {
   const { data: userRole } = useUserRole();
   const isIspOwner = userRole === "isp_owner";
+  const canViewNetwork = isIspOwner || userRole === "admin" || userRole === "manager";
 
   return (
     <div className="space-y-6">
@@ -61,6 +63,12 @@ export default function Settings() {
             <Mail className="h-4 w-4" />
             Email
           </TabsTrigger>
+          {canViewNetwork && (
+            <TabsTrigger value="network" className="gap-2">
+              <Network className="h-4 w-4" />
+              Network
+            </TabsTrigger>
+          )}
           {isIspOwner && (
             <TabsTrigger value="api" className="gap-2">
               <Key className="h-4 w-4" />
@@ -239,6 +247,12 @@ export default function Settings() {
         <TabsContent value="email" className="space-y-6">
           <EmailSettings />
         </TabsContent>
+
+        {canViewNetwork && (
+          <TabsContent value="network" className="space-y-6">
+            <NetworkIntegrationSettings />
+          </TabsContent>
+        )}
 
         {isIspOwner && (
           <TabsContent value="api" className="space-y-6">

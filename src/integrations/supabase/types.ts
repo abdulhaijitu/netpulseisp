@@ -199,8 +199,14 @@ export type Database = {
           email: string | null
           id: string
           join_date: string
+          last_network_sync_at: string | null
           last_payment_date: string | null
           name: string
+          network_password_encrypted: string | null
+          network_sync_status:
+            | Database["public"]["Enums"]["network_sync_status"]
+            | null
+          network_username: string | null
           package_id: string | null
           phone: string
           tenant_id: string
@@ -218,8 +224,14 @@ export type Database = {
           email?: string | null
           id?: string
           join_date?: string
+          last_network_sync_at?: string | null
           last_payment_date?: string | null
           name: string
+          network_password_encrypted?: string | null
+          network_sync_status?:
+            | Database["public"]["Enums"]["network_sync_status"]
+            | null
+          network_username?: string | null
           package_id?: string | null
           phone: string
           tenant_id: string
@@ -237,8 +249,14 @@ export type Database = {
           email?: string | null
           id?: string
           join_date?: string
+          last_network_sync_at?: string | null
           last_payment_date?: string | null
           name?: string
+          network_password_encrypted?: string | null
+          network_sync_status?:
+            | Database["public"]["Enums"]["network_sync_status"]
+            | null
+          network_username?: string | null
           package_id?: string | null
           phone?: string
           tenant_id?: string
@@ -255,6 +273,250 @@ export type Database = {
           },
           {
             foreignKeyName: "customers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      network_integrations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          credentials_encrypted: string | null
+          host: string
+          id: string
+          is_enabled: boolean
+          last_sync_at: string | null
+          last_sync_status:
+            | Database["public"]["Enums"]["network_sync_status"]
+            | null
+          mikrotik_address_list: string | null
+          mikrotik_ppp_profile: string | null
+          mikrotik_use_ssl: boolean | null
+          name: string
+          port: number | null
+          provider_type: Database["public"]["Enums"]["network_provider_type"]
+          radius_acct_port: number | null
+          radius_auth_port: number | null
+          radius_secret_encrypted: string | null
+          sync_interval_minutes: number | null
+          sync_mode: Database["public"]["Enums"]["network_sync_mode"]
+          tenant_id: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          credentials_encrypted?: string | null
+          host: string
+          id?: string
+          is_enabled?: boolean
+          last_sync_at?: string | null
+          last_sync_status?:
+            | Database["public"]["Enums"]["network_sync_status"]
+            | null
+          mikrotik_address_list?: string | null
+          mikrotik_ppp_profile?: string | null
+          mikrotik_use_ssl?: boolean | null
+          name: string
+          port?: number | null
+          provider_type: Database["public"]["Enums"]["network_provider_type"]
+          radius_acct_port?: number | null
+          radius_auth_port?: number | null
+          radius_secret_encrypted?: string | null
+          sync_interval_minutes?: number | null
+          sync_mode?: Database["public"]["Enums"]["network_sync_mode"]
+          tenant_id: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          credentials_encrypted?: string | null
+          host?: string
+          id?: string
+          is_enabled?: boolean
+          last_sync_at?: string | null
+          last_sync_status?:
+            | Database["public"]["Enums"]["network_sync_status"]
+            | null
+          mikrotik_address_list?: string | null
+          mikrotik_ppp_profile?: string | null
+          mikrotik_use_ssl?: boolean | null
+          name?: string
+          port?: number | null
+          provider_type?: Database["public"]["Enums"]["network_provider_type"]
+          radius_acct_port?: number | null
+          radius_auth_port?: number | null
+          radius_secret_encrypted?: string | null
+          sync_interval_minutes?: number | null
+          sync_mode?: Database["public"]["Enums"]["network_sync_mode"]
+          tenant_id?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_integrations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      network_sync_logs: {
+        Row: {
+          action: Database["public"]["Enums"]["network_sync_action"]
+          completed_at: string | null
+          created_at: string
+          customer_id: string | null
+          error_message: string | null
+          id: string
+          integration_id: string | null
+          next_retry_at: string | null
+          request_payload: Json | null
+          response_payload: Json | null
+          retry_count: number | null
+          started_at: string
+          status: Database["public"]["Enums"]["network_sync_status"]
+          tenant_id: string
+          triggered_by: string | null
+          triggered_by_user: string | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["network_sync_action"]
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          error_message?: string | null
+          id?: string
+          integration_id?: string | null
+          next_retry_at?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          retry_count?: number | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["network_sync_status"]
+          tenant_id: string
+          triggered_by?: string | null
+          triggered_by_user?: string | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["network_sync_action"]
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          error_message?: string | null
+          id?: string
+          integration_id?: string | null
+          next_retry_at?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          retry_count?: number | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["network_sync_status"]
+          tenant_id?: string
+          triggered_by?: string | null
+          triggered_by_user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_sync_logs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "network_sync_logs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "network_integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "network_sync_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      network_sync_queue: {
+        Row: {
+          action: Database["public"]["Enums"]["network_sync_action"]
+          completed_at: string | null
+          created_at: string
+          customer_id: string | null
+          id: string
+          integration_id: string
+          last_error: string | null
+          max_retries: number | null
+          payload: Json | null
+          priority: number | null
+          retry_count: number | null
+          scheduled_at: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["network_sync_status"]
+          tenant_id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["network_sync_action"]
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          integration_id: string
+          last_error?: string | null
+          max_retries?: number | null
+          payload?: Json | null
+          priority?: number | null
+          retry_count?: number | null
+          scheduled_at?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["network_sync_status"]
+          tenant_id: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["network_sync_action"]
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          id?: string
+          integration_id?: string
+          last_error?: string | null
+          max_retries?: number | null
+          payload?: Json | null
+          priority?: number | null
+          retry_count?: number | null
+          scheduled_at?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["network_sync_status"]
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_sync_queue_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "network_sync_queue_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "network_integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "network_sync_queue_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -580,6 +842,21 @@ export type Database = {
         | "member"
       billing_cycle: "monthly" | "quarterly" | "yearly"
       connection_status: "active" | "suspended" | "pending"
+      network_provider_type: "mikrotik" | "radius" | "custom"
+      network_sync_action:
+        | "enable"
+        | "disable"
+        | "update_speed"
+        | "create"
+        | "delete"
+        | "test_connection"
+      network_sync_mode: "manual" | "scheduled" | "event_driven"
+      network_sync_status:
+        | "pending"
+        | "in_progress"
+        | "success"
+        | "failed"
+        | "retrying"
       payment_status: "paid" | "due" | "partial" | "overdue"
       subscription_status: "active" | "suspended" | "trial"
     }
@@ -722,6 +999,23 @@ export const Constants = {
       ],
       billing_cycle: ["monthly", "quarterly", "yearly"],
       connection_status: ["active", "suspended", "pending"],
+      network_provider_type: ["mikrotik", "radius", "custom"],
+      network_sync_action: [
+        "enable",
+        "disable",
+        "update_speed",
+        "create",
+        "delete",
+        "test_connection",
+      ],
+      network_sync_mode: ["manual", "scheduled", "event_driven"],
+      network_sync_status: [
+        "pending",
+        "in_progress",
+        "success",
+        "failed",
+        "retrying",
+      ],
       payment_status: ["paid", "due", "partial", "overdue"],
       subscription_status: ["active", "suspended", "trial"],
     },
