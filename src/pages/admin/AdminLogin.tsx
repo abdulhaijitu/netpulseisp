@@ -6,14 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Shield } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,14 +20,52 @@ export default function AdminLogin() {
     setError(null);
     setLoading(true);
 
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
-      // TODO: Verify user has super_admin role
+    try {
+      // Sign in
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        setError("Login failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Verify super_admin role
+      const { data: isSuperAdmin, error: roleError } = await supabase.rpc("is_super_admin", {
+        _user_id: authData.user.id,
+      });
+
+      if (roleError) {
+        console.error("Role check error:", roleError);
+        await supabase.auth.signOut();
+        setError("Failed to verify access. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      if (!isSuperAdmin) {
+        // Not a super admin - sign out and show error
+        await supabase.auth.signOut();
+        setError("Access denied. This area is restricted to Super Administrators only.");
+        setLoading(false);
+        return;
+      }
+
+      // Successfully authenticated as super admin
       navigate("/admin");
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An unexpected error occurred. Please try again.");
+      setLoading(false);
     }
   };
 
