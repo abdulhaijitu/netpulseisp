@@ -9,9 +9,11 @@ import {
   BarChart3,
   Bell,
   FileText,
-  Loader2
+  Loader2,
+  LogOut
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -59,10 +61,16 @@ const roleDisplayNames: Record<string, string> = {
 
 export function DashboardSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { data: role, isLoading: roleLoading } = useUserRole();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   // Fetch user profile
   const { data: profile, isLoading: profileLoading } = useQuery({
@@ -178,7 +186,7 @@ export function DashboardSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-4 space-y-3">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-sidebar-primary flex items-center justify-center">
             {profileLoading || roleLoading ? (
@@ -190,7 +198,7 @@ export function DashboardSidebar() {
             )}
           </div>
           {!collapsed && (
-            <div className="flex flex-col min-w-0">
+            <div className="flex flex-col min-w-0 flex-1">
               <span className="text-sm font-medium text-sidebar-foreground truncate">
                 {profileLoading ? "লোড হচ্ছে..." : displayName}
               </span>
@@ -200,6 +208,15 @@ export function DashboardSidebar() {
             </div>
           )}
         </div>
+        <Button
+          variant="ghost"
+          size={collapsed ? "icon" : "sm"}
+          className="w-full justify-start text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4" />
+          {!collapsed && <span className="ml-2">লগআউট</span>}
+        </Button>
       </SidebarFooter>
     </Sidebar>
   );
