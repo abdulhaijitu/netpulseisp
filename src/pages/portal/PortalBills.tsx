@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,9 +30,12 @@ import {
   Clock,
   AlertCircle,
   CreditCard,
-  FileX
+  FileX,
+  Loader2
 } from "lucide-react";
-import { usePortalBills, usePortalCustomer } from "@/hooks/usePortalData";
+import { usePortalBills, usePortalCustomer, type Bill } from "@/hooks/usePortalData";
+import { useInitiatePayment } from "@/hooks/usePaymentGateway";
+import { toast } from "sonner";
 
 const statusConfig = {
   paid: { label: "Paid", variant: "default" as const, icon: CheckCircle },
@@ -42,8 +46,19 @@ const statusConfig = {
 
 export default function PortalBills() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams] = useSearchParams();
   const { data: customer } = usePortalCustomer();
   const { data: bills, isLoading } = usePortalBills();
+  const { initiatePayment, isProcessing } = useInitiatePayment();
+  const [payingBillId, setPayingBillId] = useState<string | null>(null);
+
+  // Handle payment status from URL
+  useEffect(() => {
+    const status = searchParams.get("status");
+    if (status === "cancelled") {
+      toast.error("পেমেন্ট বাতিল করা হয়েছে");
+    }
+  }, [searchParams]);
 
   const filteredBills = (bills || []).filter(
     (bill) =>
@@ -68,12 +83,26 @@ export default function PortalBills() {
     return `${startDate.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}`;
   };
 
-  const totalDue = (bills || [])
-    .filter((b) => b.status !== "paid")
-    .reduce((sum, b) => sum + Number(b.amount), 0);
+  const unpaidBills = (bills || []).filter((b) => b.status !== "paid");
+  const totalDue = unpaidBills.reduce((sum, b) => sum + Number(b.amount), 0);
 
   const paidCount = (bills || []).filter((b) => b.status === "paid").length;
-  const pendingCount = (bills || []).filter((b) => b.status !== "paid").length;
+  const pendingCount = unpaidBills.length;
+
+  // Handle pay now for a specific bill
+  const handlePayNow = (bill: Bill) => {
+    setPayingBillId(bill.id);
+    initiatePayment({ billId: bill.id, amount: Number(bill.amount) });
+  };
+
+  // Handle pay all outstanding bills (pay the first unpaid bill)
+  const handlePayAllNow = () => {
+    const firstUnpaidBill = unpaidBills[0];
+    if (firstUnpaidBill) {
+      setPayingBillId(firstUnpaidBill.id);
+      initiatePayment({ billId: firstUnpaidBill.id, amount: Number(firstUnpaidBill.amount) });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -109,8 +138,16 @@ export default function PortalBills() {
           </CardHeader>
           <CardContent>
             {totalDue > 0 && (
-              <Button className="w-full gap-2">
-                <CreditCard className="h-4 w-4" />
+              <Button 
+                className="w-full gap-2" 
+                onClick={handlePayAllNow}
+                disabled={isProcessing}
+              >
+                {isProcessing && !payingBillId ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CreditCard className="h-4 w-4" />
+                )}
                 Pay Now
               </Button>
             )}
@@ -239,8 +276,16 @@ export default function PortalBills() {
                                     <span>{formatCurrency(Number(bill.amount))}</span>
                                   </div>
                                   {bill.status !== "paid" && (
-                                    <Button className="w-full mt-4">
-                                      <CreditCard className="mr-2 h-4 w-4" />
+                                    <Button 
+                                      className="w-full mt-4"
+                                      onClick={() => handlePayNow(bill)}
+                                      disabled={isProcessing && payingBillId === bill.id}
+                                    >
+                                      {isProcessing && payingBillId === bill.id ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <CreditCard className="mr-2 h-4 w-4" />
+                                      )}
                                       Pay Now
                                     </Button>
                                   )}
