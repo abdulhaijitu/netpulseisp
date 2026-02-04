@@ -629,6 +629,254 @@ export type Database = {
           },
         ]
       }
+      platform_addon_tiers: {
+        Row: {
+          addon_id: string
+          created_at: string
+          id: string
+          max_customers: number | null
+          min_customers: number
+          price: number
+        }
+        Insert: {
+          addon_id: string
+          created_at?: string
+          id?: string
+          max_customers?: number | null
+          min_customers?: number
+          price: number
+        }
+        Update: {
+          addon_id?: string
+          created_at?: string
+          id?: string
+          max_customers?: number | null
+          min_customers?: number
+          price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_addon_tiers_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "platform_addons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_addons: {
+        Row: {
+          base_price: number
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          pricing_type: Database["public"]["Enums"]["addon_pricing_type"]
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          pricing_type?: Database["public"]["Enums"]["addon_pricing_type"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          pricing_type?: Database["public"]["Enums"]["addon_pricing_type"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_invoice_items: {
+        Row: {
+          addon_id: string | null
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+          item_type: string
+          metadata: Json | null
+          quantity: number
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          addon_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+          item_type: string
+          metadata?: Json | null
+          quantity?: number
+          total: number
+          unit_price: number
+        }
+        Update: {
+          addon_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+          item_type?: string
+          metadata?: Json | null
+          quantity?: number
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_invoice_items_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "platform_addons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "platform_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_invoices: {
+        Row: {
+          created_at: string
+          customer_count_snapshot: number | null
+          due_date: string
+          id: string
+          invoice_number: string
+          metadata: Json | null
+          notes: string | null
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          status: string
+          subscription_id: string | null
+          subtotal: number
+          tax_amount: number
+          tenant_id: string
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_count_snapshot?: number | null
+          due_date: string
+          id?: string
+          invoice_number: string
+          metadata?: Json | null
+          notes?: string | null
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          status?: string
+          subscription_id?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tenant_id: string
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_count_snapshot?: number | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          metadata?: Json | null
+          notes?: string | null
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          status?: string
+          subscription_id?: string | null
+          subtotal?: number
+          tax_amount?: number
+          tenant_id?: string
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_invoices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_plans: {
+        Row: {
+          base_price: number
+          billing_cycle: Database["public"]["Enums"]["platform_billing_cycle"]
+          created_at: string
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean
+          max_customers: number | null
+          max_staff: number | null
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          billing_cycle?: Database["public"]["Enums"]["platform_billing_cycle"]
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          max_customers?: number | null
+          max_staff?: number | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          billing_cycle?: Database["public"]["Enums"]["platform_billing_cycle"]
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          max_customers?: number | null
+          max_staff?: number | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -665,6 +913,105 @@ export type Database = {
             foreignKeyName: "profiles_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_addon_subscriptions: {
+        Row: {
+          activated_at: string
+          addon_id: string
+          created_at: string
+          deactivated_at: string | null
+          id: string
+          is_active: boolean
+          tenant_id: string
+        }
+        Insert: {
+          activated_at?: string
+          addon_id: string
+          created_at?: string
+          deactivated_at?: string | null
+          id?: string
+          is_active?: boolean
+          tenant_id: string
+        }
+        Update: {
+          activated_at?: string
+          addon_id?: string
+          created_at?: string
+          deactivated_at?: string | null
+          id?: string
+          is_active?: boolean
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_addon_subscriptions_addon_id_fkey"
+            columns: ["addon_id"]
+            isOneToOne: false
+            referencedRelation: "platform_addons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_addon_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_subscriptions: {
+        Row: {
+          cancelled_at: string | null
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          plan_id: string
+          status: string
+          tenant_id: string
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          created_at?: string
+          current_period_end: string
+          current_period_start?: string
+          id?: string
+          plan_id: string
+          status?: string
+          tenant_id: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          plan_id?: string
+          status?: string
+          tenant_id?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "platform_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -779,9 +1126,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_addon_price: {
+        Args: { _addon_id: string; _customer_count: number }
+        Returns: number
+      }
       can_access_tenant: {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
+      }
+      get_tenant_billing_estimate: {
+        Args: { _tenant_id: string }
+        Returns: {
+          addons_cost: number
+          base_plan_cost: number
+          customer_count: number
+          total_cost: number
+        }[]
       }
       get_user_role: {
         Args: { _user_id: string }
@@ -830,6 +1190,7 @@ export type Database = {
       }
     }
     Enums: {
+      addon_pricing_type: "fixed" | "tiered" | "usage_based"
       api_key_scope: "read_only" | "read_write"
       app_role:
         | "super_admin"
@@ -858,6 +1219,7 @@ export type Database = {
         | "failed"
         | "retrying"
       payment_status: "paid" | "due" | "partial" | "overdue"
+      platform_billing_cycle: "monthly" | "quarterly" | "yearly"
       subscription_status: "active" | "suspended" | "trial"
     }
     CompositeTypes: {
@@ -986,6 +1348,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      addon_pricing_type: ["fixed", "tiered", "usage_based"],
       api_key_scope: ["read_only", "read_write"],
       app_role: [
         "super_admin",
@@ -1017,6 +1380,7 @@ export const Constants = {
         "retrying",
       ],
       payment_status: ["paid", "due", "partial", "overdue"],
+      platform_billing_cycle: ["monthly", "quarterly", "yearly"],
       subscription_status: ["active", "suspended", "trial"],
     },
   },
