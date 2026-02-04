@@ -24,6 +24,7 @@ import NotFound from "@/pages/NotFound";
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
+import ResetPassword from "@/pages/auth/ResetPassword";
 import TenantOnboarding from "@/pages/auth/TenantOnboarding";
 
 // Portal Pages
@@ -57,6 +58,7 @@ const App = () => (
               {/* Staff Auth Routes */}
               <Route path="/login" element={<StaffLogin />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/register" element={<TenantOnboarding />} />
               
               {/* Admin Dashboard Routes (ISP Staff) - Protected by role */}
