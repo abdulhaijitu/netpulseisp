@@ -9,10 +9,15 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
-  Activity
+  Activity,
+  Wallet
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePlatformStats, useAllTenants } from "@/hooks/useTenants";
+import { useTenantContext } from "@/contexts/TenantContext";
+import { useCustomers } from "@/hooks/useCustomers";
+import { usePayments } from "@/hooks/usePayments";
+import { useBills } from "@/hooks/useBills";
 
 const statusConfig = {
   active: { label: "সক্রিয়", variant: "default" as const, icon: CheckCircle },
@@ -23,10 +28,47 @@ const statusConfig = {
 export default function AdminDashboard() {
   const { data: stats, isLoading: statsLoading } = usePlatformStats();
   const { data: tenants, isLoading: tenantsLoading } = useAllTenants();
+  const { currentTenant, isSuperAdmin } = useTenantContext();
+
+  // Tenant-specific data
+  const { data: customers = [], isLoading: customersLoading } = useCustomers(currentTenant?.id);
+  const { data: payments = [], isLoading: paymentsLoading } = usePayments(currentTenant?.id);
+  const { data: bills = [], isLoading: billsLoading } = useBills(currentTenant?.id);
 
   const formatCurrency = (amount: number) => `৳${amount.toLocaleString()}`;
 
   const recentTenants = tenants?.slice(0, 5) ?? [];
+
+  // Calculate tenant-specific metrics
+  const totalCustomers = customers.length;
+  const activeCustomers = customers.filter(c => c.connection_status === "active").length;
+  const suspendedCustomers = customers.filter(c => c.connection_status === "suspended").length;
+
+  // This month's data
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  
+  const monthlyPayments = payments.filter(p => {
+    const paymentDate = new Date(p.created_at);
+    return paymentDate >= thisMonthStart;
+  });
+  
+  const monthlyRevenue = monthlyPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+
+  // Total due from customers
+  const totalDue = customers.reduce((sum, c) => sum + (c.due_balance || 0), 0);
+
+  // Monthly bills
+  const monthlyBills = bills.filter(b => {
+    const billDate = new Date(b.created_at);
+    return billDate >= thisMonthStart;
+  });
+  const totalBilled = monthlyBills.reduce((sum, b) => sum + Number(b.amount), 0);
+
+  // Collection rate
+  const collectionRate = totalBilled > 0 ? ((monthlyRevenue / totalBilled) * 100) : 0;
+
+  const tenantDataLoading = customersLoading || paymentsLoading || billsLoading;
 
   return (
     <div className="space-y-6">
@@ -37,7 +79,7 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      {/* Stats Grid */}
+      {/* Platform Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -126,6 +168,110 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Selected Tenant Stats */}
+      {isSuperAdmin && currentTenant && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">
+              নির্বাচিত টেন্যান্ট: <span className="text-primary">{currentTenant.name}</span>
+            </h2>
+            <Badge variant={statusConfig[currentTenant.subscription_status ?? "trial"]?.variant ?? "secondary"}>
+              {statusConfig[currentTenant.subscription_status ?? "trial"]?.label ?? "ট্রায়াল"}
+            </Badge>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  গ্রাহক সংখ্যা
+                </CardTitle>
+                <Users className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                {tenantDataLoading ? (
+                  <Skeleton className="h-8 w-20" />
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold">{totalCustomers}</div>
+                    <div className="flex gap-2 mt-1 flex-wrap">
+                      <Badge variant="default" className="text-xs">{activeCustomers} সক্রিয়</Badge>
+                      {suspendedCustomers > 0 && (
+                        <Badge variant="destructive" className="text-xs">{suspendedCustomers} স্থগিত</Badge>
+                      )}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  মাসিক রাজস্ব
+                </CardTitle>
+                <Wallet className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                {tenantDataLoading ? (
+                  <Skeleton className="h-8 w-24" />
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold">{formatCurrency(monthlyRevenue)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {now.toLocaleDateString("bn-BD", { month: "long", year: "numeric" })}
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  সংগ্রহ হার
+                </CardTitle>
+                <TrendingUp className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                {tenantDataLoading ? (
+                  <Skeleton className="h-8 w-20" />
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold">{collectionRate.toFixed(1)}%</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formatCurrency(totalBilled)} থেকে
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  মোট বকেয়া
+                </CardTitle>
+                <AlertTriangle className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                {tenantDataLoading ? (
+                  <Skeleton className="h-8 w-24" />
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold">{formatCurrency(totalDue)}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {customers.filter(c => (c.due_balance || 0) > 0).length} গ্রাহকের কাছে
+                    </p>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Revenue & Tenants */}
       <div className="grid gap-6 lg:grid-cols-2">
