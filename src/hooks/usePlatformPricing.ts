@@ -258,6 +258,83 @@ export function useUpdateAddonTiers() {
   });
 }
 
+// Proration Types
+export interface ProrationItem {
+  id: string;
+  tenant_id: string;
+  item_type: "plan_upgrade" | "plan_downgrade" | "addon_activation" | "addon_deactivation";
+  description: string;
+  original_price: number;
+  prorated_amount: number;
+  days_remaining: number;
+  total_days: number;
+  period_start: string;
+  period_end: string;
+  effective_date: string;
+  old_plan_id?: string;
+  new_plan_id?: string;
+  addon_id?: string;
+  invoice_id?: string;
+  status: "pending" | "invoiced" | "paid" | "cancelled";
+  created_at: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ProrationPreview {
+  prorated_amount: number;
+  days_remaining: number;
+  total_days: number;
+  daily_rate: number;
+}
+
+// Hook to get proration preview
+export function useProrationPreview() {
+  return useMutation({
+    mutationFn: async ({
+      originalPrice,
+      periodStart,
+      periodEnd,
+      effectiveDate,
+    }: {
+      originalPrice: number;
+      periodStart: string;
+      periodEnd: string;
+      effectiveDate?: string;
+    }) => {
+      const { data, error } = await supabase.rpc("calculate_proration", {
+        _original_price: originalPrice,
+        _period_start: periodStart,
+        _period_end: periodEnd,
+        _effective_date: effectiveDate || new Date().toISOString().split("T")[0],
+      });
+
+      if (error) throw error;
+      return data?.[0] as ProrationPreview | null;
+    },
+  });
+}
+
+// Hook to get pending proration items for a tenant
+export function usePendingProrations(tenantId?: string) {
+  return useQuery({
+    queryKey: ["pending-prorations", tenantId],
+    queryFn: async () => {
+      if (!tenantId) return [];
+
+      const { data, error } = await supabase
+        .from("proration_items")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as ProrationItem[];
+    },
+    enabled: !!tenantId,
+  });
+}
+
 // Hooks for Tenant Subscriptions
 export function useTenantSubscription(tenantId?: string) {
   return useQuery({
@@ -325,7 +402,39 @@ export function useAssignPlanToTenant() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ tenantId, planId }: { tenantId: string; planId: string }) => {
+    mutationFn: async ({ 
+      tenantId, 
+      planId, 
+      createProration = true 
+    }: { 
+      tenantId: string; 
+      planId: string; 
+      createProration?: boolean;
+    }) => {
+      // Get current subscription to check for existing plan
+      const { data: currentSub } = await supabase
+        .from("tenant_subscriptions")
+        .select("plan_id")
+        .eq("tenant_id", tenantId)
+        .eq("status", "active")
+        .maybeSingle();
+
+      const oldPlanId = currentSub?.plan_id;
+
+      // Create proration item if upgrading/changing plan mid-cycle
+      if (createProration && oldPlanId && oldPlanId !== planId) {
+        const { error: prorationError } = await supabase.rpc("create_plan_proration", {
+          _tenant_id: tenantId,
+          _old_plan_id: oldPlanId,
+          _new_plan_id: planId,
+        });
+
+        if (prorationError) {
+          console.error("Proration error:", prorationError);
+          // Continue anyway - proration is not critical
+        }
+      }
+
       const periodEnd = new Date();
       periodEnd.setMonth(periodEnd.getMonth() + 1);
 
@@ -347,6 +456,7 @@ export function useAssignPlanToTenant() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenant-subscription"] });
       queryClient.invalidateQueries({ queryKey: ["billing-estimate"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-prorations"] });
       toast({ title: "প্ল্যান অ্যাসাইন হয়েছে" });
     },
     onError: (error: Error) => {
@@ -360,7 +470,31 @@ export function useToggleTenantAddon() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ tenantId, addonId, activate }: { tenantId: string; addonId: string; activate: boolean }) => {
+    mutationFn: async ({ 
+      tenantId, 
+      addonId, 
+      activate,
+      createProration = true,
+    }: { 
+      tenantId: string; 
+      addonId: string; 
+      activate: boolean;
+      createProration?: boolean;
+    }) => {
+      // Create proration item for mid-cycle addon change
+      if (createProration) {
+        const { error: prorationError } = await supabase.rpc("create_addon_proration", {
+          _tenant_id: tenantId,
+          _addon_id: addonId,
+          _is_activation: activate,
+        });
+
+        if (prorationError) {
+          console.error("Addon proration error:", prorationError);
+          // Continue anyway - proration is not critical
+        }
+      }
+
       if (activate) {
         const { error } = await supabase.from("tenant_addon_subscriptions").upsert(
           {
@@ -385,6 +519,7 @@ export function useToggleTenantAddon() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tenant-addon-subscriptions"] });
       queryClient.invalidateQueries({ queryKey: ["billing-estimate"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-prorations"] });
       toast({ title: variables.activate ? "অ্যাড-অন সক্রিয় হয়েছে" : "অ্যাড-অন নিষ্ক্রিয় হয়েছে" });
     },
     onError: (error: Error) => {
