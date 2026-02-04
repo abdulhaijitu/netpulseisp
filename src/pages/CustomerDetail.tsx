@@ -13,6 +13,7 @@ import { useCustomerBills } from "@/hooks/useBills";
 import { useCustomerPayments } from "@/hooks/usePayments";
 import { useTenantContext } from "@/contexts/TenantContext";
 import { QuickPaymentDialog } from "@/components/payments/QuickPaymentDialog";
+import { NetworkSyncButton } from "@/components/customers/NetworkSyncButton";
 import { toast } from "sonner";
 import type { ConnectionStatus, PaymentStatus } from "@/types";
 
@@ -105,7 +106,16 @@ export default function CustomerDetail() {
           <h1 className="text-2xl font-bold tracking-tight">{customer.name}</h1>
           <p className="text-muted-foreground">Customer Details</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <NetworkSyncButton
+            customerId={customer.id}
+            customerName={customer.name}
+            connectionStatus={status}
+            networkUsername={customer.network_username}
+            lastSyncAt={customer.last_network_sync_at}
+            syncStatus={customer.network_sync_status}
+            onSyncComplete={() => refetchCustomer()}
+          />
           {status === "active" ? (
             <Button variant="outline" className="gap-2 text-destructive" onClick={handleToggleStatus} disabled={updateCustomer.isPending}>
               <Pause className="h-4 w-4" />
