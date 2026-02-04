@@ -14,13 +14,13 @@ import { CustomerFormDialog, type CustomerFormData } from "@/components/customer
 import { ConnectionStatusDialog } from "@/components/customers/ConnectionStatusDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useCustomers, useCreateCustomer, useUpdateCustomer } from "@/hooks/useCustomers";
-import { useCurrentTenant } from "@/hooks/useTenant";
+import { useTenantContext } from "@/contexts/TenantContext";
 import type { ConnectionStatus } from "@/types";
 
 export default function Customers() {
   const { toast } = useToast();
-  const { data: tenant } = useCurrentTenant();
-  const { data: customers, isLoading, error } = useCustomers(tenant?.id);
+  const { currentTenant, isLoading: tenantLoading } = useTenantContext();
+  const { data: customers, isLoading, error } = useCustomers(currentTenant?.id);
   const createCustomer = useCreateCustomer();
   const updateCustomer = useUpdateCustomer();
 
@@ -86,7 +86,7 @@ export default function Customers() {
   };
 
   const handleFormSubmit = async (data: CustomerFormData) => {
-    if (!tenant?.id) {
+    if (!currentTenant?.id) {
       toast({
         title: "ত্রুটি",
         description: "টেন্যান্ট তথ্য পাওয়া যায়নি।",
@@ -98,7 +98,7 @@ export default function Customers() {
     try {
       if (formMode === "add") {
         await createCustomer.mutateAsync({
-          tenant_id: tenant.id,
+          tenant_id: currentTenant.id,
           name: data.name,
           email: data.email || null,
           phone: data.phone,
@@ -296,7 +296,7 @@ export default function Customers() {
         customer={selectedCustomer}
         onSubmit={handleFormSubmit}
         mode={formMode}
-        tenantId={tenant?.id}
+        tenantId={currentTenant?.id}
       />
 
       {/* Connection Status Dialog */}
