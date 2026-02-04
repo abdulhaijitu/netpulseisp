@@ -131,7 +131,12 @@ export function QuickPaymentDialog({
           method,
           reference: reference || undefined,
           notes: notes || undefined,
-          tenantName: currentTenant.name,
+          branding: {
+            name: currentTenant.name,
+            logoUrl: currentTenant.logo_url,
+            primaryColor: currentTenant.primary_color,
+            accentColor: currentTenant.accent_color,
+          },
         });
       }
 

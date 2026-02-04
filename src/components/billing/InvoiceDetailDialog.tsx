@@ -73,10 +73,21 @@ export interface InvoiceDetail {
   notes?: string;
 }
 
+interface TenantBranding {
+  name: string;
+  logoUrl?: string | null;
+  primaryColor?: string | null;
+  accentColor?: string | null;
+  address?: string;
+  phone?: string;
+  email?: string;
+}
+
 interface InvoiceDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   invoice: InvoiceDetail | null;
+  branding?: TenantBranding;
   onRecordPayment?: (invoiceId: string) => void;
 }
 
@@ -100,6 +111,7 @@ export function InvoiceDetailDialog({
   open,
   onOpenChange,
   invoice,
+  branding,
   onRecordPayment,
 }: InvoiceDetailDialogProps) {
   const { toast } = useToast();
@@ -109,9 +121,9 @@ export function InvoiceDetailDialog({
   const StatusIcon = statusConfig[invoice.status].icon;
   const remainingBalance = invoice.amount - invoice.paidAmount;
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     try {
-      downloadInvoicePdf(invoice);
+      await downloadInvoicePdf(invoice, branding);
       toast({
         title: "PDF Downloaded",
         description: `Invoice ${invoice.id} has been downloaded.`,
@@ -125,10 +137,10 @@ export function InvoiceDetailDialog({
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     try {
-      const { generateInvoicePdf } = require("@/lib/generateInvoicePdf");
-      const doc = generateInvoicePdf(invoice);
+      const { generateInvoicePdf } = await import("@/lib/generateInvoicePdf");
+      const doc = await generateInvoicePdf(invoice, branding);
       doc.autoPrint();
       window.open(doc.output("bloburl"), "_blank");
     } catch (error) {

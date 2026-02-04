@@ -36,6 +36,9 @@ interface RecordPaymentDialogProps {
   billingPeriod?: string;
   outstandingAmount: number;
   tenantName?: string;
+  tenantLogoUrl?: string | null;
+  tenantPrimaryColor?: string | null;
+  tenantAccentColor?: string | null;
   onSuccess?: () => void;
 }
 
@@ -58,6 +61,9 @@ export function RecordPaymentDialog({
   billingPeriod,
   outstandingAmount,
   tenantName,
+  tenantLogoUrl,
+  tenantPrimaryColor,
+  tenantAccentColor,
   onSuccess,
 }: RecordPaymentDialogProps) {
   const { toast } = useToast();
@@ -116,9 +122,14 @@ export function RecordPaymentDialog({
           method,
           reference: reference || undefined,
           notes: notes || undefined,
-          tenantName: tenantName || "ISP Provider",
           invoiceNumber,
           billingPeriod,
+          branding: {
+            name: tenantName || "ISP Provider",
+            logoUrl: tenantLogoUrl,
+            primaryColor: tenantPrimaryColor,
+            accentColor: tenantAccentColor,
+          },
         });
       }
 

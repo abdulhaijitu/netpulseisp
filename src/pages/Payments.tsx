@@ -123,7 +123,12 @@ export default function Payments() {
       method: payment.method || "cash",
       reference: payment.reference || undefined,
       notes: payment.notes || undefined,
-      tenantName: currentTenant?.name || "ISP Provider",
+      branding: {
+        name: currentTenant?.name || "ISP Provider",
+        logoUrl: currentTenant?.logo_url,
+        primaryColor: currentTenant?.primary_color,
+        accentColor: currentTenant?.accent_color,
+      },
     });
   };
 
