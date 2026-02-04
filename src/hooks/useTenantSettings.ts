@@ -17,6 +17,7 @@ interface TenantSettingsUpdate {
   subdomain?: string;
   resend_api_key?: string | null;
   sender_email?: string | null;
+  logo_url?: string | null;
 }
 
 export function useUpdateTenantSettings(tenantId: string | undefined) {
