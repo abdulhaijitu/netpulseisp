@@ -28,9 +28,10 @@ import { SubscriptionDashboard } from "@/components/subscription/SubscriptionDas
 import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Settings() {
-  const { data: userRole } = useUserRole();
+  const { data: userRole, isLoading: roleLoading } = useUserRole();
   const isIspOwner = userRole === "isp_owner";
   const isSuperAdmin = userRole === "super_admin";
+  const canViewSubscription = isIspOwner || isSuperAdmin;
   const canViewNetwork = isSuperAdmin || isIspOwner || userRole === "admin" || userRole === "manager";
   const canViewApi = isSuperAdmin || isIspOwner;
 
@@ -50,7 +51,7 @@ export default function Settings() {
             <Building2 className="h-4 w-4" />
             General
           </TabsTrigger>
-          {isIspOwner && (
+          {canViewSubscription && (
             <TabsTrigger value="subscription" className="gap-2">
               <Package className="h-4 w-4" />
               Subscription
@@ -193,7 +194,7 @@ export default function Settings() {
           </Card>
         </TabsContent>
 
-        {isIspOwner && (
+        {canViewSubscription && (
           <TabsContent value="subscription" className="space-y-6">
             <SubscriptionDashboard />
           </TabsContent>
