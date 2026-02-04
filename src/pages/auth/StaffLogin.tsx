@@ -6,8 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Wifi } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function StaffLogin() {
   const [email, setEmail] = useState("");
@@ -16,7 +16,6 @@ export default function StaffLogin() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,13 +26,50 @@ export default function StaffLogin() {
     setError(null);
     setLoading(true);
 
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        setError("Login failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Check if user is staff
+      const { data: isStaff, error: roleError } = await supabase.rpc("is_isp_staff", {
+        _user_id: authData.user.id,
+      });
+
+      if (roleError) {
+        console.error("Role check error:", roleError);
+        setError("Failed to verify access. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      if (!isStaff) {
+        // Not staff - check if they're a customer
+        await supabase.auth.signOut();
+        setError("এই পোর্টাল ISP স্টাফদের জন্য। কাস্টমার হিসেবে লগইন করতে কাস্টমার পোর্টালে যান।");
+        setLoading(false);
+        return;
+      }
+
+      // Successfully authenticated as staff
       navigate(from, { replace: true });
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An unexpected error occurred. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -43,15 +79,29 @@ export default function StaffLogin() {
     setSuccess(null);
     setLoading(true);
 
-    const { error } = await signUp(email, password, fullName, "");
-    
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess("অ্যাকাউন্ট তৈরি হয়েছে! ইমেইল ভেরিফাই করুন অথবা এখনই লগইন করুন।");
-      setEmail("");
-      setPassword("");
-      setFullName("");
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            full_name: fullName,
+          },
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+      } else {
+        setSuccess("অ্যাকাউন্ট তৈরি হয়েছে! ইমেইল ভেরিফাই করুন অথবা এখনই লগইন করুন।");
+        setEmail("");
+        setPassword("");
+        setFullName("");
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      setError("An unexpected error occurred. Please try again.");
     }
     setLoading(false);
   };
