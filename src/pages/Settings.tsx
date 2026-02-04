@@ -21,6 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaymentGatewaySettings } from "@/components/settings/PaymentGatewaySettings";
 import { EmailSettings } from "@/components/settings/EmailSettings";
+import { BrandingSettings } from "@/components/settings/BrandingSettings";
 export default function Settings() {
   return (
     <div className="space-y-6">
@@ -220,70 +221,7 @@ export default function Settings() {
         </TabsContent>
 
         <TabsContent value="branding" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Brand Identity</CardTitle>
-              <CardDescription>
-                Customize the look and feel of your portal
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label>Company Logo</Label>
-                <div className="flex items-center gap-4">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted">
-                    <Building2 className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <Button variant="outline">Upload Logo</Button>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Recommended size: 200x200px, PNG or SVG
-                </p>
-              </div>
-              <Separator />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Primary Color</Label>
-                  <div className="flex gap-2">
-                    <div className="h-10 w-10 rounded-md bg-primary" />
-                    <Input defaultValue="#3B82F6" className="flex-1" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Accent Color</Label>
-                  <div className="flex gap-2">
-                    <div className="h-10 w-10 rounded-md bg-success" />
-                    <Input defaultValue="#22C55E" className="flex-1" />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Invoice Branding</CardTitle>
-              <CardDescription>
-                Customize your invoice appearance
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="invoiceHeader">Invoice Header Text</Label>
-                <Input
-                  id="invoiceHeader"
-                  defaultValue="FastNet Internet Services"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="invoiceFooter">Invoice Footer Text</Label>
-                <Input
-                  id="invoiceFooter"
-                  defaultValue="Thank you for choosing FastNet!"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <BrandingSettings />
         </TabsContent>
 
         <TabsContent value="email" className="space-y-6">

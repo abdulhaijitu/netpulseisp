@@ -655,6 +655,12 @@ export default function Billing() {
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}
         invoice={selectedInvoice}
+        branding={currentTenant ? {
+          name: currentTenant.name,
+          logoUrl: currentTenant.logo_url,
+          primaryColor: currentTenant.primary_color,
+          accentColor: currentTenant.accent_color,
+        } : undefined}
         onRecordPayment={(invoiceId) => {
           const bill = bills?.find(b => b.invoice_number === invoiceId);
           if (bill) handleRecordPayment(bill);
@@ -681,6 +687,9 @@ export default function Billing() {
             billingPeriod={billingPeriod}
             outstandingAmount={paymentDialog.outstandingAmount}
             tenantName={currentTenant.name}
+            tenantLogoUrl={currentTenant.logo_url}
+            tenantPrimaryColor={currentTenant.primary_color}
+            tenantAccentColor={currentTenant.accent_color}
           />
         );
       })()}
