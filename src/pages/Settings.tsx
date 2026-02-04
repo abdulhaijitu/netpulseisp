@@ -1,4 +1,4 @@
-import { Building2, CreditCard, Bell, Palette } from "lucide-react";
+import { Building2, CreditCard, Bell, Palette, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaymentGatewaySettings } from "@/components/settings/PaymentGatewaySettings";
+import { EmailSettings } from "@/components/settings/EmailSettings";
 export default function Settings() {
   return (
     <div className="space-y-6">
@@ -48,6 +49,10 @@ export default function Settings() {
           <TabsTrigger value="branding" className="gap-2">
             <Palette className="h-4 w-4" />
             Branding
+          </TabsTrigger>
+          <TabsTrigger value="email" className="gap-2">
+            <Mail className="h-4 w-4" />
+            Email
           </TabsTrigger>
         </TabsList>
 
@@ -279,6 +284,10 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="email" className="space-y-6">
+          <EmailSettings />
         </TabsContent>
       </Tabs>
 

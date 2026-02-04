@@ -15,6 +15,8 @@ interface TenantSettingsUpdate {
   accent_color?: string;
   name?: string;
   subdomain?: string;
+  resend_api_key?: string | null;
+  sender_email?: string | null;
 }
 
 export function useUpdateTenantSettings(tenantId: string | undefined) {
