@@ -29,7 +29,9 @@ import { useUserRole } from "@/hooks/useUserRole";
 export default function Settings() {
   const { data: userRole } = useUserRole();
   const isIspOwner = userRole === "isp_owner";
-  const canViewNetwork = isIspOwner || userRole === "admin" || userRole === "manager";
+  const isSuperAdmin = userRole === "super_admin";
+  const canViewNetwork = isSuperAdmin || isIspOwner || userRole === "admin" || userRole === "manager";
+  const canViewApi = isSuperAdmin || isIspOwner;
 
   return (
     <div className="space-y-6">
@@ -69,7 +71,7 @@ export default function Settings() {
               Network
             </TabsTrigger>
           )}
-          {isIspOwner && (
+          {canViewApi && (
             <TabsTrigger value="api" className="gap-2">
               <Key className="h-4 w-4" />
               API Access
@@ -254,7 +256,7 @@ export default function Settings() {
           </TabsContent>
         )}
 
-        {isIspOwner && (
+        {canViewApi && (
           <TabsContent value="api" className="space-y-6">
             <ApiAccessSettings />
           </TabsContent>
