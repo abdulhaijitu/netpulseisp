@@ -42,7 +42,6 @@ import {
   Search, 
   MoreHorizontal,
   Eye,
-  Edit,
   Pause,
   Play,
   Trash2,
@@ -51,16 +50,33 @@ import {
   AlertTriangle,
   Filter,
   Loader2,
-  LogIn
+  LogIn,
+  Package,
+  Users,
+  Wallet
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAllTenants, useUpdateTenant, useDeleteTenant, type TenantWithStats } from "@/hooks/useTenants";
 import { useTenantContext } from "@/contexts/TenantContext";
+import { cn } from "@/lib/utils";
+import { StatCard } from "@/components/admin/StatCard";
 
 const statusConfig = {
-  active: { label: "সক্রিয়", variant: "default" as const, icon: CheckCircle },
-  trial: { label: "ট্রায়াল", variant: "secondary" as const, icon: Clock },
-  suspended: { label: "স্থগিত", variant: "destructive" as const, icon: AlertTriangle },
+  active: { 
+    label: "Active", 
+    icon: CheckCircle,
+    class: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  },
+  trial: { 
+    label: "Trial", 
+    icon: Clock,
+    class: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  },
+  suspended: { 
+    label: "Suspended", 
+    icon: AlertTriangle,
+    class: "bg-destructive/10 text-destructive border-destructive/20",
+  },
 };
 
 export default function AdminTenants() {
@@ -79,8 +95,8 @@ export default function AdminTenants() {
   const handleLoginAsTenant = (tenant: TenantWithStats) => {
     startImpersonation(tenant.id);
     toast({
-      title: "টেন্যান্ট হিসেবে লগইন",
-      description: `আপনি "${tenant.name}" এর অ্যাডমিন হিসেবে লগইন করেছেন।`,
+      title: "Logged in as tenant",
+      description: `You are now viewing "${tenant.name}" as admin.`,
     });
     navigate("/dashboard");
   };
@@ -95,7 +111,7 @@ export default function AdminTenants() {
   });
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('bn-BD', {
+    return new Date(dateStr).toLocaleDateString('en', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
@@ -109,13 +125,13 @@ export default function AdminTenants() {
         updates: { subscription_status: "suspended" },
       });
       toast({
-        title: "টেন্যান্ট স্থগিত",
-        description: `${tenant.name} স্থগিত করা হয়েছে।`,
+        title: "ISP Suspended",
+        description: `${tenant.name} has been suspended.`,
       });
     } catch (err) {
       toast({
-        title: "ত্রুটি",
-        description: "টেন্যান্ট স্থগিত করতে সমস্যা হয়েছে।",
+        title: "Error",
+        description: "Failed to suspend ISP.",
         variant: "destructive",
       });
     }
@@ -128,13 +144,13 @@ export default function AdminTenants() {
         updates: { subscription_status: "active" },
       });
       toast({
-        title: "টেন্যান্ট সক্রিয়",
-        description: `${tenant.name} সক্রিয় করা হয়েছে।`,
+        title: "ISP Activated",
+        description: `${tenant.name} has been activated.`,
       });
     } catch (err) {
       toast({
-        title: "ত্রুটি",
-        description: "টেন্যান্ট সক্রিয় করতে সমস্যা হয়েছে।",
+        title: "Error",
+        description: "Failed to activate ISP.",
         variant: "destructive",
       });
     }
@@ -146,13 +162,13 @@ export default function AdminTenants() {
     try {
       await deleteTenant.mutateAsync(tenantToDelete.id);
       toast({
-        title: "টেন্যান্ট মুছে ফেলা হয়েছে",
-        description: `${tenantToDelete.name} সফলভাবে মুছে ফেলা হয়েছে।`,
+        title: "ISP Deleted",
+        description: `${tenantToDelete.name} has been permanently deleted.`,
       });
     } catch (err) {
       toast({
-        title: "ত্রুটি",
-        description: "টেন্যান্ট মুছে ফেলতে সমস্যা হয়েছে।",
+        title: "Error",
+        description: "Failed to delete ISP.",
         variant: "destructive",
       });
     } finally {
@@ -164,13 +180,14 @@ export default function AdminTenants() {
   const activeCount = tenants?.filter(t => t.subscription_status === 'active').length ?? 0;
   const trialCount = tenants?.filter(t => t.subscription_status === 'trial').length ?? 0;
   const suspendedCount = tenants?.filter(t => t.subscription_status === 'suspended').length ?? 0;
+  const totalCustomers = tenants?.reduce((sum, t) => sum + (t.customer_count ?? 0), 0) ?? 0;
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-destructive">টেন্যান্ট তথ্য লোড করতে সমস্যা হয়েছে।</p>
+        <p className="text-destructive">Failed to load ISPs.</p>
         <Button variant="outline" onClick={() => window.location.reload()}>
-          পুনরায় চেষ্টা করুন
+          Try Again
         </Button>
       </div>
     );
@@ -178,88 +195,69 @@ export default function AdminTenants() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">টেন্যান্ট ম্যানেজমেন্ট</h1>
-          <p className="text-muted-foreground">
-            প্ল্যাটফর্মের সকল ISP প্রতিষ্ঠান পরিচালনা করুন
-          </p>
-        </div>
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">All ISPs</h1>
+        <p className="text-muted-foreground">
+          Manage and monitor all ISP tenants on the platform
+        </p>
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                <CheckCircle className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                {isLoading ? (
-                  <Skeleton className="h-8 w-12" />
-                ) : (
-                  <p className="text-2xl font-bold">{activeCount}</p>
-                )}
-                <p className="text-sm text-muted-foreground">সক্রিয় টেন্যান্ট</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary">
-                <Clock className="h-6 w-6 text-secondary-foreground" />
-              </div>
-              <div>
-                {isLoading ? (
-                  <Skeleton className="h-8 w-12" />
-                ) : (
-                  <p className="text-2xl font-bold">{trialCount}</p>
-                )}
-                <p className="text-sm text-muted-foreground">ট্রায়াল টেন্যান্ট</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-destructive/10">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-              </div>
-              <div>
-                {isLoading ? (
-                  <Skeleton className="h-8 w-12" />
-                ) : (
-                  <p className="text-2xl font-bold">{suspendedCount}</p>
-                )}
-                <p className="text-sm text-muted-foreground">স্থগিত</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Stats Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Active ISPs"
+          value={activeCount}
+          icon={CheckCircle}
+          variant="success"
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Trial ISPs"
+          value={trialCount}
+          icon={Clock}
+          variant="info"
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Suspended"
+          value={suspendedCount}
+          icon={AlertTriangle}
+          variant={suspendedCount > 0 ? "danger" : "default"}
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Total Customers"
+          value={totalCustomers.toLocaleString()}
+          subtitle="Across all ISPs"
+          icon={Users}
+          variant="default"
+          isLoading={isLoading}
+        />
       </div>
 
-      {/* Tenants Table */}
+      {/* ISPs Table */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            সকল টেন্যান্ট
-          </CardTitle>
-          <CardDescription>
-            সকল ISP প্রতিষ্ঠান দেখুন ও পরিচালনা করুন
-          </CardDescription>
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                ISP Directory
+              </CardTitle>
+              <CardDescription>
+                {filteredTenants.length} ISPs found
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Filters */}
-          <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="টেন্যান্ট খুঁজুন..."
+                placeholder="Search by name, subdomain, or owner..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
@@ -268,83 +266,116 @@ export default function AdminTenants() {
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-40">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="স্ট্যাটাস" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">সব স্ট্যাটাস</SelectItem>
-                <SelectItem value="active">সক্রিয়</SelectItem>
-                <SelectItem value="trial">ট্রায়াল</SelectItem>
-                <SelectItem value="suspended">স্থগিত</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="trial">Trial</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Table */}
-          <div className="rounded-md border">
+          <div className="rounded-lg border">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>টেন্যান্ট</TableHead>
-                  <TableHead>মালিক</TableHead>
-                  <TableHead>গ্রাহক</TableHead>
-                  <TableHead>তৈরি</TableHead>
-                  <TableHead>স্ট্যাটাস</TableHead>
-                  <TableHead className="text-right">অ্যাকশন</TableHead>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="pl-4">ISP</TableHead>
+                  <TableHead>Owner</TableHead>
+                  <TableHead>Customers</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Add-ons</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  [...Array(3)].map((_, i) => (
+                  [...Array(5)].map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell><Skeleton className="h-12 w-full" /></TableCell>
+                      <TableCell className="pl-4"><Skeleton className="h-10 w-40" /></TableCell>
                       <TableCell><Skeleton className="h-8 w-32" /></TableCell>
-                      <TableCell><Skeleton className="h-8 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-8 w-24" /></TableCell>
-                      <TableCell><Skeleton className="h-8 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                       <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                     </TableRow>
                   ))
                 ) : filteredTenants.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                      কোন টেন্যান্ট পাওয়া যায়নি
+                    <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
+                      No ISPs found
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredTenants.map((tenant) => {
                     const status = tenant.subscription_status ?? "trial";
-                    const StatusIcon = statusConfig[status]?.icon ?? Clock;
+                    const config = statusConfig[status] || statusConfig.trial;
+                    const StatusIcon = config.icon;
+                    
                     return (
-                      <TableRow key={tenant.id}>
-                        <TableCell>
+                      <TableRow key={tenant.id} className="group">
+                        <TableCell className="pl-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                              <Building2 className="h-5 w-5 text-primary" />
+                            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
+                              <Building2 className="h-4 w-4 text-primary" />
                             </div>
-                            <div>
-                              <p className="font-medium">{tenant.name}</p>
-                              <p className="text-sm text-muted-foreground">{tenant.subdomain}.ispmanager.com</p>
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{tenant.name}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {tenant.subdomain}.app
+                              </p>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div>
-                            <p className="font-medium">{tenant.owner_name || "-"}</p>
-                            <p className="text-sm text-muted-foreground">{tenant.owner_email || "-"}</p>
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">{tenant.owner_name || "-"}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {tenant.owner_email || "-"}
+                            </p>
                           </div>
                         </TableCell>
-                        <TableCell>{(tenant.customer_count ?? 0).toLocaleString()}</TableCell>
-                        <TableCell>{formatDate(tenant.created_at)}</TableCell>
                         <TableCell>
-                          <Badge variant={statusConfig[status]?.variant ?? "secondary"} className="gap-1">
-                            <StatusIcon className="h-3 w-3" />
-                            {statusConfig[status]?.label ?? status}
+                          <span className="font-medium">{(tenant.customer_count ?? 0).toLocaleString()}</span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="font-normal">
+                            Starter
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">2</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={cn("gap-1 font-normal", config.class)}
+                          >
+                            <StatusIcon className="h-3 w-3" />
+                            {config.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {formatDate(tenant.created_at)}
+                        </TableCell>
+                        <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" disabled={updateTenant.isPending}>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                disabled={updateTenant.isPending}
+                              >
                                 {updateTenant.isPending ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
@@ -355,40 +386,40 @@ export default function AdminTenants() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem>
                                 <Eye className="mr-2 h-4 w-4" />
-                                বিস্তারিত দেখুন
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Edit className="mr-2 h-4 w-4" />
-                                সম্পাদনা
+                                View Details
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleLoginAsTenant(tenant)}>
                                 <LogIn className="mr-2 h-4 w-4" />
-                                অ্যাডমিন হিসেবে লগইন
+                                Login as Admin
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Wallet className="mr-2 h-4 w-4" />
+                                View Billing
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               {status === "active" || status === "trial" ? (
                                 <DropdownMenuItem 
                                   onClick={() => handleSuspend(tenant)}
-                                  className="text-destructive"
+                                  className="text-destructive focus:text-destructive"
                                 >
                                   <Pause className="mr-2 h-4 w-4" />
-                                  স্থগিত করুন
+                                  Suspend ISP
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem onClick={() => handleActivate(tenant)}>
                                   <Play className="mr-2 h-4 w-4" />
-                                  সক্রিয় করুন
+                                  Activate ISP
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem 
-                                className="text-destructive"
+                                className="text-destructive focus:text-destructive"
                                 onClick={() => {
                                   setTenantToDelete(tenant);
                                   setDeleteDialogOpen(true);
                                 }}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                মুছে ফেলুন
+                                Delete ISP
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -407,22 +438,23 @@ export default function AdminTenants() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>আপনি কি নিশ্চিত?</AlertDialogTitle>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              "{tenantToDelete?.name}" টেন্যান্ট এবং এর সাথে সম্পর্কিত সকল ডেটা স্থায়ীভাবে মুছে ফেলা হবে। 
-              এই কাজ পূর্বাবস্থায় ফেরানো যাবে না।
+              This will permanently delete "{tenantToDelete?.name}" and all associated data.
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>বাতিল</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteTenant.isPending}
             >
               {deleteTenant.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
-              মুছে ফেলুন
+              Delete ISP
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

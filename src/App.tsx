@@ -52,6 +52,7 @@ import AdminTenants from "@/pages/admin/AdminTenants";
 import AdminSubscriptions from "@/pages/admin/AdminSubscriptions";
 import AdminPricing from "@/pages/admin/AdminPricing";
 import AdminSettings from "@/pages/admin/AdminSettings";
+import AdminPlaceholder from "@/pages/admin/AdminPlaceholder";
 
 const queryClient = new QueryClient();
 
@@ -131,11 +132,34 @@ const App = () => (
                   </SuperAdminRoute>
                 }
               >
+                {/* Platform Overview */}
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/health" element={<AdminPlaceholder title="System Health" />} />
+                <Route path="/admin/activity" element={<AdminPlaceholder title="Activity Logs" />} />
+                
+                {/* ISP Management */}
                 <Route path="/admin/tenants" element={<AdminTenants />} />
                 <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
-                <Route path="/admin/pricing" element={<AdminPricing />} />
+                <Route path="/admin/addons" element={<AdminPlaceholder title="Add-ons Management" />} />
+                
+                {/* Financials */}
+                <Route path="/admin/revenue" element={<AdminPlaceholder title="Platform Revenue" />} />
+                <Route path="/admin/wallets" element={<AdminPlaceholder title="ISP Wallets" />} />
+                <Route path="/admin/payouts" element={<AdminPlaceholder title="Payout Requests" />} />
+                
+                {/* Infrastructure */}
+                <Route path="/admin/payments" element={<AdminPlaceholder title="Payment Infrastructure" />} />
+                <Route path="/admin/notifications" element={<AdminPlaceholder title="Notification System" />} />
+                <Route path="/admin/network" element={<AdminPlaceholder title="Network Integrations" />} />
+                
+                {/* Governance */}
+                <Route path="/admin/users" element={<AdminPlaceholder title="Users & Roles" />} />
+                <Route path="/admin/api" element={<AdminPlaceholder title="API Usage" />} />
+                <Route path="/admin/audit" element={<AdminPlaceholder title="Audit Logs" />} />
+                
+                {/* Settings */}
                 <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/pricing" element={<AdminPricing />} />
               </Route>
 
               {/* 404 */}
