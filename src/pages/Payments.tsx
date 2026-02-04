@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, Filter, Download, MoreHorizontal, CreditCard, Banknote, Globe } from "lucide-react";
+import { Plus, Search, Filter, Download, MoreHorizontal, CreditCard, Banknote, Globe, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -26,69 +26,10 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { usePayments, type Payment } from "@/hooks/usePayments";
+import { useTenantContext } from "@/contexts/TenantContext";
 
 type PaymentMethod = "cash" | "online" | "bank_transfer";
-
-interface Payment {
-  id: string;
-  customerId: string;
-  customerName: string;
-  amount: number;
-  method: PaymentMethod;
-  reference?: string;
-  date: string;
-  collectedBy: string;
-}
-
-const payments: Payment[] = [
-  {
-    id: "PAY001",
-    customerId: "CUS001",
-    customerName: "Rahim Ahmed",
-    amount: 1200,
-    method: "cash",
-    date: "2024-01-20T10:30:00",
-    collectedBy: "Admin",
-  },
-  {
-    id: "PAY002",
-    customerId: "CUS002",
-    customerName: "Karim Hossain",
-    amount: 800,
-    method: "online",
-    reference: "UPY-789456",
-    date: "2024-01-19T14:15:00",
-    collectedBy: "System",
-  },
-  {
-    id: "PAY003",
-    customerId: "CUS004",
-    customerName: "Jamal Uddin",
-    amount: 1200,
-    method: "cash",
-    date: "2024-01-19T09:45:00",
-    collectedBy: "Staff1",
-  },
-  {
-    id: "PAY004",
-    customerId: "CUS006",
-    customerName: "Salma Begum",
-    amount: 5400,
-    method: "bank_transfer",
-    reference: "TRX-123456",
-    date: "2024-01-18T16:20:00",
-    collectedBy: "Admin",
-  },
-  {
-    id: "PAY005",
-    customerId: "CUS005",
-    customerName: "Faruk Ahmed",
-    amount: 800,
-    method: "cash",
-    date: "2024-01-18T11:00:00",
-    collectedBy: "Staff2",
-  },
-];
 
 const methodIcons: Record<PaymentMethod, React.ReactNode> = {
   cash: <Banknote className="h-4 w-4" />,
@@ -109,22 +50,60 @@ const methodStyles: Record<PaymentMethod, string> = {
 };
 
 export default function Payments() {
+  const { currentTenant } = useTenantContext();
+  const { data: payments = [], isLoading, error } = usePayments(currentTenant?.id);
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [methodFilter, setMethodFilter] = useState<string>("all");
 
   const filteredPayments = payments.filter((payment) => {
     const matchesSearch =
-      payment.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      payment.customer?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       payment.id.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesMethod = methodFilter === "all" || payment.method === methodFilter;
     return matchesSearch && matchesMethod;
   });
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
   const totalToday = payments
-    .filter((p) => new Date(p.date).toDateString() === new Date().toDateString())
-    .reduce((sum, p) => sum + p.amount, 0);
+    .filter((p) => {
+      const paymentDate = new Date(p.created_at);
+      paymentDate.setHours(0, 0, 0, 0);
+      return paymentDate.getTime() === today.getTime();
+    })
+    .reduce((sum, p) => sum + Number(p.amount), 0);
 
-  const totalThisMonth = payments.reduce((sum, p) => sum + p.amount, 0);
+  const thisMonth = new Date();
+  const totalThisMonth = payments
+    .filter((p) => {
+      const paymentDate = new Date(p.created_at);
+      return (
+        paymentDate.getMonth() === thisMonth.getMonth() &&
+        paymentDate.getFullYear() === thisMonth.getFullYear()
+      );
+    })
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-destructive">পেমেন্ট তথ্য লোড করতে সমস্যা হয়েছে।</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          পুনরায় চেষ্টা করুন
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -200,96 +179,107 @@ export default function Payments() {
 
       {/* Table */}
       <div className="rounded-lg border border-border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Reference</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Collected By</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredPayments.map((payment, index) => (
-              <TableRow
-                key={payment.id}
-                className="data-table-row animate-fade-in"
-                style={{ animationDelay: `${index * 30}ms` }}
-              >
-                <TableCell className="font-mono text-xs text-muted-foreground">
-                  {payment.id}
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <p className="font-medium">{payment.customerName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {payment.customerId}
-                    </p>
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <span className="font-semibold text-success">
-                    ৳{payment.amount.toLocaleString()}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={cn("gap-1.5", methodStyles[payment.method])}
-                  >
-                    {methodIcons[payment.method]}
-                    {methodLabels[payment.method]}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm text-muted-foreground">
-                    {payment.reference || "—"}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <p className="text-sm">
-                      {new Date(payment.date).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(payment.date).toLocaleTimeString("en-GB", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">{payment.collectedBy}</span>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Print Receipt</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
-                        Void Payment
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+        {filteredPayments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">No payments found</p>
+            <p className="text-sm text-muted-foreground">
+              {payments.length === 0
+                ? "Record your first payment to get started"
+                : "Try adjusting your search or filters"}
+            </p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-[100px]">ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Method</TableHead>
+                <TableHead>Reference</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredPayments.map((payment, index) => {
+                const method = (payment.method || "cash") as PaymentMethod;
+                return (
+                  <TableRow
+                    key={payment.id}
+                    className="data-table-row animate-fade-in"
+                    style={{ animationDelay: `${index * 30}ms` }}
+                  >
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      {payment.id.slice(0, 8)}...
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{payment.customer?.name || "Unknown"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {payment.customer?.phone}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <span className="font-semibold text-success">
+                        ৳{Number(payment.amount).toLocaleString()}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn("gap-1.5", methodStyles[method])}
+                      >
+                        {methodIcons[method]}
+                        {methodLabels[method]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">
+                        {payment.reference || "—"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="text-sm">
+                          {new Date(payment.created_at).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(payment.created_at).toLocaleTimeString("en-GB", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>View Details</DropdownMenuItem>
+                          <DropdownMenuItem>Print Receipt</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">
+                            Void Payment
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
       </div>
 
       {/* Pagination */}
@@ -301,7 +291,7 @@ export default function Payments() {
           <Button variant="outline" size="sm" disabled>
             Previous
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" disabled={filteredPayments.length <= 10}>
             Next
           </Button>
         </div>
