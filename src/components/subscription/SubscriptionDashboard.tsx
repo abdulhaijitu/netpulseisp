@@ -1,32 +1,6 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Package,
-  Puzzle,
-  CreditCard,
-  Calendar,
-  Users,
-  TrendingUp,
-  ArrowRight,
-  Check,
-  AlertCircle,
-} from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
-import { bn } from "date-fns/locale";
+import { Network, BarChart3, Bell, Users, Zap, Shield } from "lucide-react";
 import { useTenantContext } from "@/contexts/TenantContext";
 import {
   useTenantSubscription,
@@ -38,13 +12,64 @@ import {
   useToggleTenantAddon,
   PlatformPlan,
 } from "@/hooks/usePlatformPricing";
+import {
+  PlanCard,
+  FeatureComparisonTable,
+  AddonUpsellCard,
+  UpgradePreviewDialog,
+  CurrentPlanSummary,
+} from "@/components/pricing";
 
-const statusLabels = {
-  active: { label: "সক্রিয়", variant: "default" as const },
-  past_due: { label: "বকেয়া", variant: "destructive" as const },
-  cancelled: { label: "বাতিল", variant: "secondary" as const },
-  trial: { label: "ট্রায়াল", variant: "outline" as const },
+// Add-on metadata for conversion-focused display
+const addonMeta: Record<string, { icon: typeof Network; benefitHeadline: string; recommendation: string }> = {
+  network_auto: {
+    icon: Network,
+    benefitHeadline: "Automate customer speed & access",
+    recommendation: "Recommended for ISPs with 200+ customers",
+  },
+  analytics_pro: {
+    icon: BarChart3,
+    benefitHeadline: "Understand your revenue & churn trends",
+    recommendation: "Recommended for growing ISPs",
+  },
+  push_notify: {
+    icon: Bell,
+    benefitHeadline: "Reach customers instantly on their phone",
+    recommendation: "Recommended for ISPs with due collection challenges",
+  },
+  multi_staff: {
+    icon: Users,
+    benefitHeadline: "Give your team secure, role-based access",
+    recommendation: "Recommended for ISPs with 3+ staff",
+  },
+  api_access: {
+    icon: Zap,
+    benefitHeadline: "Connect with your existing tools via API",
+    recommendation: "Best for ISPs with custom integrations",
+  },
+  white_label: {
+    icon: Shield,
+    benefitHeadline: "Your brand, your portal — fully customized",
+    recommendation: "Best for ISPs with resellers",
+  },
 };
+
+// Plan size guidance
+function getSizeGuidance(plan: PlatformPlan, index: number, total: number): string {
+  if (plan.max_customers && plan.max_customers <= 200) {
+    return "Best for small ISPs starting out";
+  }
+  if (plan.max_customers && plan.max_customers <= 1000) {
+    return `Best for ISPs with up to ${plan.max_customers} customers`;
+  }
+  if (plan.max_customers && plan.max_customers > 1000) {
+    return `Best for ISPs with ${Math.floor(plan.max_customers / 2).toLocaleString()}+ customers`;
+  }
+  if (index === total - 1) {
+    return "Best for large ISPs with unlimited growth";
+  }
+  return "";
+}
 
 export function SubscriptionDashboard() {
   const { currentTenant } = useTenantContext();
@@ -61,11 +86,15 @@ export function SubscriptionDashboard() {
 
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlatformPlan | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
 
   const isLoading = subscriptionLoading || addonsLoading || estimateLoading;
-
   const currentPlan = subscription?.plan;
   const activeAddonIds = addonSubscriptions?.map((a) => a.addon_id) ?? [];
+  const activePlans = allPlans?.filter((p) => p.is_active) ?? [];
+
+  // Find the "most popular" plan (middle plan or the one with most features)
+  const popularIndex = activePlans.length >= 3 ? 1 : activePlans.length - 1;
 
   const handlePlanSelect = (plan: PlatformPlan) => {
     setSelectedPlan(plan);
@@ -79,9 +108,9 @@ export function SubscriptionDashboard() {
     }
   };
 
-  const handleToggleAddon = (addonId: string, currentlyActive: boolean) => {
+  const handleToggleAddon = (addonId: string, activate: boolean) => {
     if (tenantId) {
-      toggleAddon.mutate({ tenantId, addonId, activate: !currentlyActive });
+      toggleAddon.mutate({ tenantId, addonId, activate });
     }
   };
 
@@ -96,297 +125,103 @@ export function SubscriptionDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Current Plan Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              বর্তমান প্ল্যান
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{currentPlan?.name ?? "কোন প্ল্যান নেই"}</p>
-                {subscription && (
-                  <Badge variant={statusLabels[subscription.status].variant}>
-                    {statusLabels[subscription.status].label}
-                  </Badge>
-                )}
-              </div>
-              {currentPlan && (
-                <div className="text-right">
-                  <p className="text-2xl font-bold">৳{currentPlan.base_price}</p>
-                  <p className="text-sm text-muted-foreground">/মাস</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-8">
+      {/* Current Plan Summary */}
+      <CurrentPlanSummary
+        subscription={subscription}
+        addonSubscriptions={addonSubscriptions}
+        billingEstimate={billingEstimate}
+      />
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              গ্রাহক সংখ্যা
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-baseline justify-between">
-                <p className="text-2xl font-bold">{billingEstimate?.customer_count ?? 0}</p>
-                {currentPlan?.max_customers && (
-                  <p className="text-sm text-muted-foreground">
-                    / {currentPlan.max_customers}
-                  </p>
-                )}
-              </div>
-              {currentPlan?.max_customers && (
-                <Progress
-                  value={((billingEstimate?.customer_count ?? 0) / currentPlan.max_customers) * 100}
-                  className="h-2"
-                />
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Plans Section */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-lg font-bold">Choose the right plan for your ISP</h3>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Scale your operations with automated billing, collections, and network management
+          </p>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              পরবর্তী বিলিং
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold">৳{billingEstimate?.total_cost ?? 0}</p>
-              {subscription?.current_period_end && (
-                <p className="text-sm text-muted-foreground">
-                  {formatDistanceToNow(new Date(subscription.current_period_end), {
-                    addSuffix: true,
-                    locale: bn,
-                  })}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Plan Cards */}
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {activePlans.map((plan, idx) => (
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              isCurrent={plan.id === currentPlan?.id}
+              isPopular={idx === popularIndex && activePlans.length > 1}
+              onSelect={handlePlanSelect}
+              isLoading={assignPlan.isPending}
+              sizeGuidance={getSizeGuidance(plan, idx, activePlans.length)}
+            />
+          ))}
+        </div>
+
+        {/* Comparison Toggle */}
+        {activePlans.length > 1 && (
+          <div className="text-center pt-2">
+            <button
+              onClick={() => setShowComparison(!showComparison)}
+              className="text-sm text-primary hover:underline underline-offset-2 font-medium"
+            >
+              {showComparison ? "Hide" : "Compare"} all features
+            </button>
+          </div>
+        )}
+
+        {/* Feature Comparison */}
+        {showComparison && (
+          <div className="animate-fade-in">
+            <FeatureComparisonTable
+              plans={activePlans}
+              currentPlanId={currentPlan?.id}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Billing Breakdown */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            বিলিং ব্রেকডাউন
-          </CardTitle>
-          <CardDescription>পরবর্তী বিলিং সাইকেলের আনুমানিক খরচ</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-3">
-              <Package className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">বেস প্ল্যান ({currentPlan?.name})</p>
-                <p className="text-sm text-muted-foreground">মাসিক সাবস্ক্রিপশন</p>
-              </div>
-            </div>
-            <p className="font-medium">৳{billingEstimate?.base_plan_cost ?? 0}</p>
+      {/* Add-ons Section */}
+      {allAddons && allAddons.filter((a) => a.is_active).length > 0 && (
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-bold">Extend your platform</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Add powerful capabilities as your ISP grows — activate or deactivate anytime
+            </p>
           </div>
 
-          {addonSubscriptions && addonSubscriptions.length > 0 && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-muted-foreground">সক্রিয় অ্যাড-অন</p>
-                {addonSubscriptions.map((sub) => (
-                  <div key={sub.id} className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-3">
-                      <Puzzle className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{sub.addon?.name}</p>
-                        <p className="text-sm text-muted-foreground">{sub.addon?.description}</p>
-                      </div>
-                    </div>
-                    <p className="font-medium">৳{sub.addon?.base_price ?? 0}</p>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          <Separator />
-
-          <div className="flex items-center justify-between py-2">
-            <p className="text-lg font-bold">মোট আনুমানিক</p>
-            <p className="text-lg font-bold">৳{billingEstimate?.total_cost ?? 0}</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {allAddons
+              .filter((a) => a.is_active)
+              .map((addon) => {
+                const meta = addonMeta[addon.code];
+                return (
+                  <AddonUpsellCard
+                    key={addon.id}
+                    addon={addon}
+                    isActive={activeAddonIds.includes(addon.id)}
+                    onToggle={handleToggleAddon}
+                    isLoading={toggleAddon.isPending}
+                    icon={meta?.icon}
+                    benefitHeadline={meta?.benefitHeadline}
+                    recommendation={meta?.recommendation}
+                  />
+                );
+              })}
           </div>
+        </div>
+      )}
 
-          {subscription?.current_period_end && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              পরবর্তী বিল: {format(new Date(subscription.current_period_end), "dd MMMM, yyyy", { locale: bn })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Available Plans */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            প্ল্যান আপগ্রেড / ডাউনগ্রেড
-          </CardTitle>
-          <CardDescription>আপনার প্রয়োজন অনুযায়ী প্ল্যান পরিবর্তন করুন</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {allPlans?.filter((p) => p.is_active).map((plan) => {
-              const isCurrent = plan.id === currentPlan?.id;
-              return (
-                <Card
-                  key={plan.id}
-                  className={`relative ${isCurrent ? "border-primary" : ""}`}
-                >
-                  {isCurrent && (
-                    <Badge className="absolute -top-2 left-4">বর্তমান</Badge>
-                  )}
-                  <CardHeader className="pb-2">
-                    <CardTitle>{plan.name}</CardTitle>
-                    <CardDescription>{plan.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="text-center">
-                      <span className="text-3xl font-bold">৳{plan.base_price}</span>
-                      <span className="text-muted-foreground">/মাস</span>
-                    </div>
-
-                    <ul className="space-y-2 text-sm">
-                      {plan.features?.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-2">
-                          <Check className="h-4 w-4 text-green-500" />
-                          {feature}
-                        </li>
-                      ))}
-                      <li className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        {plan.max_customers ? `${plan.max_customers} গ্রাহক` : "আনলিমিটেড গ্রাহক"}
-                      </li>
-                    </ul>
-
-                    <Button
-                      className="w-full"
-                      variant={isCurrent ? "outline" : "default"}
-                      disabled={isCurrent || assignPlan.isPending}
-                      onClick={() => handlePlanSelect(plan)}
-                    >
-                      {isCurrent ? "বর্তমান প্ল্যান" : "এই প্ল্যানে যান"}
-                      {!isCurrent && <ArrowRight className="ml-2 h-4 w-4" />}
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Available Addons */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Puzzle className="h-5 w-5" />
-            অ্যাড-অন মডিউল
-          </CardTitle>
-          <CardDescription>প্রয়োজনীয় ফিচার যোগ করুন</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {allAddons?.filter((a) => a.is_active).map((addon) => {
-              const isActive = activeAddonIds.includes(addon.id);
-              return (
-                <div
-                  key={addon.id}
-                  className="flex items-center justify-between p-4 rounded-lg border"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-lg ${isActive ? "bg-primary/10" : "bg-muted"}`}>
-                      <Puzzle className={`h-6 w-6 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{addon.name}</p>
-                        {addon.pricing_type === "tiered" && (
-                          <Badge variant="outline" className="text-xs">টায়ার ভিত্তিক</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{addon.description}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="font-medium">৳{addon.base_price}</p>
-                      <p className="text-xs text-muted-foreground">/মাস থেকে</p>
-                    </div>
-                    <Switch
-                      checked={isActive}
-                      onCheckedChange={() => handleToggleAddon(addon.id, isActive)}
-                      disabled={toggleAddon.isPending}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Upgrade Confirmation Dialog */}
-      <Dialog open={upgradeDialogOpen} onOpenChange={setUpgradeDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>প্ল্যান পরিবর্তন নিশ্চিত করুন</DialogTitle>
-            <DialogDescription>
-              আপনি কি {selectedPlan?.name} প্ল্যানে যেতে চান?
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
-              <AlertCircle className="h-5 w-5 text-amber-500" />
-              <p className="text-sm">
-                প্ল্যান পরিবর্তন পরবর্তী বিলিং সাইকেল থেকে কার্যকর হবে
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-lg border">
-              <div>
-                <p className="text-sm text-muted-foreground">নতুন মাসিক খরচ</p>
-                <p className="text-2xl font-bold">৳{selectedPlan?.base_price}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">সর্বোচ্চ গ্রাহক</p>
-                <p className="text-lg font-medium">
-                  {selectedPlan?.max_customers ?? "আনলিমিটেড"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setUpgradeDialogOpen(false)}>
-              বাতিল
-            </Button>
-            <Button onClick={handleConfirmUpgrade} disabled={assignPlan.isPending}>
-              {assignPlan.isPending ? "প্রসেসিং..." : "নিশ্চিত করুন"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Upgrade Preview Dialog */}
+      <UpgradePreviewDialog
+        open={upgradeDialogOpen}
+        onOpenChange={setUpgradeDialogOpen}
+        currentPlan={currentPlan}
+        newPlan={selectedPlan}
+        currentCost={billingEstimate?.total_cost}
+        onConfirm={handleConfirmUpgrade}
+        isLoading={assignPlan.isPending}
+      />
     </div>
   );
 }
