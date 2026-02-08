@@ -1,108 +1,112 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreditCard, CheckCircle, FileText, Download } from "lucide-react";
 import { usePortalPayments } from "@/hooks/usePortalData";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { cn } from "@/lib/utils";
 
 export default function MobilePayments() {
   const { data: payments, isLoading } = usePortalPayments();
 
   const formatCurrency = (amount: number) => `৳${amount.toLocaleString()}`;
-  const totalPaid = payments?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0;
+  const totalPaid =
+    payments?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0;
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold">Payments</h1>
-        <p className="text-muted-foreground text-sm">Your payment history</p>
+        <h1 className="text-2xl font-bold tracking-tight">Payments</h1>
+        <p className="text-sm text-muted-foreground">Your payment history</p>
       </div>
 
       {/* Summary Card */}
-      <Card className="overflow-hidden border-0 shadow-lg animate-slide-up">
+      <Card className="overflow-hidden border-0 shadow-xl rounded-2xl">
         <CardContent className="p-0">
-          <div className="bg-gradient-to-br from-success to-success/80 text-white p-5">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                <CheckCircle className="w-5 h-5" />
+          <div className="bg-gradient-to-br from-success via-success/90 to-success/70 text-white p-5 relative overflow-hidden">
+            <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10 blur-2xl" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <span className="text-sm font-medium text-white/80">Total Paid</span>
               </div>
-              <span className="text-white/80">Total Paid</span>
+              <p className="text-3xl font-bold tabular-nums tracking-tight">
+                {formatCurrency(totalPaid)}
+              </p>
+              <p className="text-xs text-white/60 mt-1">
+                {payments?.length || 0} transactions
+              </p>
             </div>
-            <p className="text-3xl font-bold tabular-nums">{formatCurrency(totalPaid)}</p>
-            <p className="text-sm text-white/70 mt-1">
-              {payments?.length || 0} transactions
-            </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Payments List */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+      <div className="space-y-2.5">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
           Recent Transactions
-        </h3>
+        </p>
 
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-xl" />
+            <Skeleton key={i} className="h-[80px] rounded-xl" />
           ))
         ) : payments && payments.length > 0 ? (
-          payments.map((payment, index) => (
-            <Card 
-              key={payment.id} 
-              className="touch-manipulation active:scale-[0.98] transition-all duration-200 hover:shadow-soft animate-slide-up"
-              style={{ animationDelay: `${index * 50}ms` }}
+          payments.map((payment) => (
+            <div
+              key={payment.id}
+              className="bg-card rounded-xl border p-3.5 space-y-0"
             >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
-                      <CreditCard className="w-6 h-6 text-success" />
-                    </div>
-                    <div>
-                      <p className="font-semibold tabular-nums">{formatCurrency(Number(payment.amount))}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(payment.created_at).toLocaleDateString('en-GB', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric'
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="default" className="gap-1 mb-1 bg-success/10 text-success hover:bg-success/20 border-0">
-                      <CheckCircle className="w-3 h-3" />
-                      Paid
-                    </Badge>
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {payment.method || "Cash"}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+                  <CreditCard className="w-5 h-5 text-success" />
                 </div>
-                {payment.bills?.invoice_number && (
-                  <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <FileText className="w-4 h-4" />
-                      For: {payment.bills.invoice_number}
-                    </div>
-                    <button className="text-primary text-sm flex items-center gap-1 hover:underline">
-                      <Download className="w-4 h-4" />
-                      Receipt
-                    </button>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold tabular-nums text-sm">
+                    {formatCurrency(Number(payment.amount))}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(payment.created_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <StatusBadge variant="paid" dot={false} className="text-[10px] px-2 py-0">
+                    Paid
+                  </StatusBadge>
+                  <p className="text-[11px] text-muted-foreground mt-1 capitalize">
+                    {payment.method || "Cash"}
+                  </p>
+                </div>
+              </div>
+              {payment.bills?.invoice_number && (
+                <div className="mt-2.5 pt-2.5 border-t border-border flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>For: {payment.bills.invoice_number}</span>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                  <button className="text-primary text-xs flex items-center gap-1 font-medium active:scale-95 touch-manipulation">
+                    <Download className="w-3.5 h-3.5" />
+                    Receipt
+                  </button>
+                </div>
+              )}
+            </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <CreditCard className="w-8 h-8 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+              <CreditCard className="w-7 h-7 text-muted-foreground" />
             </div>
-            <h3 className="font-semibold">No Payments Yet</h3>
-            <p className="text-sm text-muted-foreground">Your payments will appear here</p>
+            <p className="font-semibold">No Payments Yet</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Your payments will appear here
+            </p>
           </div>
         )}
       </div>

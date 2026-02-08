@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Wifi, 
-  Receipt, 
-  CreditCard, 
+import {
+  Wifi,
+  WifiOff,
+  Receipt,
+  CreditCard,
   ChevronRight,
   CheckCircle,
   AlertCircle,
@@ -14,23 +14,19 @@ import {
   UserX,
   Bell,
   Package,
+  ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { usePortalCustomer, usePortalBills, usePortalPayments } from "@/hooks/usePortalData";
+import { useCustomerBranding } from "@/hooks/useBranding";
 import { cn } from "@/lib/utils";
 import { MobileNotificationSheet } from "@/components/mobile/MobileNotificationSheet";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 const statusConfig = {
-  active: { label: "Active", color: "bg-success", icon: CheckCircle },
-  suspended: { label: "Suspended", color: "bg-destructive", icon: AlertCircle },
-  pending: { label: "Pending", color: "bg-warning", icon: Clock },
-};
-
-const billStatusConfig = {
-  paid: { label: "Paid", variant: "default" as const },
-  due: { label: "Due", variant: "secondary" as const },
-  partial: { label: "Partial", variant: "outline" as const },
-  overdue: { label: "Overdue", variant: "destructive" as const },
+  active: { label: "Active", icon: CheckCircle, variant: "active" as const },
+  suspended: { label: "Suspended", icon: WifiOff, variant: "suspended" as const },
+  pending: { label: "Pending", icon: Clock, variant: "pending" as const },
 };
 
 export default function MobileHome() {
@@ -38,44 +34,43 @@ export default function MobileHome() {
   const { data: customer, isLoading: customerLoading } = usePortalCustomer();
   const { data: bills, isLoading: billsLoading } = usePortalBills();
   const { data: payments } = usePortalPayments();
+  const { branding } = useCustomerBranding(customer?.id);
   const [notificationSheetOpen, setNotificationSheetOpen] = useState(false);
 
   const formatCurrency = (amount: number) => `৳${amount.toLocaleString()}`;
-  const currentBill = bills?.find(b => b.status !== "paid") || bills?.[0];
+  const currentBill = bills?.find((b) => b.status !== "paid") || bills?.[0];
   const lastPayment = payments?.[0];
+  const dueBalance = Number(customer?.due_balance) || 0;
 
   if (customerLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-7 w-28" />
           </div>
-          <Skeleton className="h-12 w-12 rounded-full" />
+          <Skeleton className="h-11 w-11 rounded-full" />
         </div>
-        <Skeleton className="h-40 w-full rounded-2xl" />
-        <div className="grid grid-cols-2 gap-4">
-          <Skeleton className="h-32 rounded-2xl" />
-          <Skeleton className="h-32 rounded-2xl" />
+        <Skeleton className="h-48 w-full rounded-2xl" />
+        <div className="grid grid-cols-2 gap-3">
+          <Skeleton className="h-28 rounded-2xl" />
+          <Skeleton className="h-28 rounded-2xl" />
         </div>
-        <div className="space-y-3">
-          <Skeleton className="h-5 w-28" />
-          <Skeleton className="h-20 rounded-xl" />
-          <Skeleton className="h-20 rounded-xl" />
-        </div>
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-16 rounded-xl" />
       </div>
     );
   }
 
   if (!customer) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center animate-fade-in">
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted">
-          <UserX className="h-12 w-12 text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-4 text-center px-6">
+        <div className="h-20 w-20 rounded-full bg-muted/60 flex items-center justify-center">
+          <UserX className="h-10 w-10 text-muted-foreground" />
         </div>
         <h2 className="text-xl font-bold">No Account Found</h2>
-        <p className="text-muted-foreground max-w-xs">
+        <p className="text-muted-foreground text-sm max-w-[260px]">
           Your login is not linked to any customer account. Please contact your ISP.
         </p>
       </div>
@@ -83,7 +78,8 @@ export default function MobileHome() {
   }
 
   const connectionStatus = customer.connection_status || "pending";
-  const StatusIcon = statusConfig[connectionStatus].icon;
+  const statusInfo = statusConfig[connectionStatus];
+  const StatusIcon = statusInfo.icon;
 
   return (
     <div className="space-y-5">
@@ -91,221 +87,179 @@ export default function MobileHome() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">Welcome back</p>
-          <h1 className="text-2xl font-bold truncate max-w-[200px]">
+          <h1 className="text-2xl font-bold tracking-tight truncate max-w-[220px]">
             {customer.name.split(" ")[0]}
           </h1>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="relative h-12 w-12 rounded-full"
+        <button
           onClick={() => setNotificationSheetOpen(true)}
+          className="relative h-11 w-11 rounded-full bg-muted/50 flex items-center justify-center active:scale-95 touch-manipulation transition-transform"
+          aria-label="Notifications"
         >
-          <Bell className="h-6 w-6" />
-        </Button>
+          <Bell className="h-5 w-5 text-foreground" />
+        </button>
       </div>
 
-      {/* Connection Status Card */}
-      <Card className="overflow-hidden border-0 shadow-lg animate-slide-up">
+      {/* Due Amount Hero Card */}
+      <Card className="overflow-hidden border-0 shadow-xl rounded-2xl">
         <CardContent className="p-0">
-          <div className={cn(
-            "text-white p-5",
-            connectionStatus === "active" 
-              ? "bg-gradient-to-br from-success to-success/80" 
-              : connectionStatus === "suspended" 
-                ? "bg-gradient-to-br from-destructive to-destructive/80" 
-                : "bg-gradient-to-br from-warning to-warning/80"
-          )}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                  <Wifi className="w-5 h-5" />
-                </div>
-                <span className="font-medium">Connection</span>
+          <div
+            className={cn(
+              "relative p-6 text-white overflow-hidden",
+              dueBalance > 0
+                ? "bg-gradient-to-br from-destructive via-destructive/90 to-destructive/70"
+                : "bg-gradient-to-br from-success via-success/90 to-success/70"
+            )}
+          >
+            {/* Background decoration */}
+            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
+            <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/5 blur-xl" />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm font-medium text-white/80">
+                  {dueBalance > 0 ? "Amount Due" : "All Paid"}
+                </span>
               </div>
-              <Badge variant="secondary" className="bg-white/20 hover:bg-white/30 text-white border-0 gap-1 backdrop-blur-sm">
-                <StatusIcon className="w-3 h-3" />
-                {statusConfig[connectionStatus].label}
-              </Badge>
-            </div>
-            <div className="space-y-1">
-              <p className="text-white/80 text-sm">Current Package</p>
-              <p className="text-xl font-bold">
-                {customer.packages?.name || "No Package"}
+              <p className="text-4xl font-bold tabular-nums tracking-tight mb-4">
+                {formatCurrency(dueBalance)}
               </p>
-              {customer.packages?.speed_label && (
-                <p className="text-white/80 text-sm">{customer.packages.speed_label}</p>
+
+              {dueBalance > 0 ? (
+                <Button
+                  onClick={() => navigate("/app/bills")}
+                  className="w-full h-12 bg-white text-destructive font-semibold text-base hover:bg-white/90 active:scale-[0.98] touch-manipulation rounded-xl shadow-lg"
+                >
+                  Pay Now
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2 text-white/80 text-sm">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>You're all caught up!</span>
+                </div>
               )}
             </div>
+          </div>
+
+          {/* Connection status strip */}
+          <div className="flex items-center justify-between px-5 py-3.5 bg-card">
+            <div className="flex items-center gap-3">
+              <Wifi className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">
+                {customer.packages?.name || "No Package"}
+              </span>
+            </div>
+            <StatusBadge variant={statusInfo.variant}>
+              {statusInfo.label}
+            </StatusBadge>
           </div>
         </CardContent>
       </Card>
 
-      {/* Due Balance Alert */}
-      {Number(customer.due_balance) > 0 && (
-        <Card className="border-destructive/50 bg-destructive/5 animate-slide-up" style={{ animationDelay: "50ms" }}>
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
-                <AlertCircle className="h-5 w-5 text-destructive" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Due Balance</p>
-                <p className="text-xl font-bold text-destructive">
-                  {formatCurrency(Number(customer.due_balance))}
-                </p>
-              </div>
-            </div>
-            <Button size="sm" variant="destructive" onClick={() => navigate("/app/bills")}>
-              Pay Now
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Quick Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* Current Bill */}
-        <Card 
-          className="touch-manipulation active:scale-[0.98] transition-all duration-200 cursor-pointer animate-slide-up hover:shadow-soft" 
-          style={{ animationDelay: "100ms" }}
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
           onClick={() => navigate("/app/bills")}
+          className="bg-card border rounded-2xl p-4 text-left active:scale-[0.97] touch-manipulation transition-transform"
         >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Receipt className="w-4 h-4 text-primary" />
-              </div>
-              <span className="text-sm text-muted-foreground">Current Bill</span>
-            </div>
-            {billsLoading ? (
-              <Skeleton className="h-8 w-20" />
-            ) : currentBill ? (
-              <>
-                <p className="text-2xl font-bold mb-1 tabular-nums">
-                  {formatCurrency(Number(currentBill.amount))}
-                </p>
-                <Badge variant={billStatusConfig[currentBill.status || "due"].variant} className="text-xs">
-                  {billStatusConfig[currentBill.status || "due"].label}
-                </Badge>
-              </>
-            ) : (
-              <p className="text-muted-foreground text-sm">No bills</p>
-            )}
-          </CardContent>
-        </Card>
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+            <Receipt className="w-[18px] h-[18px] text-primary" />
+          </div>
+          {billsLoading ? (
+            <Skeleton className="h-7 w-20" />
+          ) : currentBill ? (
+            <>
+              <p className="text-xl font-bold tabular-nums">
+                {formatCurrency(Number(currentBill.amount))}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">Current Bill</p>
+            </>
+          ) : (
+            <>
+              <p className="text-base font-medium text-muted-foreground">—</p>
+              <p className="text-xs text-muted-foreground mt-0.5">No bills</p>
+            </>
+          )}
+        </button>
 
-        {/* Last Payment */}
-        <Card 
-          className="touch-manipulation active:scale-[0.98] transition-all duration-200 cursor-pointer animate-slide-up hover:shadow-soft" 
-          style={{ animationDelay: "150ms" }}
+        <button
           onClick={() => navigate("/app/payments")}
+          className="bg-card border rounded-2xl p-4 text-left active:scale-[0.97] touch-manipulation transition-transform"
         >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
-                <CreditCard className="w-4 h-4 text-success" />
-              </div>
-              <span className="text-sm text-muted-foreground">Last Payment</span>
-            </div>
-            {lastPayment ? (
-              <>
-                <p className="text-2xl font-bold mb-1 tabular-nums">
-                  {formatCurrency(Number(lastPayment.amount))}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(lastPayment.created_at).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'short'
-                  })}
-                </p>
-              </>
-            ) : (
-              <p className="text-muted-foreground text-sm">No payments</p>
-            )}
-          </CardContent>
-        </Card>
+          <div className="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center mb-3">
+            <CreditCard className="w-[18px] h-[18px] text-success" />
+          </div>
+          {lastPayment ? (
+            <>
+              <p className="text-xl font-bold tabular-nums">
+                {formatCurrency(Number(lastPayment.amount))}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">Last Payment</p>
+            </>
+          ) : (
+            <>
+              <p className="text-base font-medium text-muted-foreground">—</p>
+              <p className="text-xs text-muted-foreground mt-0.5">No payments</p>
+            </>
+          )}
+        </button>
       </div>
 
       {/* Quick Actions */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Quick Actions</h3>
-        
-        <QuickActionButton
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+          Quick Actions
+        </p>
+        <QuickAction
           icon={Receipt}
-          iconBg="bg-primary/10"
-          iconColor="text-primary"
+          iconClass="bg-primary/10 text-primary"
           title="View All Bills"
-          subtitle="Check your billing history"
           onClick={() => navigate("/app/bills")}
-          delay="200ms"
         />
-
-        <QuickActionButton
+        <QuickAction
           icon={CreditCard}
-          iconBg="bg-success/10"
-          iconColor="text-success"
+          iconClass="bg-success/10 text-success"
           title="Payment History"
-          subtitle="View past transactions"
           onClick={() => navigate("/app/payments")}
-          delay="250ms"
         />
-
-        <QuickActionButton
+        <QuickAction
           icon={Package}
-          iconBg="bg-accent/10"
-          iconColor="text-accent-foreground"
+          iconClass="bg-info/10 text-info"
           title="My Package"
-          subtitle="View package details"
           onClick={() => navigate("/app/profile")}
-          delay="300ms"
         />
       </div>
 
-      {/* Notification Sheet */}
-      <MobileNotificationSheet 
-        open={notificationSheetOpen} 
-        onOpenChange={setNotificationSheetOpen} 
+      <MobileNotificationSheet
+        open={notificationSheetOpen}
+        onOpenChange={setNotificationSheetOpen}
       />
     </div>
   );
 }
 
-interface QuickActionButtonProps {
-  icon: React.ElementType;
-  iconBg: string;
-  iconColor: string;
-  title: string;
-  subtitle: string;
-  onClick: () => void;
-  delay?: string;
-}
-
-function QuickActionButton({ 
-  icon: Icon, 
-  iconBg, 
-  iconColor, 
-  title, 
-  subtitle, 
+function QuickAction({
+  icon: Icon,
+  iconClass,
+  title,
   onClick,
-  delay = "0ms"
-}: QuickActionButtonProps) {
+}: {
+  icon: React.ElementType;
+  iconClass: string;
+  title: string;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-between p-4 bg-card rounded-xl border active:scale-[0.98] hover:bg-muted/30 touch-manipulation transition-all duration-200 animate-slide-up"
-      style={{ animationDelay: delay }}
+      className="w-full flex items-center gap-4 p-3.5 bg-card rounded-xl border active:scale-[0.98] touch-manipulation transition-all duration-150 hover:bg-muted/30"
     >
-      <div className="flex items-center gap-4">
-        <div className={cn("w-12 h-12 rounded-full flex items-center justify-center", iconBg)}>
-          <Icon className={cn("w-6 h-6", iconColor)} />
-        </div>
-        <div className="text-left">
-          <p className="font-semibold">{title}</p>
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
-        </div>
+      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", iconClass)}>
+        <Icon className="w-5 h-5" />
       </div>
-      <ChevronRight className="w-5 h-5 text-muted-foreground" />
+      <span className="flex-1 text-left font-medium text-[15px]">{title}</span>
+      <ChevronRight className="w-4 h-4 text-muted-foreground" />
     </button>
   );
 }

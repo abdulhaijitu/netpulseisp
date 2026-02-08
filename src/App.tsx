@@ -7,6 +7,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PortalLayout } from "@/components/portal/PortalLayout";
 import { SuperAdminLayout } from "@/components/admin/SuperAdminLayout";
 import MobileLayout from "@/components/mobile/MobileLayout";
+import { OfflineFallback } from "@/components/mobile/OfflineFallback";
 import { StaffRoute } from "@/components/StaffRoute";
 import { CustomerRoute } from "@/components/CustomerRoute";
 import { SuperAdminRoute } from "@/components/SuperAdminRoute";
@@ -85,6 +86,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <OfflineFallback />
           <BrowserRouter>
             <Routes>
               {/* Redirect root to login */}
