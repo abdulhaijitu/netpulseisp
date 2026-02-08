@@ -216,12 +216,20 @@ export default function Payments() {
         {filteredPayments.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No payments found</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-medium">
+              {payments.length === 0 ? "Enable payments to collect faster" : "No payments found"}
+            </p>
+            <p className="text-sm text-muted-foreground max-w-xs mt-1">
               {payments.length === 0
-                ? "Record your first payment to get started"
+                ? "Record manual payments or enable online collections so customers can pay from their portal"
                 : "Try adjusting your search or filters"}
             </p>
+            {payments.length === 0 && (
+              <Button className="mt-4" size="sm" onClick={() => setPaymentDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-1.5" />
+                Record First Payment
+              </Button>
+            )}
           </div>
         ) : (
           <Table>

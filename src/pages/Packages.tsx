@@ -296,12 +296,14 @@ export default function Packages() {
                     <PackageIcon className="h-6 w-6 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="font-medium">কোনো সক্রিয় প্যাকেজ নেই</p>
-                    <p className="text-sm text-muted-foreground">প্রথম প্যাকেজ তৈরি করুন</p>
+                    <p className="font-medium">Create packages to assign customers</p>
+                    <p className="text-sm text-muted-foreground">
+                      Define internet plans with speed and pricing so you can start billing
+                    </p>
                   </div>
                   <Button className="mt-2" onClick={handleCreatePackage}>
                     <Plus className="h-4 w-4 mr-2" />
-                    প্যাকেজ তৈরি করুন
+                    Create First Package
                   </Button>
                 </div>
               </Card>

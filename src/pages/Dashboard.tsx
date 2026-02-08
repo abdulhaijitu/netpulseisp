@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertBanner } from "@/components/shared/AlertBanner";
+import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -135,6 +136,9 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Onboarding Checklist */}
+      <OnboardingChecklist />
 
       {/* Contextual Guidance Banners */}
       {hasNoPaymentGateway && totalCustomers > 0 && (
