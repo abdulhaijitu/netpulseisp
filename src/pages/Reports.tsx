@@ -7,10 +7,13 @@ import { CollectionReport } from "@/components/reports/CollectionReport";
 import { CustomerGrowthReport } from "@/components/reports/CustomerGrowthReport";
 import { PackageDistribution } from "@/components/reports/PackageDistribution";
 import { DueOverdueReport } from "@/components/reports/DueOverdueReport";
+import { generateReportPdf } from "@/lib/generateReportPdf";
+import { useTenantContext } from "@/contexts/TenantContext";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Reports() {
   const { customers, payments, bills, packages, isLoading } = useReports();
+  const { currentTenant } = useTenantContext();
   const queryClient = useQueryClient();
 
   const handleRefresh = () => {
@@ -52,10 +55,24 @@ export default function Reports() {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={handleRefresh}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          রিফ্রেশ
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            রিফ্রেশ
+          </Button>
+          <Button
+            size="sm"
+            onClick={() =>
+              generateReportPdf(
+                { customers: customers || [], payments: payments || [], bills: bills || [], packages: packages || [] },
+                currentTenant?.name
+              )
+            }
+          >
+            <Download className="h-4 w-4 mr-2" />
+            PDF ডাউনলোড
+          </Button>
+        </div>
       </div>
 
       {/* Charts Grid */}
