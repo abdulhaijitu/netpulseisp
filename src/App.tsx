@@ -23,6 +23,7 @@ import Payments from "@/pages/Payments";
 import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import NetworkPage from "@/pages/NetworkPage";
+import Notifications from "@/pages/Notifications";
 import NotFound from "@/pages/NotFound";
 
 // Auth Pages
@@ -92,6 +93,7 @@ const App = () => (
                 <Route path="/dashboard/payments" element={<Payments />} />
                 <Route path="/dashboard/reports" element={<Reports />} />
                 <Route path="/dashboard/network" element={<NetworkPage />} />
+                <Route path="/dashboard/notifications" element={<Notifications />} />
                 <Route path="/dashboard/settings" element={<Settings />} />
               </Route>
 
