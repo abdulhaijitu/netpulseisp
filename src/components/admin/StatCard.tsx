@@ -25,20 +25,20 @@ const variantStyles = {
     card: "hover:border-primary/30",
   },
   success: {
-    icon: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    card: "hover:border-emerald-500/30",
+    icon: "bg-success/10 text-success",
+    card: "hover:border-success/30",
   },
   warning: {
-    icon: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    card: "hover:border-amber-500/30",
+    icon: "bg-warning/10 text-warning",
+    card: "hover:border-warning/30",
   },
   danger: {
     icon: "bg-destructive/10 text-destructive",
     card: "hover:border-destructive/30",
   },
   info: {
-    icon: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-    card: "hover:border-blue-500/30",
+    icon: "bg-info/10 text-info",
+    card: "hover:border-info/30",
   },
 };
 
@@ -83,8 +83,8 @@ export function StatCard({
                       <span
                         className={cn(
                           "inline-flex items-center text-xs font-medium",
-                          trend.isPositive
-                            ? "text-emerald-600 dark:text-emerald-400"
+                        trend.isPositive
+                            ? "text-success"
                             : "text-destructive"
                         )}
                       >
