@@ -26,6 +26,10 @@ import NetworkPage from "@/pages/NetworkPage";
 import Notifications from "@/pages/Notifications";
 import Resellers from "@/pages/Resellers";
 import ResellerDetail from "@/pages/ResellerDetail";
+import ResellerDashboardPage from "@/pages/reseller/ResellerDashboardPage";
+import ResellerCustomersPage from "@/pages/reseller/ResellerCustomersPage";
+import ResellerPaymentsPage from "@/pages/reseller/ResellerPaymentsPage";
+import ResellerWalletPage from "@/pages/reseller/ResellerWalletPage";
 import NotFound from "@/pages/NotFound";
 
 // Auth Pages
@@ -98,6 +102,11 @@ const App = () => (
                 <Route path="/dashboard/notifications" element={<Notifications />} />
                 <Route path="/dashboard/resellers" element={<Resellers />} />
                 <Route path="/dashboard/resellers/:resellerId" element={<ResellerDetail />} />
+                {/* Reseller self-service routes (inside StaffRoute since reseller is a staff role) */}
+                <Route path="/dashboard/reseller" element={<ResellerDashboardPage />} />
+                <Route path="/dashboard/reseller/customers" element={<ResellerCustomersPage />} />
+                <Route path="/dashboard/reseller/payments" element={<ResellerPaymentsPage />} />
+                <Route path="/dashboard/reseller/wallet" element={<ResellerWalletPage />} />
                 <Route path="/dashboard/settings" element={<Settings />} />
               </Route>
 

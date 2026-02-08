@@ -52,20 +52,31 @@ type NavItem = {
   badge?: number;
 };
 
+// Nav items for ISP staff (non-reseller)
 const mainNavItems: NavItem[] = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Customers", href: "/dashboard/customers", icon: Users, roles: ["super_admin", "isp_owner", "admin", "manager", "staff", "reseller" as any] },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["super_admin", "isp_owner", "admin", "manager", "staff", "accountant", "marketing"] },
+  { title: "Customers", href: "/dashboard/customers", icon: Users, roles: ["super_admin", "isp_owner", "admin", "manager", "staff"] },
   { title: "Packages", href: "/dashboard/packages", icon: Package, roles: ["super_admin", "isp_owner", "admin"] },
   { title: "Billing", href: "/dashboard/billing", icon: Receipt, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant"] },
-  { title: "Payments", href: "/dashboard/payments", icon: CreditCard, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant", "staff", "reseller" as any] },
+  { title: "Payments", href: "/dashboard/payments", icon: CreditCard, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant", "staff"] },
   { title: "Reports", href: "/dashboard/reports", icon: BarChart3, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant"] },
 ];
 
 const systemNavItems: NavItem[] = [
   { title: "Resellers", href: "/dashboard/resellers", icon: UserPlus, roles: ["super_admin", "isp_owner", "admin", "manager"] },
   { title: "Network", href: "/dashboard/network", icon: Network, roles: ["super_admin", "isp_owner", "admin"] },
-  { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
+  { title: "Notifications", href: "/dashboard/notifications", icon: Bell, roles: ["super_admin", "isp_owner", "admin", "manager", "staff", "accountant", "marketing"] },
   { title: "Settings", href: "/dashboard/settings", icon: Settings, roles: ["super_admin", "isp_owner", "admin"] },
+];
+
+// Simplified nav for reseller role
+import { Wallet } from "lucide-react";
+
+const resellerNavItems: NavItem[] = [
+  { title: "ড্যাশবোর্ড", href: "/dashboard/reseller", icon: LayoutDashboard },
+  { title: "আমার গ্রাহক", href: "/dashboard/reseller/customers", icon: Users },
+  { title: "পেমেন্ট", href: "/dashboard/reseller/payments", icon: CreditCard },
+  { title: "ওয়ালেট", href: "/dashboard/reseller/wallet", icon: Wallet },
 ];
 
 const roleDisplayNames: Record<string, string> = {
@@ -121,8 +132,9 @@ export function DashboardSidebar() {
     return item.roles.includes(role);
   };
 
-  const filteredMainNavItems = mainNavItems.filter(canAccess);
-  const filteredSystemNavItems = systemNavItems.filter(canAccess);
+  const isReseller = role === ("reseller" as AppRole);
+  const filteredMainNavItems = isReseller ? resellerNavItems : mainNavItems.filter(canAccess);
+  const filteredSystemNavItems = isReseller ? [] : systemNavItems.filter(canAccess);
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
