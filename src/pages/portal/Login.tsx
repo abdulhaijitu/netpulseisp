@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useISPBranding } from "@/hooks/useBranding";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -31,16 +32,26 @@ export default function Login() {
     }
   };
 
+  const { branding } = useISPBranding();
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Building2 className="h-6 w-6 text-primary-foreground" />
-          </div>
+          {branding.logoUrl ? (
+            <img
+              src={branding.logoUrl}
+              alt={branding.brandName}
+              className="mx-auto mb-4 h-12 w-12 rounded-lg object-contain"
+            />
+          ) : (
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
+              <Building2 className="h-6 w-6 text-primary-foreground" />
+            </div>
+          )}
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
           <CardDescription>
-            Sign in to your customer portal to view bills and make payments
+            Sign in to {branding.brandName} customer portal
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

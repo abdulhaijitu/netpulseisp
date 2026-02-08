@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wifi, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useISPBranding } from "@/hooks/useBranding";
 
 export default function MobileLogin() {
   const navigate = useNavigate();
@@ -50,14 +51,24 @@ export default function MobileLogin() {
     }
   };
 
+  const { branding } = useISPBranding();
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary/5 to-background">
       {/* Header */}
       <div className="flex flex-col items-center justify-center pt-16 pb-8 px-6">
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mb-6 shadow-lg">
-          <Wifi className="w-10 h-10 text-primary-foreground" />
-        </div>
-        <h1 className="text-3xl font-bold text-center">NetPulse</h1>
+        {branding.logoUrl ? (
+          <img
+            src={branding.logoUrl}
+            alt={branding.brandName}
+            className="w-20 h-20 rounded-2xl object-contain mb-6 shadow-lg"
+          />
+        ) : (
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mb-6 shadow-lg">
+            <Building2 className="w-10 h-10 text-primary-foreground" />
+          </div>
+        )}
+        <h1 className="text-3xl font-bold text-center">{branding.brandName}</h1>
         <p className="text-muted-foreground text-center mt-2">
           Customer Portal
         </p>

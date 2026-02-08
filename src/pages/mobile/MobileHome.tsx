@@ -253,8 +253,8 @@ export default function MobileHome() {
 
         <QuickActionButton
           icon={Package}
-          iconBg="bg-purple-500/10"
-          iconColor="text-purple-600"
+          iconBg="bg-accent/10"
+          iconColor="text-accent-foreground"
           title="My Package"
           subtitle="View package details"
           onClick={() => navigate("/app/profile")}
