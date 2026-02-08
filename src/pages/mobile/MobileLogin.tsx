@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import ispManagerIcon from "@/assets/isp-manager-icon.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useISPBranding } from "@/hooks/useBranding";
@@ -61,9 +62,7 @@ export default function MobileLogin() {
             className="w-20 h-20 rounded-2xl object-contain mb-5 shadow-lg"
           />
         ) : (
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center mb-5 shadow-lg">
-            <Building2 className="w-10 h-10 text-primary-foreground" />
-          </div>
+          <img src={ispManagerIcon} alt="ISP Manager" className="w-20 h-20 rounded-2xl object-contain mb-5 shadow-lg" />
         )}
         <h1 className="text-2xl font-bold text-center">{branding.brandName}</h1>
         <p className="text-sm text-muted-foreground text-center mt-1">

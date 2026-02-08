@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Shield } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import ispManagerIcon from "@/assets/isp-manager-icon.png";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminLogin() {
@@ -73,9 +74,7 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-destructive">
-            <Shield className="h-6 w-6 text-destructive-foreground" />
-          </div>
+          <img src={ispManagerIcon} alt="ISP Manager" className="mx-auto mb-4 h-12 w-12 rounded-lg object-contain" />
           <CardTitle className="text-2xl">Super Admin Access</CardTitle>
           <CardDescription>
             Sign in to manage the ISP platform

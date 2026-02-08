@@ -9,6 +9,7 @@ import {
   X,
   Building2
 } from "lucide-react";
+import ispManagerIcon from "@/assets/isp-manager-icon.png";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -57,9 +58,7 @@ export function PortalLayout() {
                   className="h-9 w-9 rounded-lg object-contain"
                 />
               ) : (
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                  <Building2 className="h-5 w-5 text-primary-foreground" />
-                </div>
+                <img src={ispManagerIcon} alt="ISP Manager" className="h-9 w-9 rounded-lg object-contain" />
               )}
               <span className="font-semibold">{branding.brandName}</span>
             </div>

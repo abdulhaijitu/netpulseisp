@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Building2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import ispManagerIcon from "@/assets/isp-manager-icon.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useISPBranding } from "@/hooks/useBranding";
 
@@ -45,9 +46,7 @@ export default function Login() {
               className="mx-auto mb-4 h-12 w-12 rounded-lg object-contain"
             />
           ) : (
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-              <Building2 className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <img src={ispManagerIcon} alt="ISP Manager" className="mx-auto mb-4 h-12 w-12 rounded-lg object-contain" />
           )}
           <CardTitle className="text-2xl">Welcome Back</CardTitle>
           <CardDescription>

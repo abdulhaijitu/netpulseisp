@@ -31,7 +31,7 @@ interface ResellerBrandingData {
 }
 
 const PLATFORM_DEFAULTS: ResolvedBranding = {
-  brandName: "NetPulse ISP",
+  brandName: "ISP Manager",
   logoUrl: null,
   primaryColor: "#3b82f6",
   accentColor: "#8b5cf6",

@@ -40,6 +40,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useResellerImpersonation } from "@/contexts/ResellerImpersonationContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useISPBranding } from "@/hooks/useBranding";
+import ispManagerIcon from "@/assets/isp-manager-icon.png";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
@@ -221,9 +222,7 @@ export function DashboardSidebar() {
               className="h-10 w-10 shrink-0 rounded-xl object-contain shadow-md"
             />
           ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sidebar-primary to-sidebar-primary/80 shadow-md">
-              <Building2 className="h-5 w-5 text-sidebar-primary-foreground" />
-            </div>
+            <img src={ispManagerIcon} alt="ISP Manager" className="h-10 w-10 shrink-0 rounded-xl object-contain shadow-md" />
           )}
           {!collapsed && (
             <div className="flex flex-col animate-fade-in">
