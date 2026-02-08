@@ -11,7 +11,8 @@ import {
   Loader2,
   LogOut,
   ChevronRight,
-  Network
+  Network,
+  UserPlus,
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -53,14 +54,15 @@ type NavItem = {
 
 const mainNavItems: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Customers", href: "/dashboard/customers", icon: Users, roles: ["super_admin", "isp_owner", "admin", "manager", "staff"] },
+  { title: "Customers", href: "/dashboard/customers", icon: Users, roles: ["super_admin", "isp_owner", "admin", "manager", "staff", "reseller" as any] },
   { title: "Packages", href: "/dashboard/packages", icon: Package, roles: ["super_admin", "isp_owner", "admin"] },
   { title: "Billing", href: "/dashboard/billing", icon: Receipt, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant"] },
-  { title: "Payments", href: "/dashboard/payments", icon: CreditCard, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant", "staff"] },
+  { title: "Payments", href: "/dashboard/payments", icon: CreditCard, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant", "staff", "reseller" as any] },
   { title: "Reports", href: "/dashboard/reports", icon: BarChart3, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant"] },
 ];
 
 const systemNavItems: NavItem[] = [
+  { title: "Resellers", href: "/dashboard/resellers", icon: UserPlus, roles: ["super_admin", "isp_owner", "admin", "manager"] },
   { title: "Network", href: "/dashboard/network", icon: Network, roles: ["super_admin", "isp_owner", "admin"] },
   { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { title: "Settings", href: "/dashboard/settings", icon: Settings, roles: ["super_admin", "isp_owner", "admin"] },
@@ -75,6 +77,7 @@ const roleDisplayNames: Record<string, string> = {
   accountant: "হিসাবরক্ষক",
   marketing: "মার্কেটিং",
   member: "সদস্য",
+  reseller: "রিসেলার",
 };
 
 export function DashboardSidebar() {

@@ -24,6 +24,8 @@ import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
 import NetworkPage from "@/pages/NetworkPage";
 import Notifications from "@/pages/Notifications";
+import Resellers from "@/pages/Resellers";
+import ResellerDetail from "@/pages/ResellerDetail";
 import NotFound from "@/pages/NotFound";
 
 // Auth Pages
@@ -94,6 +96,8 @@ const App = () => (
                 <Route path="/dashboard/reports" element={<Reports />} />
                 <Route path="/dashboard/network" element={<NetworkPage />} />
                 <Route path="/dashboard/notifications" element={<Notifications />} />
+                <Route path="/dashboard/resellers" element={<Resellers />} />
+                <Route path="/dashboard/resellers/:resellerId" element={<ResellerDetail />} />
                 <Route path="/dashboard/settings" element={<Settings />} />
               </Route>
 

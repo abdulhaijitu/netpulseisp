@@ -209,6 +209,7 @@ export type Database = {
           network_username: string | null
           package_id: string | null
           phone: string
+          reseller_id: string | null
           tenant_id: string
           updated_at: string
           user_id: string | null
@@ -234,6 +235,7 @@ export type Database = {
           network_username?: string | null
           package_id?: string | null
           phone: string
+          reseller_id?: string | null
           tenant_id: string
           updated_at?: string
           user_id?: string | null
@@ -259,6 +261,7 @@ export type Database = {
           network_username?: string | null
           package_id?: string | null
           phone?: string
+          reseller_id?: string | null
           tenant_id?: string
           updated_at?: string
           user_id?: string | null
@@ -269,6 +272,13 @@ export type Database = {
             columns: ["package_id"]
             isOneToOne: false
             referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: false
+            referencedRelation: "resellers"
             referencedColumns: ["id"]
           },
           {
@@ -1128,6 +1138,184 @@ export type Database = {
           },
         ]
       }
+      reseller_commissions: {
+        Row: {
+          commission_amount: number
+          commission_type: string
+          commission_value: number
+          created_at: string
+          customer_id: string
+          id: string
+          payment_amount: number
+          payment_id: string
+          reseller_id: string
+          tenant_id: string
+        }
+        Insert: {
+          commission_amount: number
+          commission_type: string
+          commission_value: number
+          created_at?: string
+          customer_id: string
+          id?: string
+          payment_amount: number
+          payment_id: string
+          reseller_id: string
+          tenant_id: string
+        }
+        Update: {
+          commission_amount?: number
+          commission_type?: string
+          commission_value?: number
+          created_at?: string
+          customer_id?: string
+          id?: string
+          payment_amount?: number
+          payment_id?: string
+          reseller_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reseller_commissions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reseller_commissions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reseller_commissions_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: false
+            referencedRelation: "resellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reseller_commissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reseller_wallet_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          reference_id: string | null
+          reseller_id: string
+          tenant_id: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          reference_id?: string | null
+          reseller_id: string
+          tenant_id: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          reference_id?: string | null
+          reseller_id?: string
+          tenant_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reseller_wallet_transactions_reseller_id_fkey"
+            columns: ["reseller_id"]
+            isOneToOne: false
+            referencedRelation: "resellers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reseller_wallet_transactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resellers: {
+        Row: {
+          address: string | null
+          commission_type: string
+          commission_value: number
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          commission_type?: string
+          commission_value?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          commission_type?: string
+          commission_value?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resellers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_addon_subscriptions: {
         Row: {
           activated_at: string
@@ -1354,6 +1542,15 @@ export type Database = {
           total_days: number
         }[]
       }
+      calculate_reseller_commission: {
+        Args: {
+          _customer_id: string
+          _payment_amount: number
+          _payment_id: string
+          _tenant_id: string
+        }
+        Returns: number
+      }
       can_access_tenant: {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
@@ -1376,6 +1573,7 @@ export type Database = {
         }
         Returns: string
       }
+      get_reseller_id: { Args: { _user_id: string }; Returns: string }
       get_tenant_billing_estimate: {
         Args: { _tenant_id: string }
         Returns: {
@@ -1397,6 +1595,7 @@ export type Database = {
         Returns: boolean
       }
       is_isp_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_reseller: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
       log_api_request: {
         Args: {
@@ -1443,6 +1642,7 @@ export type Database = {
         | "accountant"
         | "marketing"
         | "member"
+        | "reseller"
       billing_cycle: "monthly" | "quarterly" | "yearly"
       connection_status: "active" | "suspended" | "pending"
       network_provider_type: "mikrotik" | "radius" | "custom"
@@ -1601,6 +1801,7 @@ export const Constants = {
         "accountant",
         "marketing",
         "member",
+        "reseller",
       ],
       billing_cycle: ["monthly", "quarterly", "yearly"],
       connection_status: ["active", "suspended", "pending"],
