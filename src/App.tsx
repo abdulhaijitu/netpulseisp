@@ -62,7 +62,18 @@ import AdminTenants from "@/pages/admin/AdminTenants";
 import AdminSubscriptions from "@/pages/admin/AdminSubscriptions";
 import AdminPricing from "@/pages/admin/AdminPricing";
 import AdminSettings from "@/pages/admin/AdminSettings";
-import AdminPlaceholder from "@/pages/admin/AdminPlaceholder";
+import AdminSystemHealth from "@/pages/admin/AdminSystemHealth";
+import AdminActivityLogs from "@/pages/admin/AdminActivityLogs";
+import AdminAddons from "@/pages/admin/AdminAddons";
+import AdminRevenue from "@/pages/admin/AdminRevenue";
+import AdminWallets from "@/pages/admin/AdminWallets";
+import AdminPayouts from "@/pages/admin/AdminPayouts";
+import AdminPaymentInfra from "@/pages/admin/AdminPaymentInfra";
+import AdminNotifications from "@/pages/admin/AdminNotifications";
+import AdminNetworkIntegrations from "@/pages/admin/AdminNetworkIntegrations";
+import AdminUsersRoles from "@/pages/admin/AdminUsersRoles";
+import AdminApiUsage from "@/pages/admin/AdminApiUsage";
+import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 
 const queryClient = new QueryClient();
 
@@ -155,28 +166,28 @@ const App = () => (
               >
                 {/* Platform Overview */}
                 <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/health" element={<AdminPlaceholder title="System Health" />} />
-                <Route path="/admin/activity" element={<AdminPlaceholder title="Activity Logs" />} />
+                <Route path="/admin/health" element={<AdminSystemHealth />} />
+                <Route path="/admin/activity" element={<AdminActivityLogs />} />
                 
                 {/* ISP Management */}
                 <Route path="/admin/tenants" element={<AdminTenants />} />
                 <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
-                <Route path="/admin/addons" element={<AdminPlaceholder title="Add-ons Management" />} />
+                <Route path="/admin/addons" element={<AdminAddons />} />
                 
                 {/* Financials */}
-                <Route path="/admin/revenue" element={<AdminPlaceholder title="Platform Revenue" />} />
-                <Route path="/admin/wallets" element={<AdminPlaceholder title="ISP Wallets" />} />
-                <Route path="/admin/payouts" element={<AdminPlaceholder title="Payout Requests" />} />
+                <Route path="/admin/revenue" element={<AdminRevenue />} />
+                <Route path="/admin/wallets" element={<AdminWallets />} />
+                <Route path="/admin/payouts" element={<AdminPayouts />} />
                 
                 {/* Infrastructure */}
-                <Route path="/admin/payments" element={<AdminPlaceholder title="Payment Infrastructure" />} />
-                <Route path="/admin/notifications" element={<AdminPlaceholder title="Notification System" />} />
-                <Route path="/admin/network" element={<AdminPlaceholder title="Network Integrations" />} />
+                <Route path="/admin/payments" element={<AdminPaymentInfra />} />
+                <Route path="/admin/notifications" element={<AdminNotifications />} />
+                <Route path="/admin/network" element={<AdminNetworkIntegrations />} />
                 
                 {/* Governance */}
-                <Route path="/admin/users" element={<AdminPlaceholder title="Users & Roles" />} />
-                <Route path="/admin/api" element={<AdminPlaceholder title="API Usage" />} />
-                <Route path="/admin/audit" element={<AdminPlaceholder title="Audit Logs" />} />
+                <Route path="/admin/users" element={<AdminUsersRoles />} />
+                <Route path="/admin/api" element={<AdminApiUsage />} />
+                <Route path="/admin/audit" element={<AdminAuditLogs />} />
                 
                 {/* Settings */}
                 <Route path="/admin/settings" element={<AdminSettings />} />
