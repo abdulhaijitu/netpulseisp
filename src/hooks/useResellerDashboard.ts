@@ -1,11 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useResellerImpersonation } from "@/contexts/ResellerImpersonationContext";
 
-export function useResellerSelf() {
+/**
+ * Returns the reseller ID to use — either the impersonated one or the logged-in user's own.
+ */
+export function useActiveResellerId() {
   const { user } = useAuth();
+  const { impersonatedResellerId, isImpersonatingReseller } = useResellerImpersonation();
 
-  return useQuery({
+  const selfQuery = useQuery({
     queryKey: ["resellerSelf", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -14,11 +19,35 @@ export function useResellerSelf() {
         .select("*")
         .eq("user_id", user.id)
         .single();
-      if (error) throw error;
+      if (error) return null;
       return data;
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && !isImpersonatingReseller,
   });
+
+  const impersonatedQuery = useQuery({
+    queryKey: ["resellerById", impersonatedResellerId],
+    queryFn: async () => {
+      if (!impersonatedResellerId) return null;
+      const { data, error } = await supabase
+        .from("resellers")
+        .select("*")
+        .eq("id", impersonatedResellerId)
+        .single();
+      if (error) return null;
+      return data;
+    },
+    enabled: !!impersonatedResellerId,
+  });
+
+  if (isImpersonatingReseller) {
+    return { data: impersonatedQuery.data, isLoading: impersonatedQuery.isLoading };
+  }
+  return { data: selfQuery.data, isLoading: selfQuery.isLoading };
+}
+
+export function useResellerSelf() {
+  return useActiveResellerId();
 }
 
 export function useResellerSelfCustomers(resellerId: string | undefined) {

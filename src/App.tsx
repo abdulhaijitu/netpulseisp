@@ -12,6 +12,7 @@ import { CustomerRoute } from "@/components/CustomerRoute";
 import { SuperAdminRoute } from "@/components/SuperAdminRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { TenantProvider } from "@/contexts/TenantContext";
+import { ResellerImpersonationProvider } from "@/contexts/ResellerImpersonationContext";
 
 // Dashboard Pages
 import Dashboard from "@/pages/Dashboard";
@@ -69,6 +70,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TenantProvider>
+        <ResellerImpersonationProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -186,6 +188,7 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
+        </ResellerImpersonationProvider>
       </TenantProvider>
     </AuthProvider>
   </QueryClientProvider>

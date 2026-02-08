@@ -10,7 +10,9 @@ import {
   Edit,
   Ban,
   CheckCircle,
+  LogIn,
 } from "lucide-react";
+import { useResellerImpersonation } from "@/contexts/ResellerImpersonationContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +49,14 @@ export default function ResellerDetail() {
   const { data: commissions, isLoading: commissionsLoading } = useResellerCommissions(resellerId);
   const { data: wallet, isLoading: walletLoading } = useResellerWallet(resellerId);
   const toggleStatus = useToggleResellerStatus();
+  const { startResellerImpersonation } = useResellerImpersonation();
+
+  const handleLoginAsReseller = () => {
+    if (reseller) {
+      startResellerImpersonation(reseller.id, reseller.name);
+      navigate("/dashboard/reseller");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -84,7 +94,10 @@ export default function ResellerDetail() {
           </div>
           <p className="text-sm text-muted-foreground">{reseller.phone} {reseller.email ? `• ${reseller.email}` : ""}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={handleLoginAsReseller}>
+            <LogIn className="h-4 w-4 mr-1" /> রিসেলার হিসেবে লগইন
+          </Button>
           {reseller.status === "active" ? (
             <Button variant="destructive" size="sm" onClick={() => toggleStatus.mutate({ id: reseller.id, status: "suspended" })}>
               <Ban className="h-4 w-4 mr-1" /> সাসপেন্ড

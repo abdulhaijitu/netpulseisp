@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useResellerImpersonation } from "@/contexts/ResellerImpersonationContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -98,6 +99,7 @@ export function DashboardSidebar() {
   const collapsed = state === "collapsed";
   const { user, signOut } = useAuth();
   const { data: role, isLoading: roleLoading } = useUserRole();
+  const { isImpersonatingReseller } = useResellerImpersonation();
 
   const handleLogout = async () => {
     await signOut();
@@ -132,7 +134,7 @@ export function DashboardSidebar() {
     return item.roles.includes(role);
   };
 
-  const isReseller = role === ("reseller" as AppRole);
+  const isReseller = role === ("reseller" as AppRole) || isImpersonatingReseller;
   const filteredMainNavItems = isReseller ? resellerNavItems : mainNavItems.filter(canAccess);
   const filteredSystemNavItems = isReseller ? [] : systemNavItems.filter(canAccess);
 

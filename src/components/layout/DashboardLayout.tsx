@@ -5,14 +5,16 @@ import { DashboardHeader } from "./DashboardHeader";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useTenantContext } from "@/contexts/TenantContext";
+import { useResellerImpersonation } from "@/contexts/ResellerImpersonationContext";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, ArrowLeft, X } from "lucide-react";
+import { AlertTriangle, X, UserCheck } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
   const { isImpersonating, currentTenant, stopImpersonation } = useTenantContext();
+  const { isImpersonatingReseller, impersonatedResellerName, stopResellerImpersonation } = useResellerImpersonation();
   const isMobile = useIsMobile();
 
   const handleExitImpersonation = () => {
@@ -20,15 +22,19 @@ export function DashboardLayout() {
     navigate("/admin/tenants");
   };
 
+  const handleExitResellerImpersonation = () => {
+    stopResellerImpersonation();
+    navigate("/dashboard/resellers");
+  };
+
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full bg-background">
-        {/* Desktop Sidebar */}
         <DashboardSidebar />
         
         <div className="flex flex-1 flex-col min-w-0">
-          {/* Impersonation Banner */}
-          {isImpersonating && (
+          {/* Tenant Impersonation Banner */}
+          {isImpersonating && !isImpersonatingReseller && (
             <div className="bg-warning/15 text-warning-foreground px-4 py-2.5 flex items-center justify-between border-b border-warning/20 animate-fade-in">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-full bg-warning/20 flex items-center justify-center">
@@ -49,6 +55,29 @@ export function DashboardLayout() {
               </Button>
             </div>
           )}
+
+          {/* Reseller Impersonation Banner */}
+          {isImpersonatingReseller && (
+            <div className="bg-primary/10 text-primary px-4 py-2.5 flex items-center justify-between border-b border-primary/20 animate-fade-in">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                  <UserCheck className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  রিসেলার হিসেবে দেখছেন: <strong>"{impersonatedResellerName}"</strong>
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleExitResellerImpersonation}
+                className="h-8 gap-1.5 text-primary hover:bg-primary/20"
+              >
+                <X className="h-4 w-4" />
+                <span className="hidden sm:inline">বের হন</span>
+              </Button>
+            </div>
+          )}
           
           <DashboardHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
           
@@ -58,7 +87,6 @@ export function DashboardLayout() {
             </div>
           </main>
           
-          {/* Mobile Bottom Navigation */}
           <MobileBottomNav />
         </div>
       </div>
