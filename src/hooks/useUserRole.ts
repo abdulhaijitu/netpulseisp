@@ -13,6 +13,7 @@ const STAFF_ROLES: AppRole[] = [
   "staff",
   "accountant",
   "marketing",
+  "reseller" as AppRole,
 ];
 
 export function useUserRole() {
