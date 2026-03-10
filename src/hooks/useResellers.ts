@@ -128,7 +128,7 @@ export function useCreateReseller() {
         },
       });
 
-      if (response.error) throw new Error(response.error.message || "রিসেলার তৈরিতে ত্রুটি");
+      if (response.error) throw new Error(response.error.message || "Failed to create reseller");
       if (response.data?.error) throw new Error(response.data.error);
 
       return response.data.reseller;
