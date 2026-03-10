@@ -71,56 +71,56 @@ export function ResellerFormDialog({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>নতুন রিসেলার যোগ করুন</DialogTitle>
-          <DialogDescription>রিসেলারের তথ্য ও লগইন ক্রেডেনশিয়াল দিন</DialogDescription>
+          <DialogTitle>Add New Reseller</DialogTitle>
+          <DialogDescription>Enter reseller details and login credentials</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>নাম *</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="রিসেলারের নাম" />
+            <Label>Name *</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Reseller name" />
           </div>
           <div className="space-y-2">
-            <Label>ফোন *</Label>
+            <Label>Phone *</Label>
             <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01XXXXXXXXX" />
           </div>
           <div className="space-y-2">
-            <Label>ইমেইল (ঐচ্ছিক)</Label>
+            <Label>Email (Optional)</Label>
             <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="reseller@example.com" />
           </div>
           <div className="space-y-2">
-            <Label>ঠিকানা (ঐচ্ছিক)</Label>
-            <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="এলাকা, শহর" />
+            <Label>Address (Optional)</Label>
+            <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Area, City" />
           </div>
 
           <div className="border-t border-border pt-4 space-y-3">
-            <p className="text-sm font-semibold text-foreground">লগইন তথ্য</p>
+            <p className="text-sm font-semibold text-foreground">Login Credentials</p>
             <div className="space-y-2">
-              <Label>লগইন ইমেইল *</Label>
+              <Label>Login Email *</Label>
               <Input value={form.user_email} onChange={(e) => setForm({ ...form, user_email: e.target.value })} placeholder="login@example.com" type="email" />
             </div>
             <div className="space-y-2">
-              <Label>পাসওয়ার্ড *</Label>
-              <Input value={form.user_password} onChange={(e) => setForm({ ...form, user_password: e.target.value })} placeholder="ন্যূনতম ৬ অক্ষর" type="password" />
+              <Label>Password *</Label>
+              <Input value={form.user_password} onChange={(e) => setForm({ ...form, user_password: e.target.value })} placeholder="Minimum 6 characters" type="password" />
             </div>
           </div>
 
           <div className="border-t border-border pt-4 space-y-3">
-            <p className="text-sm font-semibold text-foreground">কমিশন সেটিংস</p>
+            <p className="text-sm font-semibold text-foreground">Commission Settings</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>কমিশন ধরন</Label>
+                <Label>Commission Type</Label>
                 <Select value={form.commission_type} onValueChange={(v) => setForm({ ...form, commission_type: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="percentage">শতাংশ (%)</SelectItem>
-                    <SelectItem value="flat">ফ্ল্যাট (৳)</SelectItem>
-                    <SelectItem value="per_payment">প্রতি পেমেন্ট (৳)</SelectItem>
+                    <SelectItem value="percentage">Percentage (%)</SelectItem>
+                    <SelectItem value="flat">Flat (৳)</SelectItem>
+                    <SelectItem value="per_payment">Per Payment (৳)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>কমিশন মান</Label>
+                <Label>Commission Value</Label>
                 <Input
                   type="number"
                   min={0}
@@ -132,16 +132,16 @@ export function ResellerFormDialog({ open, onOpenChange }: Props) {
           </div>
 
           <div className="space-y-2">
-            <Label>নোট (ঐচ্ছিক)</Label>
-            <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="অতিরিক্ত তথ্য..." rows={2} />
+            <Label>Notes (Optional)</Label>
+            <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Additional info..." rows={2} />
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>বাতিল</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={createReseller.isPending}>
             {createReseller.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            রিসেলার তৈরি করুন
+            Create Reseller
           </Button>
         </DialogFooter>
       </DialogContent>

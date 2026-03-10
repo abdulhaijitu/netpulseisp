@@ -14,9 +14,9 @@ import { format } from "date-fns";
 import { useResellerSelf, useResellerSelfStats, useResellerSelfCustomers, useResellerSelfWallet } from "@/hooks/useResellerDashboard";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "destructive" | "secondary" }> = {
-  active: { label: "সক্রিয়", variant: "default" },
-  suspended: { label: "সাসপেন্ড", variant: "destructive" },
-  pending: { label: "পেন্ডিং", variant: "secondary" },
+  active: { label: "Active", variant: "default" },
+  suspended: { label: "Suspended", variant: "destructive" },
+  pending: { label: "Pending", variant: "secondary" },
 };
 
 export default function ResellerDashboardPage() {
@@ -39,17 +39,17 @@ export default function ResellerDashboardPage() {
   if (!reseller) {
     return (
       <div className="flex items-center justify-center min-h-[50vh] text-muted-foreground">
-        <p>রিসেলার অ্যাকাউন্ট পাওয়া যায়নি।</p>
+        <p>Reseller account not found.</p>
       </div>
     );
   }
 
   const loading = statsLoading;
   const statCards = [
-    { label: "মোট গ্রাহক", value: stats?.totalCustomers || 0, icon: Users, color: "text-primary", bg: "bg-primary/10" },
-    { label: "সক্রিয় গ্রাহক", value: stats?.activeCustomers || 0, icon: UserCheck, color: "text-success", bg: "bg-success/10" },
-    { label: "মোট বকেয়া", value: `৳${(stats?.totalDue || 0).toLocaleString()}`, icon: AlertCircle, color: "text-destructive", bg: "bg-destructive/10" },
-    { label: "ওয়ালেট ব্যালেন্স", value: `৳${(wallet?.balance || 0).toLocaleString()}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
+    { label: "Total Customers", value: stats?.totalCustomers || 0, icon: Users, color: "text-primary", bg: "bg-primary/10" },
+    { label: "Active Customers", value: stats?.activeCustomers || 0, icon: UserCheck, color: "text-success", bg: "bg-success/10" },
+    { label: "Total Due", value: `৳${(stats?.totalDue || 0).toLocaleString()}`, icon: AlertCircle, color: "text-destructive", bg: "bg-destructive/10" },
+    { label: "Wallet Balance", value: `৳${(wallet?.balance || 0).toLocaleString()}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
   ];
 
   const recentCustomers = (customers || []).slice(0, 8);
@@ -59,9 +59,9 @@ export default function ResellerDashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl md:text-2xl font-bold text-foreground">
-          স্বাগতম, {reseller.name}
+          Welcome, {reseller.name}
         </h1>
-        <p className="text-sm text-muted-foreground">আপনার রিসেলার ড্যাশবোর্ড</p>
+        <p className="text-sm text-muted-foreground">Your reseller dashboard</p>
       </div>
 
       {/* Stats */}
@@ -93,7 +93,7 @@ export default function ResellerDashboardPage() {
               <CreditCard className="h-6 w-6 text-success" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">এই মাসের কালেকশন</p>
+              <p className="text-xs text-muted-foreground">This Month's Collection</p>
               {loading ? (
                 <Skeleton className="h-7 w-24 mt-1" />
               ) : (
@@ -111,11 +111,11 @@ export default function ResellerDashboardPage() {
               <Receipt className="h-6 w-6 text-accent-foreground" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">কমিশন ধরন</p>
+              <p className="text-xs text-muted-foreground">Commission Type</p>
               <p className="text-lg font-bold text-foreground">
                 {reseller.commission_value}{reseller.commission_type === "percentage" ? "%" : "৳"}
                 <span className="text-sm font-normal text-muted-foreground ml-1.5">
-                  ({reseller.commission_type === "percentage" ? "শতাংশ" : reseller.commission_type === "flat" ? "ফ্ল্যাট" : "প্রতি পেমেন্ট"})
+                  ({reseller.commission_type === "percentage" ? "Percentage" : reseller.commission_type === "flat" ? "Flat" : "Per Payment"})
                 </span>
               </p>
             </div>
@@ -126,7 +126,7 @@ export default function ResellerDashboardPage() {
       {/* Recent Customers */}
       <Card className="border-border/50">
         <CardHeader>
-          <CardTitle className="text-base">সাম্প্রতিক গ্রাহক</CardTitle>
+          <CardTitle className="text-base">Recent Customers</CardTitle>
         </CardHeader>
         <CardContent>
           {customersLoading ? (
@@ -136,18 +136,18 @@ export default function ResellerDashboardPage() {
           ) : recentCustomers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground text-sm">
               <Users className="h-10 w-10 mx-auto mb-2 opacity-30" />
-              <p>কোনো গ্রাহক নেই</p>
+              <p>No customers yet</p>
             </div>
           ) : (
             <div className="overflow-auto rounded-lg border border-border/50">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
-                    <TableHead>নাম</TableHead>
-                    <TableHead>ফোন</TableHead>
-                    <TableHead>প্যাকেজ</TableHead>
-                    <TableHead className="text-right">বকেয়া</TableHead>
-                    <TableHead>স্ট্যাটাস</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Package</TableHead>
+                    <TableHead className="text-right">Due</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

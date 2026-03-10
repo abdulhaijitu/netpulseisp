@@ -62,10 +62,10 @@ export function useAssignCustomers() {
       queryClient.invalidateQueries({ queryKey: ["resellerCustomers"] });
       queryClient.invalidateQueries({ queryKey: ["assignableCustomers"] });
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
-      toast.success("গ্রাহক সফলভাবে অ্যাসাইন হয়েছে");
+      toast.success("Customers assigned successfully");
     },
     onError: (error: any) => {
-      toast.error(error.message || "গ্রাহক অ্যাসাইনে ত্রুটি");
+      toast.error(error.message || "Failed to assign customers");
     },
   });
 }
@@ -85,10 +85,10 @@ export function useUnassignCustomer() {
       queryClient.invalidateQueries({ queryKey: ["resellerCustomers"] });
       queryClient.invalidateQueries({ queryKey: ["assignableCustomers"] });
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
-      toast.success("গ্রাহক রিসেলার থেকে সরানো হয়েছে");
+      toast.success("Customer removed from reseller");
     },
     onError: (error: any) => {
-      toast.error(error.message || "গ্রাহক সরাতে ত্রুটি");
+      toast.error(error.message || "Failed to remove customer");
     },
   });
 }

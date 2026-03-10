@@ -14,9 +14,9 @@ import { format } from "date-fns";
 import { useResellerSelf, useResellerSelfPayments } from "@/hooks/useResellerDashboard";
 
 const methodLabels: Record<string, string> = {
-  cash: "ক্যাশ",
-  online: "অনলাইন",
-  bank_transfer: "ব্যাংক ট্রান্সফার",
+  cash: "Cash",
+  online: "Online",
+  bank_transfer: "Bank Transfer",
 };
 
 export default function ResellerPaymentsPage() {
@@ -30,14 +30,14 @@ export default function ResellerPaymentsPage() {
           <CreditCard className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-foreground">পেমেন্ট</h1>
-          <p className="text-sm text-muted-foreground">আপনার গ্রাহকদের পেমেন্ট হিস্ট্রি</p>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">Payments</h1>
+          <p className="text-sm text-muted-foreground">Payment history of your customers</p>
         </div>
       </div>
 
       <Card className="border-border/50">
         <CardHeader>
-          <CardTitle className="text-base">পেমেন্ট তালিকা</CardTitle>
+          <CardTitle className="text-base">Payment List</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -45,18 +45,18 @@ export default function ResellerPaymentsPage() {
           ) : !payments?.length ? (
             <div className="text-center py-12 text-muted-foreground">
               <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">কোনো পেমেন্ট পাওয়া যায়নি</p>
+              <p className="text-sm">No payments found</p>
             </div>
           ) : (
             <div className="overflow-auto rounded-lg border border-border/50">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
-                    <TableHead>তারিখ</TableHead>
-                    <TableHead>গ্রাহক</TableHead>
-                    <TableHead className="text-right">পরিমাণ</TableHead>
-                    <TableHead>মাধ্যম</TableHead>
-                    <TableHead>নোট</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead>Notes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -26,9 +26,9 @@ import { useUnassignCustomer } from "@/hooks/useResellerAssignment";
 import { AssignCustomerDialog } from "./AssignCustomerDialog";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "destructive" | "secondary" }> = {
-  active: { label: "সক্রিয়", variant: "default" },
-  suspended: { label: "সাসপেন্ড", variant: "destructive" },
-  pending: { label: "পেন্ডিং", variant: "secondary" },
+  active: { label: "Active", variant: "default" },
+  suspended: { label: "Suspended", variant: "destructive" },
+  pending: { label: "Pending", variant: "secondary" },
 };
 
 interface Props {
@@ -51,18 +51,18 @@ export function ResellerCustomersTab({ customers, isLoading, resellerId, tenantI
     <>
       <Card className="border-border/50 mt-4">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">গ্রাহক তালিকা ({customers.length})</CardTitle>
+          <CardTitle className="text-base">Customer List ({customers.length})</CardTitle>
           <Button size="sm" onClick={() => setAssignOpen(true)}>
-            <UserPlus className="h-4 w-4 mr-1.5" /> গ্রাহক যোগ করুন
+            <UserPlus className="h-4 w-4 mr-1.5" /> Add Customer
           </Button>
         </CardHeader>
         <CardContent>
           {customers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-10 w-10 mx-auto mb-2 opacity-30" />
-              <p className="text-sm">এই রিসেলারের কোনো গ্রাহক নেই</p>
+              <p className="text-sm">This reseller has no customers</p>
               <Button variant="outline" size="sm" className="mt-3" onClick={() => setAssignOpen(true)}>
-                <UserPlus className="h-4 w-4 mr-1.5" /> গ্রাহক অ্যাসাইন করুন
+                <UserPlus className="h-4 w-4 mr-1.5" /> Assign Customer
               </Button>
             </div>
           ) : (
@@ -70,11 +70,11 @@ export function ResellerCustomersTab({ customers, isLoading, resellerId, tenantI
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
-                    <TableHead>নাম</TableHead>
-                    <TableHead>ফোন</TableHead>
-                    <TableHead>প্যাকেজ</TableHead>
-                    <TableHead className="text-right">বকেয়া</TableHead>
-                    <TableHead>স্ট্যাটাস</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Package</TableHead>
+                    <TableHead className="text-right">Due</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="w-[80px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -102,7 +102,7 @@ export function ResellerCustomersTab({ customers, isLoading, resellerId, tenantI
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-destructive hover:text-destructive"
-                            title="রিসেলার থেকে সরান"
+                            title="Remove from reseller"
                             onClick={() => setUnassignTarget({ id: c.id, name: c.name })}
                           >
                             <UserMinus className="h-4 w-4" />
@@ -128,13 +128,13 @@ export function ResellerCustomersTab({ customers, isLoading, resellerId, tenantI
       <AlertDialog open={!!unassignTarget} onOpenChange={() => setUnassignTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>গ্রাহক সরান?</AlertDialogTitle>
+            <AlertDialogTitle>Remove Customer?</AlertDialogTitle>
             <AlertDialogDescription>
-              <strong>{unassignTarget?.name}</strong> কে এই রিসেলার থেকে সরাতে চান? গ্রাহক ISP-এর সরাসরি অধীনে চলে যাবে।
+              Are you sure you want to remove <strong>{unassignTarget?.name}</strong> from this reseller? The customer will be moved directly under the ISP.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>বাতিল</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
@@ -144,7 +144,7 @@ export function ResellerCustomersTab({ customers, isLoading, resellerId, tenantI
                 }
               }}
             >
-              সরিয়ে দিন
+              Remove
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -62,17 +62,17 @@ export function AssignCustomerDialog({ open, onOpenChange, resellerId, tenantId 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5 text-primary" />
-            গ্রাহক অ্যাসাইন করুন
+            Assign Customers
           </DialogTitle>
           <DialogDescription>
-            এই রিসেলারে গ্রাহক যোগ করুন। যেসব গ্রাহক বর্তমানে কোনো রিসেলারে নেই বা অন্য রিসেলারে আছে তাদের নির্বাচন করুন।
+            Add customers to this reseller. Select customers who are currently unassigned or assigned to another reseller.
           </DialogDescription>
         </DialogHeader>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="নাম বা ফোন দিয়ে খুঁজুন..."
+            placeholder="Search by name or phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -88,7 +88,7 @@ export function AssignCustomerDialog({ open, onOpenChange, resellerId, tenantId 
             </div>
           ) : filtered.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground text-sm">
-              কোনো গ্রাহক পাওয়া যায়নি
+              No customers found
             </div>
           ) : (
             <div className="divide-y divide-border">
@@ -126,17 +126,17 @@ export function AssignCustomerDialog({ open, onOpenChange, resellerId, tenantId 
 
         <div className="flex items-center justify-between pt-2">
           <p className="text-sm text-muted-foreground">
-            {selected.length > 0 ? `${selected.length}টি নির্বাচিত` : "গ্রাহক নির্বাচন করুন"}
+            {selected.length > 0 ? `${selected.length} selected` : "Select customers"}
           </p>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              বাতিল
+              Cancel
             </Button>
             <Button
               onClick={handleAssign}
               disabled={selected.length === 0 || assignMutation.isPending}
             >
-              {assignMutation.isPending ? "অ্যাসাইন হচ্ছে..." : "অ্যাসাইন করুন"}
+              {assignMutation.isPending ? "Assigning..." : "Assign"}
             </Button>
           </div>
         </div>

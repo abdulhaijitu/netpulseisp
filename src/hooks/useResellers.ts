@@ -128,17 +128,17 @@ export function useCreateReseller() {
         },
       });
 
-      if (response.error) throw new Error(response.error.message || "রিসেলার তৈরিতে ত্রুটি");
+      if (response.error) throw new Error(response.error.message || "Failed to create reseller");
       if (response.data?.error) throw new Error(response.data.error);
 
       return response.data.reseller;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
-      toast.success("রিসেলার সফলভাবে তৈরি হয়েছে");
+      toast.success("Reseller created successfully");
     },
     onError: (error: any) => {
-      toast.error(error.message || "রিসেলার তৈরিতে ত্রুটি");
+      toast.error(error.message || "Failed to create reseller");
     },
   });
 }
@@ -159,10 +159,10 @@ export function useUpdateReseller() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
-      toast.success("রিসেলার আপডেট হয়েছে");
+      toast.success("Reseller updated");
     },
     onError: (error: any) => {
-      toast.error(error.message || "আপডেটে ত্রুটি");
+      toast.error(error.message || "Update failed");
     },
   });
 }
@@ -180,7 +180,7 @@ export function useToggleResellerStatus() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
-      toast.success("স্ট্যাটাস পরিবর্তন হয়েছে");
+      toast.success("Status updated");
     },
   });
 }
@@ -284,10 +284,10 @@ export function useAddWalletAdjustment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resellerWallet"] });
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
-      toast.success("ওয়ালেট অ্যাডজাস্টমেন্ট সফল");
+      toast.success("Wallet adjustment successful");
     },
     onError: (error: any) => {
-      toast.error(error.message || "অ্যাডজাস্টমেন্টে ত্রুটি");
+      toast.error(error.message || "Adjustment failed");
     },
   });
 }
