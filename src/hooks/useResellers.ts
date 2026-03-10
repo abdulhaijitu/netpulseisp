@@ -135,7 +135,7 @@ export function useCreateReseller() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
-      toast.success("রিসেলার সফলভাবে তৈরি হয়েছে");
+      toast.success("Reseller created successfully");
     },
     onError: (error: any) => {
       toast.error(error.message || "রিসেলার তৈরিতে ত্রুটি");
