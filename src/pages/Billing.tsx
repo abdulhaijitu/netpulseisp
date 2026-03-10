@@ -137,8 +137,8 @@ export default function Billing() {
   const handleGenerateBills = async () => {
     if (!currentTenant?.id) {
       toast({
-        title: "ত্রুটি",
-        description: "টেন্যান্ট পাওয়া যায়নি",
+        title: "Error",
+        description: "Tenant not found",
         variant: "destructive",
       });
       return;
