@@ -278,6 +278,107 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Handle sync_package action
+    if (action === "sync_package" && package_id) {
+      const { data: pkg, error: pkgError } = await supabaseAdmin
+        .from("packages")
+        .select("*")
+        .eq("id", package_id)
+        .single();
+
+      if (pkgError || !pkg) {
+        return new Response(
+          JSON.stringify({ error: "Package not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (!pkg.mikrotik_profile_name) {
+        return new Response(
+          JSON.stringify({ error: "Package has no MikroTik profile configured" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Simulate creating/updating PPP Profile on MikroTik
+      const profileResult = {
+        success: true,
+        message: `PPP Profile '${pkg.mikrotik_profile_name}' synced successfully`,
+        data: {
+          profile_name: pkg.mikrotik_profile_name,
+          rate_limit: pkg.mikrotik_rate_limit,
+          address_pool: pkg.mikrotik_address_pool,
+          queue_type: pkg.mikrotik_queue_type,
+        },
+      };
+
+      const responseTime = Date.now() - startTime;
+
+      // Log the sync
+      await supabaseAdmin.from("network_sync_logs").insert({
+        tenant_id: integration.tenant_id,
+        integration_id: integration.id,
+        action: "update_speed",
+        status: profileResult.success ? "success" : "failed",
+        request_payload: { action: "sync_package", package_id, triggered_by },
+        response_payload: profileResult.data,
+        error_message: profileResult.success ? null : profileResult.message,
+        started_at: new Date(startTime).toISOString(),
+        completed_at: new Date().toISOString(),
+        triggered_by,
+        triggered_by_user: userId,
+      });
+
+      // Queue bulk customer updates for all customers on this package
+      const { data: packageCustomers } = await supabaseAdmin
+        .from("customers")
+        .select("id")
+        .eq("package_id", package_id)
+        .eq("connection_status", "active");
+
+      if (packageCustomers && packageCustomers.length > 0) {
+        const queueItems = packageCustomers.map((c) => ({
+          tenant_id: integration.tenant_id,
+          integration_id: integration.id,
+          customer_id: c.id,
+          action: "update_speed" as const,
+          priority: 5,
+          payload: {
+            package_id,
+            profile_name: pkg.mikrotik_profile_name,
+            rate_limit: pkg.mikrotik_rate_limit,
+          },
+        }));
+
+        await supabaseAdmin.from("network_sync_queue").insert(queueItems);
+      }
+
+      // Update integration last sync
+      await supabaseAdmin
+        .from("network_integrations")
+        .update({
+          last_sync_at: new Date().toISOString(),
+          last_sync_status: "success",
+        })
+        .eq("id", integration_id);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: profileResult.message,
+          data: {
+            ...profileResult.data,
+            customers_queued: packageCustomers?.length ?? 0,
+          },
+          response_time_ms: responseTime,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     let customerData: CustomerSyncData | undefined;
     
     // Fetch customer data if needed
