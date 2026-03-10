@@ -182,15 +182,18 @@ interface NotificationItemProps {
   unread?: boolean;
 }
 
-function NotificationItem({ title, description, time, unread }: NotificationItemProps) {
-  return (
-    <DropdownMenuItem className={cn("flex flex-col items-start gap-1 py-3 px-4 cursor-pointer", unread && "bg-primary/5")}>
-      <div className="flex items-center gap-2 w-full">
-        {unread && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
-        <span className="font-medium text-sm">{title}</span>
-        <span className="text-[10px] text-muted-foreground ml-auto">{time}</span>
-      </div>
-      <span className="text-xs text-muted-foreground line-clamp-2 pl-4">{description}</span>
-    </DropdownMenuItem>
-  );
-}
+const NotificationItem = forwardRef<HTMLDivElement, NotificationItemProps>(
+  ({ title, description, time, unread, ...props }, ref) => {
+    return (
+      <DropdownMenuItem ref={ref} className={cn("flex flex-col items-start gap-1 py-3 px-4 cursor-pointer", unread && "bg-primary/5")} {...props}>
+        <div className="flex items-center gap-2 w-full">
+          {unread && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
+          <span className="font-medium text-sm">{title}</span>
+          <span className="text-[10px] text-muted-foreground ml-auto">{time}</span>
+        </div>
+        <span className="text-xs text-muted-foreground line-clamp-2 pl-4">{description}</span>
+      </DropdownMenuItem>
+    );
+  }
+);
+NotificationItem.displayName = "NotificationItem";
