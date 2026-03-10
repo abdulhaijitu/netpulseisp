@@ -158,8 +158,8 @@ export default function Billing() {
       });
 
       toast({
-        title: "বিল তৈরি হয়েছে",
-        description: `${result.length}টি গ্রাহকের জন্য বিল তৈরি হয়েছে`,
+        title: "Bills generated",
+        description: `Bills generated for ${result.length} customer(s)`,
       });
       setIsGenerateDialogOpen(false);
     } catch (error: any) {
