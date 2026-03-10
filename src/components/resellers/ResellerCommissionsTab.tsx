@@ -13,9 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const typeLabels: Record<string, string> = {
-  percentage: "শতাংশ",
-  flat: "ফ্ল্যাট",
-  per_payment: "প্রতি পেমেন্ট",
+  percentage: "Percentage",
+  flat: "Flat",
+  per_payment: "Per Payment",
 };
 
 interface Props {
@@ -34,26 +34,26 @@ export function ResellerCommissionsTab({ commissions, isLoading }: Props) {
     <Card className="border-border/50 mt-4">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">কমিশন ইতিহাস ({commissions.length})</CardTitle>
-          <Badge variant="outline" className="text-sm">মোট: ৳{totalCommission.toLocaleString()}</Badge>
+          <CardTitle className="text-base">Commission History ({commissions.length})</CardTitle>
+          <Badge variant="outline" className="text-sm">Total: ৳{totalCommission.toLocaleString()}</Badge>
         </div>
       </CardHeader>
       <CardContent>
         {commissions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Receipt className="h-10 w-10 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">কোনো কমিশন রেকর্ড নেই</p>
+            <p className="text-sm">No commission records</p>
           </div>
         ) : (
           <div className="overflow-auto rounded-lg border border-border/50">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30">
-                  <TableHead>তারিখ</TableHead>
-                  <TableHead>গ্রাহক</TableHead>
-                  <TableHead className="text-right">পেমেন্ট</TableHead>
-                  <TableHead>কমিশন ধরন</TableHead>
-                  <TableHead className="text-right">কমিশন</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead className="text-right">Payment</TableHead>
+                  <TableHead>Commission Type</TableHead>
+                  <TableHead className="text-right">Commission</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

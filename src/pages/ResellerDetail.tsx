@@ -30,15 +30,15 @@ import { ResellerWalletTab } from "@/components/resellers/ResellerWalletTab";
 import { ResellerCommissionsTab } from "@/components/resellers/ResellerCommissionsTab";
 
 const commissionLabels: Record<string, string> = {
-  percentage: "শতাংশ",
-  flat: "ফ্ল্যাট",
-  per_payment: "প্রতি পেমেন্ট",
+  percentage: "Percentage",
+  flat: "Flat",
+  per_payment: "Per Payment",
 };
 
 const statusConfig: Record<string, { label: string; variant: "default" | "destructive" | "secondary" }> = {
-  active: { label: "সক্রিয়", variant: "default" },
-  suspended: { label: "সাসপেন্ড", variant: "destructive" },
-  inactive: { label: "নিষ্ক্রিয়", variant: "secondary" },
+  active: { label: "Active", variant: "default" },
+  suspended: { label: "Suspended", variant: "destructive" },
+  inactive: { label: "Inactive", variant: "secondary" },
 };
 
 export default function ResellerDetail() {
@@ -70,9 +70,9 @@ export default function ResellerDetail() {
   if (!reseller) {
     return (
       <div className="p-6 text-center text-muted-foreground">
-        <p>রিসেলার পাওয়া যায়নি</p>
+        <p>Reseller not found</p>
         <Button variant="outline" className="mt-4" onClick={() => navigate("/dashboard/resellers")}>
-          ফিরে যান
+          Go Back
         </Button>
       </div>
     );
@@ -96,15 +96,15 @@ export default function ResellerDetail() {
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={handleLoginAsReseller}>
-            <LogIn className="h-4 w-4 mr-1" /> রিসেলার হিসেবে লগইন
+            <LogIn className="h-4 w-4 mr-1" /> Login as Reseller
           </Button>
           {reseller.status === "active" ? (
             <Button variant="destructive" size="sm" onClick={() => toggleStatus.mutate({ id: reseller.id, status: "suspended" })}>
-              <Ban className="h-4 w-4 mr-1" /> সাসপেন্ড
+              <Ban className="h-4 w-4 mr-1" /> Suspend
             </Button>
           ) : (
             <Button variant="default" size="sm" onClick={() => toggleStatus.mutate({ id: reseller.id, status: "active" })}>
-              <CheckCircle className="h-4 w-4 mr-1" /> সক্রিয়
+              <CheckCircle className="h-4 w-4 mr-1" /> Activate
             </Button>
           )}
         </div>
@@ -113,10 +113,10 @@ export default function ResellerDetail() {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "গ্রাহক সংখ্যা", value: customers?.length || 0, icon: Users, color: "text-primary", bg: "bg-primary/10" },
-          { label: "কমিশন ধরন", value: `${reseller.commission_value}${reseller.commission_type === "percentage" ? "%" : "৳"} (${commissionLabels[reseller.commission_type]})`, icon: Receipt, color: "text-accent-foreground", bg: "bg-accent/50" },
-          { label: "মোট কমিশন", value: `৳${commissions?.reduce((s: number, c: any) => s + Number(c.commission_amount), 0).toLocaleString() || 0}`, icon: Receipt, color: "text-success", bg: "bg-success/10" },
-          { label: "ওয়ালেট ব্যালেন্স", value: `৳${(wallet?.balance || 0).toLocaleString()}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Customer Count", value: customers?.length || 0, icon: Users, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Commission Type", value: `${reseller.commission_value}${reseller.commission_type === "percentage" ? "%" : "৳"} (${commissionLabels[reseller.commission_type]})`, icon: Receipt, color: "text-accent-foreground", bg: "bg-accent/50" },
+          { label: "Total Commission", value: `৳${commissions?.reduce((s: number, c: any) => s + Number(c.commission_amount), 0).toLocaleString() || 0}`, icon: Receipt, color: "text-success", bg: "bg-success/10" },
+          { label: "Wallet Balance", value: `৳${(wallet?.balance || 0).toLocaleString()}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
         ].map((stat) => (
           <Card key={stat.label} className="border-border/50">
             <CardContent className="p-4 flex items-center gap-3">
@@ -136,13 +136,13 @@ export default function ResellerDetail() {
       <Tabs defaultValue="customers">
         <TabsList className="grid w-full grid-cols-3 md:w-auto md:inline-grid">
           <TabsTrigger value="customers" className="gap-1.5">
-            <Users className="h-4 w-4" /> গ্রাহক
+            <Users className="h-4 w-4" /> Customers
           </TabsTrigger>
           <TabsTrigger value="commissions" className="gap-1.5">
-            <Receipt className="h-4 w-4" /> কমিশন
+            <Receipt className="h-4 w-4" /> Commissions
           </TabsTrigger>
           <TabsTrigger value="wallet" className="gap-1.5">
-            <Wallet className="h-4 w-4" /> ওয়ালেট
+            <Wallet className="h-4 w-4" /> Wallet
           </TabsTrigger>
         </TabsList>
 

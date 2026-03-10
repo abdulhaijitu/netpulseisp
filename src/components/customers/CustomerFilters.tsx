@@ -75,7 +75,7 @@ export function CustomerFiltersBar({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="নাম, ফোন, ইমেইল বা ID দিয়ে খুঁজুন..."
+            placeholder="Search by name, phone, email or ID..."
             value={filters.search}
             onChange={(e) => updateFilter("search", e.target.value)}
             className="pl-9 pr-9"
@@ -99,13 +99,13 @@ export function CustomerFiltersBar({
         >
           <SelectTrigger className="w-full sm:w-[160px]">
             <Filter className="mr-2 h-4 w-4" />
-            <SelectValue placeholder="স্ট্যাটাস" />
+            <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">সব স্ট্যাটাস</SelectItem>
-            <SelectItem value="active">সক্রিয়</SelectItem>
-            <SelectItem value="suspended">স্থগিত</SelectItem>
-            <SelectItem value="pending">অপেক্ষমান</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="suspended">Suspended</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
           </SelectContent>
         </Select>
 
@@ -114,7 +114,7 @@ export function CustomerFiltersBar({
           <PopoverTrigger asChild>
             <Button variant="outline" className="gap-2">
               <SlidersHorizontal className="h-4 w-4" />
-              ফিল্টার
+              Filters
               {activeFiltersCount > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
                   {activeFiltersCount}
@@ -125,7 +125,7 @@ export function CustomerFiltersBar({
           <PopoverContent className="w-80" align="end">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium">অ্যাডভান্সড ফিল্টার</h4>
+                <h4 className="font-medium">Advanced Filters</h4>
                 {hasActiveFilters && (
                   <Button
                     variant="ghost"
@@ -133,7 +133,7 @@ export function CustomerFiltersBar({
                     onClick={clearFilters}
                     className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    সব ক্লিয়ার করুন
+                    Clear All
                   </Button>
                 )}
               </div>
@@ -141,17 +141,17 @@ export function CustomerFiltersBar({
 
               {/* Package Filter */}
               <div className="space-y-2">
-                <Label>প্যাকেজ</Label>
+                <Label>Package</Label>
                 <Select
                   value={filters.packageId}
                   onValueChange={(value) => updateFilter("packageId", value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="প্যাকেজ নির্বাচন করুন" />
+                    <SelectValue placeholder="Select package" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">সব প্যাকেজ</SelectItem>
-                    <SelectItem value="none">প্যাকেজ নেই</SelectItem>
+                    <SelectItem value="all">All Packages</SelectItem>
+                    <SelectItem value="none">No Package</SelectItem>
                     {packages.map((pkg) => (
                       <SelectItem key={pkg.id} value={pkg.id}>
                         {pkg.name} - {pkg.speed_label}
@@ -163,19 +163,19 @@ export function CustomerFiltersBar({
 
               {/* Balance Type Filter */}
               <div className="space-y-2">
-                <Label>ব্যালেন্স টাইপ</Label>
+                <Label>Balance Type</Label>
                 <Select
                   value={filters.balanceType}
                   onValueChange={(value) => updateFilter("balanceType", value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="ব্যালেন্স টাইপ" />
+                    <SelectValue placeholder="Balance Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">সব</SelectItem>
-                    <SelectItem value="due">বাকি আছে</SelectItem>
-                    <SelectItem value="advance">অগ্রিম আছে</SelectItem>
-                    <SelectItem value="clear">কোন বাকি নেই</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="due">Has Due</SelectItem>
+                    <SelectItem value="advance">Has Advance</SelectItem>
+                    <SelectItem value="clear">No Due</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -186,7 +186,7 @@ export function CustomerFiltersBar({
                 className="w-full"
                 onClick={() => setAdvancedOpen(false)}
               >
-                ফিল্টার প্রয়োগ করুন
+                Apply Filters
               </Button>
             </div>
           </PopoverContent>
@@ -196,11 +196,11 @@ export function CustomerFiltersBar({
       {/* Active Filters Display */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">ফিল্টার:</span>
+          <span className="text-sm text-muted-foreground">Filters:</span>
           
           {filters.search && (
             <Badge variant="secondary" className="gap-1">
-              খোঁজা: "{filters.search}"
+              Search: "{filters.search}"
               <Button
                 variant="ghost"
                 size="icon"
@@ -214,7 +214,7 @@ export function CustomerFiltersBar({
           
           {filters.status !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              স্ট্যাটাস: {filters.status === "active" ? "সক্রিয়" : filters.status === "suspended" ? "স্থগিত" : "অপেক্ষমান"}
+              Status: {filters.status === "active" ? "Active" : filters.status === "suspended" ? "Suspended" : "Pending"}
               <Button
                 variant="ghost"
                 size="icon"
@@ -228,7 +228,7 @@ export function CustomerFiltersBar({
           
           {filters.packageId !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              প্যাকেজ: {filters.packageId === "none" ? "নেই" : packages.find(p => p.id === filters.packageId)?.name}
+              Package: {filters.packageId === "none" ? "None" : packages.find(p => p.id === filters.packageId)?.name}
               <Button
                 variant="ghost"
                 size="icon"
@@ -242,7 +242,7 @@ export function CustomerFiltersBar({
           
           {filters.balanceType !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              ব্যালেন্স: {filters.balanceType === "due" ? "বাকি" : filters.balanceType === "advance" ? "অগ্রিম" : "ক্লিয়ার"}
+              Balance: {filters.balanceType === "due" ? "Due" : filters.balanceType === "advance" ? "Advance" : "Clear"}
               <Button
                 variant="ghost"
                 size="icon"
@@ -260,7 +260,7 @@ export function CustomerFiltersBar({
             onClick={clearFilters}
             className="h-6 text-xs"
           >
-            সব ক্লিয়ার
+            Clear All
           </Button>
         </div>
       )}
@@ -268,8 +268,8 @@ export function CustomerFiltersBar({
       {/* Results Count */}
       <div className="flex items-center justify-between text-sm">
         <p className="text-muted-foreground">
-          মোট <span className="font-medium text-foreground">{totalCount}</span> কাস্টমারের মধ্যে{" "}
-          <span className="font-medium text-foreground">{filteredCount}</span> জন দেখানো হচ্ছে
+          Showing <span className="font-medium text-foreground">{filteredCount}</span> of{" "}
+          <span className="font-medium text-foreground">{totalCount}</span> customers
         </p>
       </div>
     </div>

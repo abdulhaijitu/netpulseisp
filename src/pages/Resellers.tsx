@@ -45,15 +45,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const statusConfig: Record<string, { label: string; variant: "default" | "destructive" | "secondary" }> = {
-  active: { label: "সক্রিয়", variant: "default" },
-  suspended: { label: "সাসপেন্ড", variant: "destructive" },
-  inactive: { label: "নিষ্ক্রিয়", variant: "secondary" },
+  active: { label: "Active", variant: "default" },
+  suspended: { label: "Suspended", variant: "destructive" },
+  inactive: { label: "Inactive", variant: "secondary" },
 };
 
 const commissionLabels: Record<string, string> = {
-  percentage: "শতাংশ",
-  flat: "ফ্ল্যাট",
-  per_payment: "প্রতি পেমেন্ট",
+  percentage: "Percentage",
+  flat: "Flat",
+  per_payment: "Per Payment",
 };
 
 export default function Resellers() {
@@ -89,8 +89,8 @@ export default function Resellers() {
             <UserPlus className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-foreground">রিসেলার</h1>
-            <p className="text-sm text-muted-foreground">রিসেলার পরিচালনা ও মনিটরিং</p>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">Resellers</h1>
+            <p className="text-sm text-muted-foreground">Manage & monitor resellers</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -99,15 +99,15 @@ export default function Resellers() {
             size="sm"
             onClick={() => {
               queryClient.invalidateQueries({ queryKey: ["resellers"] });
-              toast.success("রিফ্রেশ হচ্ছে...");
+              toast.success("Refreshing...");
             }}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            রিফ্রেশ
+            Refresh
           </Button>
           <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            নতুন রিসেলার
+            New Reseller
           </Button>
         </div>
       </div>
@@ -115,10 +115,10 @@ export default function Resellers() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "মোট রিসেলার", value: totalResellers, icon: Users, color: "text-primary", bg: "bg-primary/10" },
-          { label: "সক্রিয়", value: activeResellers, icon: CheckCircle, color: "text-success", bg: "bg-success/10" },
-          { label: "মোট গ্রাহক", value: totalCustomers, icon: Users, color: "text-accent-foreground", bg: "bg-accent/50" },
-          { label: "মোট কমিশন", value: `৳${totalCommission.toLocaleString()}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Total Resellers", value: totalResellers, icon: Users, color: "text-primary", bg: "bg-primary/10" },
+          { label: "Active", value: activeResellers, icon: CheckCircle, color: "text-success", bg: "bg-success/10" },
+          { label: "Total Customers", value: totalCustomers, icon: Users, color: "text-accent-foreground", bg: "bg-accent/50" },
+          { label: "Total Commission", value: `৳${totalCommission.toLocaleString()}`, icon: Wallet, color: "text-primary", bg: "bg-primary/10" },
         ].map((stat) => (
           <Card key={stat.label} className="border-border/50">
             <CardContent className="p-4 flex items-center gap-3">
@@ -137,12 +137,12 @@ export default function Resellers() {
       {/* Filters & Table */}
       <Card className="border-border/50">
         <CardHeader className="pb-4">
-          <CardTitle className="text-base font-semibold">রিসেলার তালিকা</CardTitle>
+          <CardTitle className="text-base font-semibold">Reseller List</CardTitle>
           <div className="flex flex-col sm:flex-row gap-3 mt-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="নাম বা ফোন দিয়ে খুঁজুন..."
+                placeholder="Search by name or phone..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -150,13 +150,13 @@ export default function Resellers() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[160px]">
-                <SelectValue placeholder="স্ট্যাটাস" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">সব স্ট্যাটাস</SelectItem>
-                <SelectItem value="active">সক্রিয়</SelectItem>
-                <SelectItem value="suspended">সাসপেন্ড</SelectItem>
-                <SelectItem value="inactive">নিষ্ক্রিয়</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -171,19 +171,19 @@ export default function Resellers() {
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <UserPlus className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm font-medium">কোনো রিসেলার পাওয়া যায়নি</p>
+              <p className="text-sm font-medium">No resellers found</p>
             </div>
           ) : (
             <div className="overflow-auto rounded-lg border border-border/50">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30">
-                    <TableHead>নাম</TableHead>
-                    <TableHead>ফোন</TableHead>
-                    <TableHead className="text-center">গ্রাহক</TableHead>
-                    <TableHead>কমিশন</TableHead>
-                    <TableHead className="text-right">ওয়ালেট</TableHead>
-                    <TableHead>স্ট্যাটাস</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead className="text-center">Customers</TableHead>
+                    <TableHead>Commission</TableHead>
+                    <TableHead className="text-right">Wallet</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="w-[60px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -228,20 +228,20 @@ export default function Resellers() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/resellers/${reseller.id}`); }}>
-                                <Eye className="h-4 w-4 mr-2" /> বিস্তারিত
+                                <Eye className="h-4 w-4 mr-2" /> Details
                               </DropdownMenuItem>
                               {reseller.status === "active" ? (
                                 <DropdownMenuItem
                                   onClick={(e) => { e.stopPropagation(); toggleStatus.mutate({ id: reseller.id, status: "suspended" }); }}
                                   className="text-destructive"
                                 >
-                                  <Ban className="h-4 w-4 mr-2" /> সাসপেন্ড
+                                  <Ban className="h-4 w-4 mr-2" /> Suspend
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem
                                   onClick={(e) => { e.stopPropagation(); toggleStatus.mutate({ id: reseller.id, status: "active" }); }}
                                 >
-                                  <CheckCircle className="h-4 w-4 mr-2" /> সক্রিয় করুন
+                                  <CheckCircle className="h-4 w-4 mr-2" /> Activate
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>

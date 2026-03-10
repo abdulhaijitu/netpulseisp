@@ -28,9 +28,9 @@ import { useAddWalletAdjustment } from "@/hooks/useResellers";
 import { Loader2 } from "lucide-react";
 
 const typeConfig: Record<string, { label: string; icon: typeof ArrowUpRight; color: string }> = {
-  commission: { label: "কমিশন", icon: ArrowUpRight, color: "text-success" },
-  adjustment: { label: "অ্যাডজাস্টমেন্ট", icon: Settings, color: "text-primary" },
-  withdrawal: { label: "উত্তোলন", icon: ArrowDownRight, color: "text-destructive" },
+  commission: { label: "Commission", icon: ArrowUpRight, color: "text-success" },
+  adjustment: { label: "Adjustment", icon: Settings, color: "text-primary" },
+  withdrawal: { label: "Withdrawal", icon: ArrowDownRight, color: "text-destructive" },
 };
 
 interface Props {
@@ -75,12 +75,12 @@ export function ResellerWalletTab({ wallet, isLoading, resellerId, tenantId }: P
                 <Wallet className="h-7 w-7 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">বর্তমান ব্যালেন্স</p>
+                <p className="text-sm text-muted-foreground">Current Balance</p>
                 <p className="text-3xl font-bold text-foreground">৳{wallet.balance.toLocaleString()}</p>
               </div>
             </div>
             <Button size="sm" onClick={() => setAdjustDialog(true)}>
-              <Plus className="h-4 w-4 mr-1" /> অ্যাডজাস্ট
+              <Plus className="h-4 w-4 mr-1" /> Adjust
             </Button>
           </CardContent>
         </Card>
@@ -88,24 +88,24 @@ export function ResellerWalletTab({ wallet, isLoading, resellerId, tenantId }: P
         {/* Transactions */}
         <Card className="border-border/50">
           <CardHeader>
-            <CardTitle className="text-base">ট্রানজাকশন ইতিহাস</CardTitle>
+            <CardTitle className="text-base">Transaction History</CardTitle>
           </CardHeader>
           <CardContent>
             {wallet.transactions.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Wallet className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">কোনো ট্রানজাকশন নেই</p>
+                <p className="text-sm">No transactions yet</p>
               </div>
             ) : (
               <div className="overflow-auto rounded-lg border border-border/50">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/30">
-                      <TableHead>তারিখ</TableHead>
-                      <TableHead>ধরন</TableHead>
-                      <TableHead>বিবরণ</TableHead>
-                      <TableHead className="text-right">পরিমাণ</TableHead>
-                      <TableHead className="text-right">ব্যালেন্স</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="text-right">Balance</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -145,24 +145,24 @@ export function ResellerWalletTab({ wallet, isLoading, resellerId, tenantId }: P
       <Dialog open={adjustDialog} onOpenChange={setAdjustDialog}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>ওয়ালেট অ্যাডজাস্টমেন্ট</DialogTitle>
-            <DialogDescription>ধনাত্মক মান ক্রেডিট, ঋণাত্মক মান ডেবিট করবে</DialogDescription>
+            <DialogTitle>Wallet Adjustment</DialogTitle>
+            <DialogDescription>Positive value credits, negative value debits</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>পরিমাণ (৳)</Label>
-              <Input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="100 বা -50" />
+              <Label>Amount (৳)</Label>
+              <Input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} placeholder="100 or -50" />
             </div>
             <div className="space-y-2">
-              <Label>বিবরণ *</Label>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="অ্যাডজাস্টমেন্টের কারণ..." rows={2} />
+              <Label>Description *</Label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Reason for adjustment..." rows={2} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAdjustDialog(false)}>বাতিল</Button>
+            <Button variant="outline" onClick={() => setAdjustDialog(false)}>Cancel</Button>
             <Button onClick={handleAdjust} disabled={addAdjustment.isPending || !amount || !description}>
               {addAdjustment.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              নিশ্চিত করুন
+              Confirm
             </Button>
           </DialogFooter>
         </DialogContent>

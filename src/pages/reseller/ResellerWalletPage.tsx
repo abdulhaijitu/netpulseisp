@@ -15,9 +15,9 @@ import { format } from "date-fns";
 import { useResellerSelf, useResellerSelfWallet, useResellerSelfCommissions } from "@/hooks/useResellerDashboard";
 
 const typeLabels: Record<string, string> = {
-  commission: "কমিশন",
-  adjustment: "অ্যাডজাস্টমেন্ট",
-  withdrawal: "উত্তোলন",
+  commission: "Commission",
+  adjustment: "Adjustment",
+  withdrawal: "Withdrawal",
 };
 
 export default function ResellerWalletPage() {
@@ -32,8 +32,8 @@ export default function ResellerWalletPage() {
           <Wallet className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-foreground">ওয়ালেট ও কমিশন</h1>
-          <p className="text-sm text-muted-foreground">আপনার আয় ও লেনদেনের বিবরণ</p>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">Wallet & Commission</h1>
+          <p className="text-sm text-muted-foreground">Your earnings and transaction details</p>
         </div>
       </div>
 
@@ -44,7 +44,7 @@ export default function ResellerWalletPage() {
             <Wallet className="h-8 w-8 text-primary" />
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">বর্তমান ব্যালেন্স</p>
+            <p className="text-sm text-muted-foreground">Current Balance</p>
             {walletLoading ? (
               <Skeleton className="h-9 w-32 mt-1" />
             ) : (
@@ -57,33 +57,33 @@ export default function ResellerWalletPage() {
       <Tabs defaultValue="transactions">
         <TabsList className="grid w-full grid-cols-2 md:w-auto md:inline-grid">
           <TabsTrigger value="transactions" className="gap-1.5">
-            <Wallet className="h-4 w-4" /> লেনদেন
+            <Wallet className="h-4 w-4" /> Transactions
           </TabsTrigger>
           <TabsTrigger value="commissions" className="gap-1.5">
-            <Receipt className="h-4 w-4" /> কমিশন
+            <Receipt className="h-4 w-4" /> Commissions
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="transactions">
           <Card className="border-border/50 mt-4">
             <CardHeader>
-              <CardTitle className="text-base">লেনদেনের ইতিহাস</CardTitle>
+              <CardTitle className="text-base">Transaction History</CardTitle>
             </CardHeader>
             <CardContent>
               {walletLoading ? (
                 <div className="space-y-2">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
               ) : !wallet?.transactions.length ? (
-                <div className="text-center py-8 text-muted-foreground text-sm">কোনো লেনদেন নেই</div>
+                <div className="text-center py-8 text-muted-foreground text-sm">No transactions yet</div>
               ) : (
                 <div className="overflow-auto rounded-lg border border-border/50">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/30">
-                        <TableHead>তারিখ</TableHead>
-                        <TableHead>ধরন</TableHead>
-                        <TableHead>বিবরণ</TableHead>
-                        <TableHead className="text-right">পরিমাণ</TableHead>
-                        <TableHead className="text-right">ব্যালেন্স</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead className="text-right">Balance</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -114,22 +114,22 @@ export default function ResellerWalletPage() {
         <TabsContent value="commissions">
           <Card className="border-border/50 mt-4">
             <CardHeader>
-              <CardTitle className="text-base">কমিশন রেকর্ড</CardTitle>
+              <CardTitle className="text-base">Commission Records</CardTitle>
             </CardHeader>
             <CardContent>
               {commissionsLoading ? (
                 <div className="space-y-2">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
               ) : !commissions?.length ? (
-                <div className="text-center py-8 text-muted-foreground text-sm">কোনো কমিশন রেকর্ড নেই</div>
+                <div className="text-center py-8 text-muted-foreground text-sm">No commission records yet</div>
               ) : (
                 <div className="overflow-auto rounded-lg border border-border/50">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/30">
-                        <TableHead>তারিখ</TableHead>
-                        <TableHead>গ্রাহক</TableHead>
-                        <TableHead className="text-right">পেমেন্ট</TableHead>
-                        <TableHead className="text-right">কমিশন</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead className="text-right">Payment</TableHead>
+                        <TableHead className="text-right">Commission</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
