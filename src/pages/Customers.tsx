@@ -140,8 +140,8 @@ export default function Customers() {
   const handleFormSubmit = async (data: CustomerFormData) => {
     if (!currentTenant?.id) {
       toast({
-        title: "ত্রুটি",
-        description: "টেন্যান্ট তথ্য পাওয়া যায়নি।",
+        title: "Error",
+        description: "Tenant information not found.",
         variant: "destructive",
       });
       return;
@@ -161,8 +161,8 @@ export default function Customers() {
           advance_balance: 0,
         });
         toast({
-          title: "কাস্টমার যুক্ত হয়েছে",
-          description: `${data.name} সফলভাবে যুক্ত হয়েছে।`,
+          title: "Customer added",
+          description: `${data.name} was added successfully.`,
         });
       } else {
         await updateCustomer.mutateAsync({
@@ -179,15 +179,15 @@ export default function Customers() {
           },
         });
         toast({
-          title: "কাস্টমার আপডেট হয়েছে",
-          description: `${data.name} এর তথ্য আপডেট হয়েছে।`,
+          title: "Customer updated",
+          description: `${data.name} details were updated.`,
         });
       }
     } catch (err) {
       console.error("Error saving customer:", err);
       toast({
-        title: "ত্রুটি",
-        description: "কাস্টমার সেভ করতে সমস্যা হয়েছে।",
+        title: "Error",
+        description: "Failed to save customer.",
         variant: "destructive",
       });
       throw err;
@@ -218,14 +218,14 @@ export default function Customers() {
       });
       const customer = tableData.find((c) => c.id === customerId);
       toast({
-        title: newStatus === "active" ? "সংযোগ সক্রিয়" : "সংযোগ স্থগিত",
-        description: `${customer?.name} এর সংযোগ ${newStatus === "active" ? "সক্রিয়" : "স্থগিত"} করা হয়েছে।`,
+        title: newStatus === "active" ? "Connection activated" : "Connection suspended",
+        description: `${customer?.name} connection was ${newStatus === "active" ? "activated" : "suspended"}.`,
       });
     } catch (err) {
       console.error("Error updating status:", err);
       toast({
-        title: "ত্রুটি",
-        description: "সংযোগ স্ট্যাটাস পরিবর্তন করতে সমস্যা হয়েছে।",
+        title: "Error",
+        description: "Failed to update connection status.",
         variant: "destructive",
       });
     }
@@ -237,15 +237,15 @@ export default function Customers() {
 
   const handleRecordPayment = (customer: CustomerTableData) => {
     toast({
-      title: "শীঘ্রই আসছে",
-      description: "পেমেন্ট রেকর্ড শীঘ্রই যুক্ত হবে।",
+      title: "Coming soon",
+      description: "Payment recording will be added soon.",
     });
   };
 
   const handleGenerateBill = (customer: CustomerTableData) => {
     toast({
-      title: "শীঘ্রই আসছে",
-      description: "বিল জেনারেট শীঘ্রই যুক্ত হবে।",
+      title: "Coming soon",
+      description: "Bill generation will be added soon.",
     });
   };
 
@@ -273,17 +273,17 @@ export default function Customers() {
     URL.revokeObjectURL(url);
 
     toast({
-      title: "এক্সপোর্ট সম্পন্ন",
-      description: `${filteredCustomers.length} কাস্টমার এক্সপোর্ট করা হয়েছে।`,
+      title: "Export complete",
+      description: `${filteredCustomers.length} customers exported.`,
     });
   };
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-destructive">কাস্টমার তথ্য লোড করতে সমস্যা হয়েছে।</p>
+        <p className="text-destructive">Failed to load customer data.</p>
         <Button variant="outline" onClick={() => window.location.reload()}>
-          পুনরায় চেষ্টা করুন
+          Try Again
         </Button>
       </div>
     );
@@ -294,19 +294,19 @@ export default function Customers() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">কাস্টমার</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Customers</h1>
           <p className="text-muted-foreground">
-            আপনার কাস্টমার এবং সংযোগ ম্যানেজ করুন
+            Manage your customers and their connections
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2" onClick={handleExport}>
             <Download className="h-4 w-4" />
-            এক্সপোর্ট
+            Export
           </Button>
           <Button className="gap-2" onClick={handleAddCustomer}>
             <Plus className="h-4 w-4" />
-            নতুন কাস্টমার
+            New Customer
           </Button>
         </div>
       </div>

@@ -25,7 +25,7 @@ export default function Notifications() {
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ["notificationLogs"] });
     queryClient.invalidateQueries({ queryKey: ["notificationStats"] });
-    toast.success("রিফ্রেশ হচ্ছে...");
+    toast.success("Refreshing...");
   };
 
   return (
@@ -38,16 +38,16 @@ export default function Notifications() {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-foreground">
-              নোটিফিকেশন
+              Notifications
             </h1>
             <p className="text-sm text-muted-foreground">
-              পাঠানো নোটিফিকেশনের লগ ও স্ট্যাটাস
+              Notification logs and delivery status
             </p>
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={handleRefresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
-          রিফ্রেশ
+          Refresh
         </Button>
       </div>
 
@@ -58,7 +58,7 @@ export default function Notifications() {
       <Card className="border-border/50">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold">
-            নোটিফিকেশন লগ
+            Notification Logs
           </CardTitle>
           <NotificationFilters
             type={type}
@@ -74,7 +74,7 @@ export default function Notifications() {
             logs={logs || []}
             isLoading={logsLoading}
             onResend={(log) => {
-              toast.info(`"${log.title}" পুনরায় পাঠানোর ফিচার শীঘ্রই আসছে`);
+              toast.info(`Resend feature for "${log.title}" is coming soon`);
             }}
           />
         </CardContent>
