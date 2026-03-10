@@ -67,20 +67,20 @@ export default function NetworkPage() {
             <Network className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">নেটওয়ার্ক</h1>
+            <h1 className="text-xl font-bold tracking-tight">Network</h1>
             <p className="text-sm text-muted-foreground">
-              MikroTik ও RADIUS সিঙ্ক্রোনাইজেশন ম্যানেজমেন্ট
+              MikroTik and RADIUS synchronization management
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            রিফ্রেশ
+            Refresh
           </Button>
           <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/settings")}>
             <Settings2 className="h-4 w-4 mr-2" />
-            সেটিংস
+            Settings
           </Button>
         </div>
       </div>
@@ -88,30 +88,30 @@ export default function NetworkPage() {
       {/* Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="মোট ইন্টিগ্রেশন"
+          title="Total Integrations"
           value={totalIntegrations}
-          subtitle={`${activeIntegrations}টি সক্রিয়`}
+          subtitle={`${activeIntegrations} active`}
           icon={Wifi}
           variant="info"
         />
         <StatCard
-          title="সফল সিঙ্ক"
+          title="Successful Syncs"
           value={recentSuccessLogs}
-          subtitle="গত ৫০টি লগে"
+          subtitle="In last 50 logs"
           icon={CheckCircle}
           variant="success"
         />
         <StatCard
-          title="ব্যর্থ সিঙ্ক"
+          title="Failed Syncs"
           value={recentFailedLogs}
-          subtitle="গত ৫০টি লগে"
+          subtitle="In last 50 logs"
           icon={XCircle}
           variant={recentFailedLogs > 0 ? "danger" : "default"}
         />
         <StatCard
-          title="কিউতে আছে"
+          title="In Queue"
           value={pendingQueue}
-          subtitle="অপেক্ষমান টাস্ক"
+          subtitle="Waiting tasks"
           icon={Clock}
           variant={pendingQueue > 0 ? "warning" : "default"}
         />
@@ -119,47 +119,26 @@ export default function NetworkPage() {
 
       {/* Integrations */}
       <div>
-        <h2 className="text-base font-semibold mb-3">ইন্টিগ্রেশনসমূহ</h2>
+        <h2 className="text-base font-semibold mb-3">Integrations</h2>
         {totalIntegrations === 0 ? (
           <div className="rounded-xl border-2 border-dashed p-8 text-center">
             <Network className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-            <h3 className="font-semibold mb-1">কোনো নেটওয়ার্ক ইন্টিগ্রেশন নেই</h3>
+            <h3 className="font-semibold mb-1">No network integrations found</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              MikroTik বা RADIUS সার্ভার সংযুক্ত করতে সেটিংস পেইজে যান
+              Go to settings to connect a MikroTik or RADIUS server
             </p>
             <Button onClick={() => navigate("/dashboard/settings")}>
               <Plus className="h-4 w-4 mr-2" />
-              ইন্টিগ্রেশন যোগ করুন
+              Add Integration
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {integrations?.map((integration) => (
-              <IntegrationCard key={integration.id} integration={integration} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Tabs for Queue & Logs */}
-      <Tabs defaultValue="logs">
-        <TabsList>
-          <TabsTrigger value="logs">সিঙ্ক লগ</TabsTrigger>
-          <TabsTrigger value="queue">
-            সিঙ্ক কিউ
-            {pendingQueue > 0 && (
-              <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500/20 px-1.5 text-[10px] font-semibold text-amber-600">
-                {pendingQueue}
-              </span>
-            )}
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="logs" className="mt-4">
+...
           <SyncLogTable
             logs={syncLogs || []}
             isLoading={logsLoading}
-            title="সাম্প্রতিক সিঙ্ক লগ"
-            description="শেষ ৫০টি সিঙ্ক অপারেশনের লগ"
+            title="Recent Sync Logs"
+            description="Latest 50 sync operation logs"
           />
         </TabsContent>
         <TabsContent value="queue" className="mt-4">

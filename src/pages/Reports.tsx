@@ -49,16 +49,16 @@ export default function Reports() {
             <BarChart3 className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight">রিপোর্টস</h1>
+            <h1 className="text-xl font-bold tracking-tight">Reports</h1>
             <p className="text-sm text-muted-foreground">
-              আপনার ISP ব্যবসার সম্পূর্ণ বিশ্লেষণ
+              Complete analytics of your ISP business
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            রিফ্রেশ
+            Refresh
           </Button>
           <Button
             size="sm"
@@ -70,7 +70,7 @@ export default function Reports() {
             }
           >
             <Download className="h-4 w-4 mr-2" />
-            PDF ডাউনলোড
+            Download PDF
           </Button>
         </div>
       </div>
