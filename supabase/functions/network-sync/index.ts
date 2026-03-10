@@ -239,7 +239,7 @@ Deno.serve(async (req) => {
 
     // Parse request body
     const body: SyncRequest = await req.json();
-    const { action, integration_id, customer_id, triggered_by = "manual" } = body;
+    const { action, integration_id, customer_id, package_id, triggered_by = "manual" } = body;
 
     if (!action || !integration_id) {
       return new Response(
