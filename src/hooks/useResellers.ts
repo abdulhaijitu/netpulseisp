@@ -159,7 +159,7 @@ export function useUpdateReseller() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
-      toast.success("রিসেলার আপডেট হয়েছে");
+      toast.success("Reseller updated");
     },
     onError: (error: any) => {
       toast.error(error.message || "আপডেটে ত্রুটি");
