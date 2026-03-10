@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const today = new Date();
-    const reminderDays = [1, 3, 7]; // Send reminders 1, 3, and 7 days before due date
+    const reminderDays = [1, 3, 7];
     
     let totalReminders = 0;
     const results: { day: number; count: number; errors: string[] }[] = [];
@@ -43,24 +43,9 @@ Deno.serve(async (req) => {
       targetDate.setDate(targetDate.getDate() + daysBeforeDue);
       const targetDateStr = targetDate.toISOString().split("T")[0];
 
-      // Find unpaid bills due on target date
       const { data: bills, error: billsError } = await supabase
         .from("bills")
-        .select(`
-          id,
-          invoice_number,
-          amount,
-          due_date,
-          customer_id,
-          tenant_id,
-          customers!inner (
-            id,
-            name,
-            email,
-            phone,
-            user_id
-          )
-        `)
+        .select(`id, invoice_number, amount, due_date, customer_id, tenant_id, customers!inner (id, name, email, phone, user_id)`)
         .eq("due_date", targetDateStr)
         .in("status", ["due", "partial", "overdue"]);
 
@@ -76,7 +61,6 @@ Deno.serve(async (req) => {
 
       for (const bill of typedBills) {
         try {
-          // Check if we already sent a reminder for this bill today
           const { data: existingReminder } = await supabase
             .from("notification_logs")
             .select("id")
@@ -90,23 +74,21 @@ Deno.serve(async (req) => {
             continue;
           }
 
-          // Determine reminder urgency
           let urgencyText = "";
           let title = "";
           if (daysBeforeDue === 1) {
-            urgencyText = "আগামীকাল";
-            title = "⚠️ বিল পেমেন্ট রিমাইন্ডার - আগামীকাল Due";
+            urgencyText = "tomorrow";
+            title = "⚠️ Bill Payment Reminder - Due Tomorrow";
           } else if (daysBeforeDue === 3) {
-            urgencyText = "৩ দিন পরে";
-            title = "📋 বিল পেমেন্ট রিমাইন্ডার";
+            urgencyText = "in 3 days";
+            title = "📋 Bill Payment Reminder";
           } else {
-            urgencyText = "৭ দিন পরে";
-            title = "📅 আসন্ন বিল রিমাইন্ডার";
+            urgencyText = "in 7 days";
+            title = "📅 Upcoming Bill Reminder";
           }
 
-          const body = `${bill.customers.name}, আপনার ${bill.invoice_number} বিলের পরিমাণ ৳${bill.amount.toLocaleString()} - Due Date: ${urgencyText}। অনুগ্রহ করে সময়মতো পেমেন্ট করুন।`;
+          const body = `${bill.customers.name}, your invoice ${bill.invoice_number} for ৳${bill.amount.toLocaleString()} is due ${urgencyText}. Please make your payment on time.`;
 
-          // Log the notification
           await supabase.from("notification_logs").insert({
             tenant_id: bill.tenant_id,
             customer_id: bill.customer_id,
@@ -123,7 +105,6 @@ Deno.serve(async (req) => {
             status: "pending",
           });
 
-          // Get push subscriptions for this customer
           const { data: subscriptions } = await supabase
             .from("push_subscriptions")
             .select("*")
@@ -131,18 +112,14 @@ Deno.serve(async (req) => {
             .eq("is_active", true);
 
           if (subscriptions && subscriptions.length > 0) {
-            // Send push notifications
             for (const sub of subscriptions) {
               try {
-                // In production, send actual push notification here
-                // For now, we log it as sent
                 console.log(`Would send push to ${sub.endpoint} for bill ${bill.id}`);
               } catch (pushError) {
                 console.error(`Push notification error:`, pushError);
               }
             }
 
-            // Update notification status to sent
             await supabase
               .from("notification_logs")
               .update({ status: "sent", sent_at: new Date().toISOString() })
@@ -165,12 +142,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: `Sent ${totalReminders} billing reminders`,
-        details: results,
-        processed_at: new Date().toISOString(),
-      }),
+      JSON.stringify({ success: true, message: `Sent ${totalReminders} billing reminders`, details: results, processed_at: new Date().toISOString() }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {

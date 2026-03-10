@@ -296,7 +296,7 @@ export default function Billing() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsGenerateDialogOpen(false)}>
-                বাতিল
+                Cancel
               </Button>
               <Button 
                 onClick={handleGenerateBills}
@@ -305,7 +305,7 @@ export default function Billing() {
                 {generateBills.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                বিল তৈরি করুন
+                Generate Bills
               </Button>
             </DialogFooter>
           </DialogContent>
