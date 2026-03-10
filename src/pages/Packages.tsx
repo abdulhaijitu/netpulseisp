@@ -657,6 +657,7 @@ export default function Packages() {
         package={editingPackage}
         onSubmit={handleSubmit}
         isLoading={createPackage.isPending || updatePackage.isPending}
+        hasMikrotikIntegration={hasMikrotik}
       />
 
       <DeletePackageDialog
