@@ -65,7 +65,7 @@ export function useAssignCustomers() {
       toast.success("Customers assigned successfully");
     },
     onError: (error: any) => {
-      toast.error(error.message || "গ্রাহক অ্যাসাইনে ত্রুটি");
+      toast.error(error.message || "Failed to assign customers");
     },
   });
 }
