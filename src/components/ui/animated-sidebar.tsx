@@ -71,7 +71,7 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-        "h-full px-4 py-4 hidden md:flex md:flex-col bg-sidebar border-r border-sidebar-border w-[240px] shrink-0",
+        "h-full px-2 py-4 hidden md:flex md:flex-col bg-sidebar border-r border-sidebar-border w-[240px] shrink-0 overflow-hidden",
         className
       )}
       animate={{
@@ -147,7 +147,7 @@ export const SidebarLink = ({
     <NavLink
       to={link.href}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 group relative",
+        "flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm font-medium transition-all duration-200 group",
         "hover:bg-sidebar-accent/80",
         active
           ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
@@ -167,9 +167,6 @@ export const SidebarLink = ({
       >
         {link.label}
       </motion.span>
-      {active && (
-        <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-sidebar-primary" />
-      )}
     </NavLink>
   );
 };
