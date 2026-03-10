@@ -187,6 +187,88 @@ export type Database = {
           },
         ]
       }
+      customer_onu: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          last_seen_at: string | null
+          notes: string | null
+          olt_port_id: string
+          onu_mac: string | null
+          onu_number: number | null
+          onu_serial: string | null
+          onu_status: string
+          onu_type: string | null
+          rx_power: number | null
+          service_port_id: number | null
+          tenant_id: string
+          tx_power: number | null
+          updated_at: string
+          vlan_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          last_seen_at?: string | null
+          notes?: string | null
+          olt_port_id: string
+          onu_mac?: string | null
+          onu_number?: number | null
+          onu_serial?: string | null
+          onu_status?: string
+          onu_type?: string | null
+          rx_power?: number | null
+          service_port_id?: number | null
+          tenant_id: string
+          tx_power?: number | null
+          updated_at?: string
+          vlan_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          last_seen_at?: string | null
+          notes?: string | null
+          olt_port_id?: string
+          onu_mac?: string | null
+          onu_number?: number | null
+          onu_serial?: string | null
+          onu_status?: string
+          onu_type?: string | null
+          rx_power?: number | null
+          service_port_id?: number | null
+          tenant_id?: string
+          tx_power?: number | null
+          updated_at?: string
+          vlan_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_onu_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_onu_olt_port_id_fkey"
+            columns: ["olt_port_id"]
+            isOneToOne: false
+            referencedRelation: "olt_ports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_onu_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           address: string | null
@@ -584,6 +666,137 @@ export type Database = {
           },
           {
             foreignKeyName: "notification_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      olt_devices: {
+        Row: {
+          brand: string
+          created_at: string
+          created_by: string | null
+          credentials_encrypted: string | null
+          host: string
+          id: string
+          is_enabled: boolean
+          model: string | null
+          name: string
+          notes: string | null
+          port: number | null
+          protocol: string
+          snmp_community: string | null
+          snmp_version: string | null
+          tenant_id: string
+          total_pon_ports: number | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          brand?: string
+          created_at?: string
+          created_by?: string | null
+          credentials_encrypted?: string | null
+          host: string
+          id?: string
+          is_enabled?: boolean
+          model?: string | null
+          name: string
+          notes?: string | null
+          port?: number | null
+          protocol?: string
+          snmp_community?: string | null
+          snmp_version?: string | null
+          tenant_id: string
+          total_pon_ports?: number | null
+          updated_at?: string
+          username?: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          created_by?: string | null
+          credentials_encrypted?: string | null
+          host?: string
+          id?: string
+          is_enabled?: boolean
+          model?: string | null
+          name?: string
+          notes?: string | null
+          port?: number | null
+          protocol?: string
+          snmp_community?: string | null
+          snmp_version?: string | null
+          tenant_id?: string
+          total_pon_ports?: number | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "olt_devices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      olt_ports: {
+        Row: {
+          created_at: string
+          id: string
+          max_onus: number | null
+          notes: string | null
+          olt_device_id: string
+          port: number
+          port_label: string | null
+          port_type: string
+          slot: number
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_onus?: number | null
+          notes?: string | null
+          olt_device_id: string
+          port: number
+          port_label?: string | null
+          port_type?: string
+          slot?: number
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_onus?: number | null
+          notes?: string | null
+          olt_device_id?: string
+          port?: number
+          port_label?: string | null
+          port_type?: string
+          slot?: number
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "olt_ports_olt_device_id_fkey"
+            columns: ["olt_device_id"]
+            isOneToOne: false
+            referencedRelation: "olt_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "olt_ports_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
