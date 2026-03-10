@@ -284,7 +284,7 @@ export function useAddWalletAdjustment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resellerWallet"] });
       queryClient.invalidateQueries({ queryKey: ["resellers"] });
-      toast.success("ওয়ালেট অ্যাডজাস্টমেন্ট সফল");
+      toast.success("Wallet adjustment successful");
     },
     onError: (error: any) => {
       toast.error(error.message || "অ্যাডজাস্টমেন্টে ত্রুটি");
