@@ -1,7 +1,6 @@
-import { Bell, Search, LogOut, User, Settings, HelpCircle, ChevronDown, Eye } from "lucide-react";
+import { Bell, Search, LogOut, User, Settings, HelpCircle, ChevronDown, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +9,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { TenantSwitcher } from "./TenantSwitcher";
 import { DemoModeToggle } from "@/components/demo/DemoModeToggle";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,14 +17,12 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useSidebar } from "@/components/ui/animated-sidebar";
 
-interface DashboardHeaderProps {
-  onMenuClick?: () => void;
-}
-
-export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
+export function DashboardHeader() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { setOpen } = useSidebar();
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["header-profile", user?.id],
@@ -43,12 +39,10 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
     enabled: !!user?.id,
   });
 
-  // Fetch pending notification count
   const { data: notificationCount = 0 } = useQuery({
     queryKey: ["notification-count", user?.id],
     queryFn: async () => {
-      // This would typically query notification_logs for unread count
-      return 3; // Placeholder
+      return 3;
     },
     enabled: !!user?.id,
   });
@@ -69,10 +63,14 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 md:px-6">
       {/* Mobile menu trigger */}
-      <SidebarTrigger className="h-9 w-9 shrink-0 md:hidden" />
-      
-      {/* Desktop sidebar trigger */}
-      <SidebarTrigger className="hidden md:flex h-9 w-9 shrink-0" />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9 shrink-0 md:hidden"
+        onClick={() => setOpen(true)}
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
       
       {/* Tenant Switcher */}
       <TenantSwitcher />
@@ -93,9 +91,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
 
       {/* Right side actions */}
       <div className="flex flex-1 items-center justify-end gap-2">
-        {/* Demo Mode Toggle */}
         <DemoModeToggle />
-        {/* Mobile search button */}
         <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
           <Search className="h-4 w-4" />
         </Button>
@@ -103,11 +99,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative h-9 w-9 hover:bg-muted transition-colors"
-            >
+            <Button variant="ghost" size="icon" className="relative h-9 w-9 hover:bg-muted transition-colors">
               <Bell className="h-[18px] w-[18px]" />
               {notificationCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground animate-scale-in">
@@ -125,23 +117,9 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="max-h-[300px] overflow-y-auto">
-              <NotificationItem
-                title="Payment Received"
-                description="Customer #1234 paid ৳2,500 via Cash"
-                time="2 min ago"
-                unread
-              />
-              <NotificationItem
-                title="New Customer"
-                description="Rahim Ahmed joined with 20 Mbps plan"
-                time="1 hour ago"
-                unread
-              />
-              <NotificationItem
-                title="Auto-Suspend Alert"
-                description="5 customers due for suspension tomorrow"
-                time="3 hours ago"
-              />
+              <NotificationItem title="Payment Received" description="Customer #1234 paid ৳2,500 via Cash" time="2 min ago" unread />
+              <NotificationItem title="New Customer" description="Rahim Ahmed joined with 20 Mbps plan" time="1 hour ago" unread />
+              <NotificationItem title="Auto-Suspend Alert" description="5 customers due for suspension tomorrow" time="3 hours ago" />
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="justify-center text-primary cursor-pointer">
@@ -153,17 +131,12 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
         {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button 
-              variant="ghost" 
-              className="h-9 gap-2 px-2 hover:bg-muted transition-colors"
-            >
+            <Button variant="ghost" className="h-9 gap-2 px-2 hover:bg-muted transition-colors">
               <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-sm">
                 {profileLoading ? (
                   <Skeleton className="h-full w-full rounded-full" />
                 ) : (
-                  <span className="text-xs font-semibold text-primary-foreground">
-                    {initials}
-                  </span>
+                  <span className="text-xs font-semibold text-primary-foreground">{initials}</span>
                 )}
               </div>
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
@@ -172,12 +145,8 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
           <DropdownMenuContent align="end" className="w-56" sideOffset={8}>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {profileLoading ? "Loading..." : displayName}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {user?.email}
-                </p>
+                <p className="text-sm font-medium leading-none">{profileLoading ? "Loading..." : displayName}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -194,10 +163,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
               Support
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              className="text-destructive focus:text-destructive focus:bg-destructive/10"
-              onClick={handleLogout}
-            >
+            <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>
@@ -217,18 +183,13 @@ interface NotificationItemProps {
 
 function NotificationItem({ title, description, time, unread }: NotificationItemProps) {
   return (
-    <DropdownMenuItem className={cn(
-      "flex flex-col items-start gap-1 py-3 px-4 cursor-pointer",
-      unread && "bg-primary/5"
-    )}>
+    <DropdownMenuItem className={cn("flex flex-col items-start gap-1 py-3 px-4 cursor-pointer", unread && "bg-primary/5")}>
       <div className="flex items-center gap-2 w-full">
         {unread && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
         <span className="font-medium text-sm">{title}</span>
         <span className="text-[10px] text-muted-foreground ml-auto">{time}</span>
       </div>
-      <span className="text-xs text-muted-foreground line-clamp-2 pl-4">
-        {description}
-      </span>
+      <span className="text-xs text-muted-foreground line-clamp-2 pl-4">{description}</span>
     </DropdownMenuItem>
   );
 }
