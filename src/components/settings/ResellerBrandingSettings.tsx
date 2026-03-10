@@ -41,14 +41,11 @@ export function ResellerBrandingSettings() {
 
   const handleToggle = (field: keyof typeof controls, value: boolean) => {
     const updated = { ...controls, [field]: value };
-
-    // If master toggle is turned off, disable all sub-toggles
     if (field === "allow_reseller_branding" && !value) {
       updated.allow_reseller_logo = false;
       updated.allow_reseller_name = false;
       updated.allow_reseller_theme = false;
     }
-
     setControls(updated);
     setHasChanges(true);
   };
@@ -57,9 +54,9 @@ export function ResellerBrandingSettings() {
     try {
       await updateSettings.mutateAsync(controls as any);
       setHasChanges(false);
-      toast.success("রিসেলার ব্র্যান্ডিং সেটিংস আপডেট হয়েছে");
+      toast.success("Reseller branding settings updated");
     } catch {
-      toast.error("সেটিংস সেভ করতে সমস্যা হয়েছে");
+      toast.error("Failed to save settings");
     }
   };
 
@@ -67,7 +64,7 @@ export function ResellerBrandingSettings() {
     return (
       <Card>
         <CardContent className="py-10 text-center text-muted-foreground">
-          লোড হচ্ছে...
+          Loading...
         </CardContent>
       </Card>
     );
@@ -83,7 +80,7 @@ export function ResellerBrandingSettings() {
           </Badge>
         </div>
         <CardDescription>
-          রিসেলারদের নিজস্ব ব্র্যান্ডিং ব্যবহার করার অনুমতি দিন। আপনি যেকোনো সময় এটি বন্ধ করতে পারবেন।
+          Allow resellers to use their own branding. You can disable this at any time.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -96,7 +93,7 @@ export function ResellerBrandingSettings() {
             <div className="space-y-0.5">
               <Label className="text-sm font-medium">Allow Reseller Branding</Label>
               <p className="text-xs text-muted-foreground">
-                রিসেলারদের নিজস্ব ব্র্যান্ড ব্যবহারের অনুমতি
+                Allow resellers to use their own brand
               </p>
             </div>
           </div>
@@ -109,16 +106,14 @@ export function ResellerBrandingSettings() {
         {controls.allow_reseller_branding && (
           <>
             <Separator />
-
             <div className="space-y-4 pl-2">
-              {/* Allow Logo */}
               <div className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
                   <Image className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <Label className="text-sm">Allow Reseller Logo</Label>
                     <p className="text-xs text-muted-foreground">
-                      রিসেলারের নিজস্ব লোগো দেখাবে
+                      Display the reseller's own logo
                     </p>
                   </div>
                 </div>
@@ -128,14 +123,13 @@ export function ResellerBrandingSettings() {
                 />
               </div>
 
-              {/* Allow Brand Name */}
               <div className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
                   <Type className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <Label className="text-sm">Allow Reseller Brand Name</Label>
                     <p className="text-xs text-muted-foreground">
-                      রিসেলারের ব্র্যান্ড নাম দেখাবে
+                      Display the reseller's brand name
                     </p>
                   </div>
                 </div>
@@ -145,14 +139,13 @@ export function ResellerBrandingSettings() {
                 />
               </div>
 
-              {/* Allow Theme Override */}
               <div className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
                   <Palette className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <Label className="text-sm">Allow Reseller Theme Override</Label>
                     <p className="text-xs text-muted-foreground">
-                      রিসেলারের কালার থিম ISP থিমের বদলে ব্যবহার হবে
+                      Use the reseller's color theme instead of ISP theme
                     </p>
                   </div>
                 </div>

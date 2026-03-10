@@ -18,7 +18,6 @@ import {
   Activity,
 } from "lucide-react";
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { bn } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 interface SyncLogTableProps {
@@ -30,23 +29,23 @@ interface SyncLogTableProps {
 }
 
 const actionLabels: Record<string, string> = {
-  enable: "সক্রিয়",
-  disable: "নিষ্ক্রিয়",
-  update_speed: "স্পিড আপডেট",
-  create: "তৈরি",
-  delete: "মুছুন",
-  test_connection: "সংযোগ পরীক্ষা",
+  enable: "Enable",
+  disable: "Disable",
+  update_speed: "Speed Update",
+  create: "Create",
+  delete: "Delete",
+  test_connection: "Test Connection",
 };
 
 const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
-  success: { label: "সফল", className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle },
-  failed: { label: "ব্যর্থ", className: "bg-destructive/10 text-destructive border-destructive/20", icon: XCircle },
-  pending: { label: "অপেক্ষমান", className: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: Clock },
-  in_progress: { label: "চলমান", className: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: RefreshCw },
-  retrying: { label: "পুনরায় চেষ্টা", className: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: AlertTriangle },
+  success: { label: "Success", className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle },
+  failed: { label: "Failed", className: "bg-destructive/10 text-destructive border-destructive/20", icon: XCircle },
+  pending: { label: "Pending", className: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: Clock },
+  in_progress: { label: "In Progress", className: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: RefreshCw },
+  retrying: { label: "Retrying", className: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: AlertTriangle },
 };
 
-export function SyncLogTable({ logs, isLoading, title = "সিঙ্ক লগ", description, limit = 15 }: SyncLogTableProps) {
+export function SyncLogTable({ logs, isLoading, title = "Sync Logs", description, limit = 15 }: SyncLogTableProps) {
   const displayLogs = logs?.slice(0, limit) || [];
 
   return (
@@ -70,19 +69,19 @@ export function SyncLogTable({ logs, isLoading, title = "সিঙ্ক লগ"
         ) : displayLogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Activity className="h-10 w-10 text-muted-foreground/30 mb-3" />
-            <p className="text-sm text-muted-foreground">কোনো সিঙ্ক লগ নেই</p>
+            <p className="text-sm text-muted-foreground">No sync logs found</p>
           </div>
         ) : (
           <div className="overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[140px]">সময়</TableHead>
-                  <TableHead>অ্যাকশন</TableHead>
-                  <TableHead>কাস্টমার</TableHead>
-                  <TableHead>ইন্টিগ্রেশন</TableHead>
-                  <TableHead>স্ট্যাটাস</TableHead>
-                  <TableHead className="hidden md:table-cell">ত্রুটি</TableHead>
+                  <TableHead className="w-[140px]">Time</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Integration</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="hidden md:table-cell">Error</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -92,7 +91,7 @@ export function SyncLogTable({ logs, isLoading, title = "সিঙ্ক লগ"
                   return (
                     <TableRow key={log.id}>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDistanceToNow(parseISO(log.created_at), { addSuffix: true, locale: bn })}
+                        {formatDistanceToNow(parseISO(log.created_at), { addSuffix: true })}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">

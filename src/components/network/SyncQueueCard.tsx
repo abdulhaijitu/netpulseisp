@@ -10,7 +10,6 @@ import {
   ListTodo,
 } from "lucide-react";
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { bn } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 interface SyncQueueCardProps {
@@ -19,12 +18,12 @@ interface SyncQueueCardProps {
 }
 
 const actionLabels: Record<string, string> = {
-  enable: "সক্রিয় করুন",
-  disable: "নিষ্ক্রিয় করুন",
-  update_speed: "স্পিড আপডেট",
-  create: "তৈরি",
-  delete: "মুছুন",
-  test_connection: "টেস্ট",
+  enable: "Enable",
+  disable: "Disable",
+  update_speed: "Speed Update",
+  create: "Create",
+  delete: "Delete",
+  test_connection: "Test",
 };
 
 const statusStyles: Record<string, { className: string; icon: any }> = {
@@ -48,17 +47,17 @@ export function SyncQueueCard({ queue, isLoading }: SyncQueueCardProps) {
               <ListTodo className="h-5 w-5 text-violet-600" />
             </div>
             <div>
-              <CardTitle className="text-base">সিঙ্ক কিউ</CardTitle>
+              <CardTitle className="text-base">Sync Queue</CardTitle>
               <CardDescription>
                 {pendingItems.length > 0
-                  ? `${pendingItems.length}টি টাস্ক অপেক্ষমান`
-                  : "কোনো অপেক্ষমান টাস্ক নেই"}
+                  ? `${pendingItems.length} task(s) pending`
+                  : "No pending tasks"}
               </CardDescription>
             </div>
           </div>
           {pendingItems.length > 0 && (
             <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-              {pendingItems.length} পেন্ডিং
+              {pendingItems.length} Pending
             </Badge>
           )}
         </div>
@@ -71,7 +70,7 @@ export function SyncQueueCard({ queue, isLoading }: SyncQueueCardProps) {
         ) : displayItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <ListTodo className="h-8 w-8 text-muted-foreground/30 mb-2" />
-            <p className="text-sm text-muted-foreground">কিউ খালি</p>
+            <p className="text-sm text-muted-foreground">Queue is empty</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -96,8 +95,8 @@ export function SyncQueueCard({ queue, isLoading }: SyncQueueCardProps) {
                       </div>
                       <p className="text-xs text-muted-foreground truncate">
                         {item.network_integrations?.name || "-"} • 
-                        {item.retry_count > 0 && ` চেষ্টা: ${item.retry_count}/${item.max_retries} •`}{" "}
-                        {formatDistanceToNow(parseISO(item.created_at), { addSuffix: true, locale: bn })}
+                        {item.retry_count > 0 && ` Attempt: ${item.retry_count}/${item.max_retries} •`}{" "}
+                        {formatDistanceToNow(parseISO(item.created_at), { addSuffix: true })}
                       </p>
                     </div>
                   </div>

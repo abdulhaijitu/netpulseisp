@@ -79,7 +79,6 @@ export function usePlatformPlans() {
         .from("platform_plans")
         .select("*")
         .order("sort_order");
-
       if (error) throw error;
       return data as PlatformPlan[];
     },
@@ -107,16 +106,15 @@ export function useCreatePlan() {
         })
         .select()
         .single();
-
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-plans"] });
-      toast({ title: "প্ল্যান তৈরি হয়েছে" });
+      toast({ title: "Plan created" });
     },
     onError: (error: Error) => {
-      toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 }
@@ -133,16 +131,15 @@ export function useUpdatePlan() {
         .eq("id", id)
         .select()
         .single();
-
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-plans"] });
-      toast({ title: "প্ল্যান আপডেট হয়েছে" });
+      toast({ title: "Plan updated" });
     },
     onError: (error: Error) => {
-      toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 }
@@ -154,12 +151,8 @@ export function usePlatformAddons() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("platform_addons")
-        .select(`
-          *,
-          tiers:platform_addon_tiers(*)
-        `)
+        .select(`*, tiers:platform_addon_tiers(*)`)
         .order("sort_order");
-
       if (error) throw error;
       return data as PlatformAddon[];
     },
@@ -185,16 +178,15 @@ export function useCreateAddon() {
         })
         .select()
         .single();
-
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-addons"] });
-      toast({ title: "অ্যাড-অন তৈরি হয়েছে" });
+      toast({ title: "Add-on created" });
     },
     onError: (error: Error) => {
-      toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 }
@@ -211,16 +203,15 @@ export function useUpdateAddon() {
         .eq("id", id)
         .select()
         .single();
-
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-addons"] });
-      toast({ title: "অ্যাড-অন আপডেট হয়েছে" });
+      toast({ title: "Add-on updated" });
     },
     onError: (error: Error) => {
-      toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 }
@@ -232,10 +223,7 @@ export function useUpdateAddonTiers() {
 
   return useMutation({
     mutationFn: async ({ addonId, tiers }: { addonId: string; tiers: { min_customers?: number; max_customers?: number | null; price?: number }[] }) => {
-      // Delete existing tiers
       await supabase.from("platform_addon_tiers").delete().eq("addon_id", addonId);
-
-      // Insert new tiers
       if (tiers.length > 0) {
         const { error } = await supabase.from("platform_addon_tiers").insert(
           tiers.map((t) => ({
@@ -250,10 +238,10 @@ export function useUpdateAddonTiers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-addons"] });
-      toast({ title: "টায়ার আপডেট হয়েছে" });
+      toast({ title: "Tiers updated" });
     },
     onError: (error: Error) => {
-      toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 }
@@ -287,47 +275,32 @@ export interface ProrationPreview {
   daily_rate: number;
 }
 
-// Hook to get proration preview
 export function useProrationPreview() {
   return useMutation({
-    mutationFn: async ({
-      originalPrice,
-      periodStart,
-      periodEnd,
-      effectiveDate,
-    }: {
-      originalPrice: number;
-      periodStart: string;
-      periodEnd: string;
-      effectiveDate?: string;
-    }) => {
+    mutationFn: async ({ originalPrice, periodStart, periodEnd, effectiveDate }: { originalPrice: number; periodStart: string; periodEnd: string; effectiveDate?: string }) => {
       const { data, error } = await supabase.rpc("calculate_proration", {
         _original_price: originalPrice,
         _period_start: periodStart,
         _period_end: periodEnd,
         _effective_date: effectiveDate || new Date().toISOString().split("T")[0],
       });
-
       if (error) throw error;
       return data?.[0] as ProrationPreview | null;
     },
   });
 }
 
-// Hook to get pending proration items for a tenant
 export function usePendingProrations(tenantId?: string) {
   return useQuery({
     queryKey: ["pending-prorations", tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
-
       const { data, error } = await supabase
         .from("proration_items")
         .select("*")
         .eq("tenant_id", tenantId)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
-
       if (error) throw error;
       return data as ProrationItem[];
     },
@@ -335,22 +308,16 @@ export function usePendingProrations(tenantId?: string) {
   });
 }
 
-// Hooks for Tenant Subscriptions
 export function useTenantSubscription(tenantId?: string) {
   return useQuery({
     queryKey: ["tenant-subscription", tenantId],
     queryFn: async () => {
       if (!tenantId) return null;
-
       const { data, error } = await supabase
         .from("tenant_subscriptions")
-        .select(`
-          *,
-          plan:platform_plans(*)
-        `)
+        .select(`*, plan:platform_plans(*)`)
         .eq("tenant_id", tenantId)
         .maybeSingle();
-
       if (error) throw error;
       return data as TenantSubscription | null;
     },
@@ -363,16 +330,11 @@ export function useTenantAddonSubscriptions(tenantId?: string) {
     queryKey: ["tenant-addon-subscriptions", tenantId],
     queryFn: async () => {
       if (!tenantId) return [];
-
       const { data, error } = await supabase
         .from("tenant_addon_subscriptions")
-        .select(`
-          *,
-          addon:platform_addons(*)
-        `)
+        .select(`*, addon:platform_addons(*)`)
         .eq("tenant_id", tenantId)
         .eq("is_active", true);
-
       if (error) throw error;
       return data as TenantAddonSubscription[];
     },
@@ -385,11 +347,7 @@ export function useBillingEstimate(tenantId?: string) {
     queryKey: ["billing-estimate", tenantId],
     queryFn: async () => {
       if (!tenantId) return null;
-
-      const { data, error } = await supabase.rpc("get_tenant_billing_estimate", {
-        _tenant_id: tenantId,
-      });
-
+      const { data, error } = await supabase.rpc("get_tenant_billing_estimate", { _tenant_id: tenantId });
       if (error) throw error;
       return data?.[0] as BillingEstimate | null;
     },
@@ -402,16 +360,7 @@ export function useAssignPlanToTenant() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ 
-      tenantId, 
-      planId, 
-      createProration = true 
-    }: { 
-      tenantId: string; 
-      planId: string; 
-      createProration?: boolean;
-    }) => {
-      // Get current subscription to check for existing plan
+    mutationFn: async ({ tenantId, planId, createProration = true }: { tenantId: string; planId: string; createProration?: boolean }) => {
       const { data: currentSub } = await supabase
         .from("tenant_subscriptions")
         .select("plan_id")
@@ -421,18 +370,13 @@ export function useAssignPlanToTenant() {
 
       const oldPlanId = currentSub?.plan_id;
 
-      // Create proration item if upgrading/changing plan mid-cycle
       if (createProration && oldPlanId && oldPlanId !== planId) {
         const { error: prorationError } = await supabase.rpc("create_plan_proration", {
           _tenant_id: tenantId,
           _old_plan_id: oldPlanId,
           _new_plan_id: planId,
         });
-
-        if (prorationError) {
-          console.error("Proration error:", prorationError);
-          // Continue anyway - proration is not critical
-        }
+        if (prorationError) console.error("Proration error:", prorationError);
       }
 
       const periodEnd = new Date();
@@ -457,10 +401,10 @@ export function useAssignPlanToTenant() {
       queryClient.invalidateQueries({ queryKey: ["tenant-subscription"] });
       queryClient.invalidateQueries({ queryKey: ["billing-estimate"] });
       queryClient.invalidateQueries({ queryKey: ["pending-prorations"] });
-      toast({ title: "প্ল্যান অ্যাসাইন হয়েছে" });
+      toast({ title: "Plan assigned" });
     },
     onError: (error: Error) => {
-      toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 }
@@ -470,29 +414,14 @@ export function useToggleTenantAddon() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ 
-      tenantId, 
-      addonId, 
-      activate,
-      createProration = true,
-    }: { 
-      tenantId: string; 
-      addonId: string; 
-      activate: boolean;
-      createProration?: boolean;
-    }) => {
-      // Create proration item for mid-cycle addon change
+    mutationFn: async ({ tenantId, addonId, activate, createProration = true }: { tenantId: string; addonId: string; activate: boolean; createProration?: boolean }) => {
       if (createProration) {
         const { error: prorationError } = await supabase.rpc("create_addon_proration", {
           _tenant_id: tenantId,
           _addon_id: addonId,
           _is_activation: activate,
         });
-
-        if (prorationError) {
-          console.error("Addon proration error:", prorationError);
-          // Continue anyway - proration is not critical
-        }
+        if (prorationError) console.error("Addon proration error:", prorationError);
       }
 
       if (activate) {
@@ -520,10 +449,10 @@ export function useToggleTenantAddon() {
       queryClient.invalidateQueries({ queryKey: ["tenant-addon-subscriptions"] });
       queryClient.invalidateQueries({ queryKey: ["billing-estimate"] });
       queryClient.invalidateQueries({ queryKey: ["pending-prorations"] });
-      toast({ title: variables.activate ? "অ্যাড-অন সক্রিয় হয়েছে" : "অ্যাড-অন নিষ্ক্রিয় হয়েছে" });
+      toast({ title: variables.activate ? "Add-on activated" : "Add-on deactivated" });
     },
     onError: (error: Error) => {
-      toast({ title: "ত্রুটি", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 }
@@ -535,17 +464,9 @@ export function usePlatformInvoices(tenantId?: string) {
     queryFn: async () => {
       let query = supabase
         .from("platform_invoices")
-        .select(`
-          *,
-          tenant:tenants(name, subdomain),
-          items:platform_invoice_items(*)
-        `)
+        .select(`*, tenant:tenants(name, subdomain), items:platform_invoice_items(*)`)
         .order("created_at", { ascending: false });
-
-      if (tenantId) {
-        query = query.eq("tenant_id", tenantId);
-      }
-
+      if (tenantId) query = query.eq("tenant_id", tenantId);
       const { data, error } = await query;
       if (error) throw error;
       return data;

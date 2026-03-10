@@ -60,7 +60,7 @@ export default function StaffLogin() {
       if (!isStaff) {
         // Not staff - check if they're a customer
         await supabase.auth.signOut();
-        setError("এই পোর্টাল ISP স্টাফদের জন্য। কাস্টমার হিসেবে লগইন করতে কাস্টমার পোর্টালে যান।");
+        setError("This portal is for ISP staff only. To log in as a customer, please visit the customer portal.");
         setLoading(false);
         return;
       }
@@ -95,7 +95,7 @@ export default function StaffLogin() {
       if (error) {
         setError(error.message);
       } else {
-        setSuccess("অ্যাকাউন্ট তৈরি হয়েছে! ইমেইল ভেরিফাই করুন অথবা এখনই লগইন করুন।");
+        setSuccess("Account created! Please verify your email or sign in now.");
         setEmail("");
         setPassword("");
         setFullName("");
@@ -114,14 +114,14 @@ export default function StaffLogin() {
           <img src={ispManagerIcon} alt="ISP Manager" className="mx-auto mb-4 h-12 w-12 rounded-lg object-contain" />
           <CardTitle className="text-2xl">ISP Management</CardTitle>
           <CardDescription>
-            আপনার ড্যাশবোর্ডে প্রবেশ করুন
+            Sign in to your dashboard
           </CardDescription>
         </CardHeader>
         
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mx-4" style={{ width: 'calc(100% - 2rem)' }}>
-            <TabsTrigger value="login">লগইন</TabsTrigger>
-            <TabsTrigger value="signup">সাইনআপ</TabsTrigger>
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           
           <TabsContent value="login">
@@ -138,7 +138,7 @@ export default function StaffLogin() {
                   </Alert>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">ইমেইল</Label>
+                  <Label htmlFor="login-email">Email</Label>
                   <Input
                     id="login-email"
                     type="email"
@@ -150,12 +150,12 @@ export default function StaffLogin() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="login-password">পাসওয়ার্ড</Label>
+                    <Label htmlFor="login-password">Password</Label>
                     <Link 
                       to="/forgot-password" 
                       className="text-sm text-primary hover:underline"
                     >
-                      পাসওয়ার্ড ভুলে গেছেন?
+                      Forgot password?
                     </Link>
                   </div>
                   <Input
@@ -171,7 +171,7 @@ export default function StaffLogin() {
               <CardFooter className="flex flex-col gap-4">
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  লগইন করুন
+                  Sign In
                 </Button>
               </CardFooter>
             </form>
@@ -191,18 +191,18 @@ export default function StaffLogin() {
                   </Alert>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">পুরো নাম</Label>
+                  <Label htmlFor="signup-name">Full Name</Label>
                   <Input
                     id="signup-name"
                     type="text"
-                    placeholder="আপনার নাম"
+                    placeholder="Your name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">ইমেইল</Label>
+                  <Label htmlFor="signup-email">Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -213,7 +213,7 @@ export default function StaffLogin() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">পাসওয়ার্ড</Label>
+                  <Label htmlFor="signup-password">Password</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -228,7 +228,7 @@ export default function StaffLogin() {
               <CardFooter className="flex flex-col gap-4">
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  অ্যাকাউন্ট তৈরি করুন
+                  Create Account
                 </Button>
               </CardFooter>
             </form>
@@ -237,15 +237,15 @@ export default function StaffLogin() {
         
         <div className="text-sm text-muted-foreground text-center pb-6 space-y-1">
           <p>
-            নতুন ISP?{" "}
+            New ISP?{" "}
             <Link to="/register" className="text-primary hover:underline">
-              আপনার প্রতিষ্ঠান নিবন্ধন করুন
+              Register your organization
             </Link>
           </p>
           <p>
-            কাস্টমার?{" "}
+            Customer?{" "}
             <Link to="/portal/login" className="text-primary hover:underline">
-              কাস্টমার পোর্টালে যান
+              Go to customer portal
             </Link>
           </p>
         </div>

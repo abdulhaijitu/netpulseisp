@@ -5,38 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { 
-  CreditCard, 
-  Search,
-  Filter,
-  TrendingUp,
-  Calendar,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Building2,
-  Users
+  CreditCard, Search, Filter, TrendingUp, Calendar,
+  CheckCircle, Clock, AlertTriangle, Building2, Users
 } from "lucide-react";
 import { useAllSubscriptions, useSubscriptionStats } from "@/hooks/useSubscriptions";
 
 const statusConfig = {
-  active: { label: "সক্রিয়", variant: "default" as const, icon: CheckCircle },
-  trial: { label: "ট্রায়াল", variant: "secondary" as const, icon: Clock },
-  suspended: { label: "স্থগিত", variant: "destructive" as const, icon: AlertTriangle },
+  active: { label: "Active", variant: "default" as const, icon: CheckCircle },
+  trial: { label: "Trial", variant: "secondary" as const, icon: Clock },
+  suspended: { label: "Suspended", variant: "destructive" as const, icon: AlertTriangle },
 };
 
 export default function AdminSubscriptions() {
@@ -55,7 +38,7 @@ export default function AdminSubscriptions() {
   });
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('bn-BD', {
+    return new Date(dateStr).toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
@@ -65,9 +48,9 @@ export default function AdminSubscriptions() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">সাবস্ক্রিপশন ম্যানেজমেন্ট</h1>
+        <h1 className="text-2xl font-bold">Subscription Management</h1>
         <p className="text-muted-foreground">
-          টেন্যান্ট সাবস্ক্রিপশন ও বিলিং পরিচালনা করুন
+          Manage tenant subscriptions and billing
         </p>
       </div>
 
@@ -75,79 +58,52 @@ export default function AdminSubscriptions() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              মোট সাবস্ক্রিপশন
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Subscriptions</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold">{stats?.total ?? 0}</div>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">সকল টেন্যান্ট</p>
+            {statsLoading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{stats?.total ?? 0}</div>}
+            <p className="text-xs text-muted-foreground mt-1">All tenants</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              সক্রিয় সাবস্ক্রিপশন
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Active Subscriptions</CardTitle>
             <CheckCircle className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold">{stats?.active ?? 0}</div>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">পেইং কাস্টমার</p>
+            {statsLoading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{stats?.active ?? 0}</div>}
+            <p className="text-xs text-muted-foreground mt-1">Paying customers</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              ট্রায়াল অ্যাকাউন্ট
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Trial Accounts</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold">{stats?.trial ?? 0}</div>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">সম্ভাব্য কনভার্শন</p>
+            {statsLoading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{stats?.trial ?? 0}</div>}
+            <p className="text-xs text-muted-foreground mt-1">Potential conversions</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              স্থগিত
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Suspended</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            {statsLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <div className="text-2xl font-bold text-destructive">{stats?.suspended ?? 0}</div>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">মনোযোগ প্রয়োজন</p>
+            {statsLoading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold text-destructive">{stats?.suspended ?? 0}</div>}
+            <p className="text-xs text-muted-foreground mt-1">Needs attention</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Subscription Status Distribution */}
+      {/* Status Distribution */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            স্ট্যাটাস ডিস্ট্রিবিউশন
+            Status Distribution
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -157,12 +113,8 @@ export default function AdminSubscriptions() {
                 <CheckCircle className="h-6 w-6 text-primary" />
               </div>
               <div>
-                {statsLoading ? (
-                  <Skeleton className="h-8 w-12" />
-                ) : (
-                  <p className="text-2xl font-bold">{stats?.active ?? 0}</p>
-                )}
-                <p className="text-sm text-muted-foreground">সক্রিয়</p>
+                {statsLoading ? <Skeleton className="h-8 w-12" /> : <p className="text-2xl font-bold">{stats?.active ?? 0}</p>}
+                <p className="text-sm text-muted-foreground">Active</p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-4 rounded-lg border">
@@ -170,12 +122,8 @@ export default function AdminSubscriptions() {
                 <Clock className="h-6 w-6 text-secondary-foreground" />
               </div>
               <div>
-                {statsLoading ? (
-                  <Skeleton className="h-8 w-12" />
-                ) : (
-                  <p className="text-2xl font-bold">{stats?.trial ?? 0}</p>
-                )}
-                <p className="text-sm text-muted-foreground">ট্রায়াল</p>
+                {statsLoading ? <Skeleton className="h-8 w-12" /> : <p className="text-2xl font-bold">{stats?.trial ?? 0}</p>}
+                <p className="text-sm text-muted-foreground">Trial</p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-4 rounded-lg border">
@@ -183,12 +131,8 @@ export default function AdminSubscriptions() {
                 <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
               <div>
-                {statsLoading ? (
-                  <Skeleton className="h-8 w-12" />
-                ) : (
-                  <p className="text-2xl font-bold">{stats?.suspended ?? 0}</p>
-                )}
-                <p className="text-sm text-muted-foreground">স্থগিত</p>
+                {statsLoading ? <Skeleton className="h-8 w-12" /> : <p className="text-2xl font-bold">{stats?.suspended ?? 0}</p>}
+                <p className="text-sm text-muted-foreground">Suspended</p>
               </div>
             </div>
           </div>
@@ -200,19 +144,16 @@ export default function AdminSubscriptions() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            সকল সাবস্ক্রিপশন
+            All Subscriptions
           </CardTitle>
-          <CardDescription>
-            টেন্যান্ট সাবস্ক্রিপশন দেখুন ও পরিচালনা করুন
-          </CardDescription>
+          <CardDescription>View and manage tenant subscriptions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Filters */}
           <div className="flex flex-col gap-4 sm:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="সাবস্ক্রিপশন খুঁজুন..."
+                placeholder="Search subscriptions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
@@ -221,28 +162,27 @@ export default function AdminSubscriptions() {
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-40">
                 <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="স্ট্যাটাস" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">সব স্ট্যাটাস</SelectItem>
-                <SelectItem value="active">সক্রিয়</SelectItem>
-                <SelectItem value="trial">ট্রায়াল</SelectItem>
-                <SelectItem value="suspended">স্থগিত</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="trial">Trial</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Table */}
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>টেন্যান্ট</TableHead>
-                  <TableHead>সাবডোমেইন</TableHead>
-                  <TableHead>গ্রাহক</TableHead>
-                  <TableHead>তৈরি</TableHead>
-                  <TableHead>স্ট্যাটাস</TableHead>
-                  <TableHead className="text-right">অ্যাকশন</TableHead>
+                  <TableHead>Tenant</TableHead>
+                  <TableHead>Subdomain</TableHead>
+                  <TableHead>Customers</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -260,7 +200,7 @@ export default function AdminSubscriptions() {
                 ) : filteredSubscriptions.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                      কোন সাবস্ক্রিপশন পাওয়া যায়নি
+                      No subscriptions found
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -277,9 +217,7 @@ export default function AdminSubscriptions() {
                             <span className="font-medium">{sub.tenant_name}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {sub.subdomain}.ispmanager.com
-                        </TableCell>
+                        <TableCell className="text-muted-foreground">{sub.subdomain}.ispmanager.com</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4 text-muted-foreground" />
@@ -299,9 +237,7 @@ export default function AdminSubscriptions() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm">
-                            পরিচালনা
-                          </Button>
+                          <Button variant="ghost" size="sm">Manage</Button>
                         </TableCell>
                       </TableRow>
                     );

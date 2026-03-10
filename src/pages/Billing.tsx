@@ -137,8 +137,8 @@ export default function Billing() {
   const handleGenerateBills = async () => {
     if (!currentTenant?.id) {
       toast({
-        title: "ত্রুটি",
-        description: "টেন্যান্ট পাওয়া যায়নি",
+        title: "Error",
+        description: "Tenant not found",
         variant: "destructive",
       });
       return;
@@ -158,13 +158,13 @@ export default function Billing() {
       });
 
       toast({
-        title: "বিল তৈরি হয়েছে",
-        description: `${result.length}টি গ্রাহকের জন্য বিল তৈরি হয়েছে`,
+        title: "Bills generated",
+        description: `Bills generated for ${result.length} customer(s)`,
       });
       setIsGenerateDialogOpen(false);
     } catch (error: any) {
       toast({
-        title: "বিল তৈরি করতে ব্যর্থ",
+        title: "Failed to generate bills",
         description: error.message,
         variant: "destructive",
       });
@@ -290,13 +290,13 @@ export default function Billing() {
               </div>
               <div className="rounded-lg bg-muted p-3">
                 <p className="text-sm text-muted-foreground">
-                  সক্রিয় গ্রাহকদের জন্য তাদের প্যাকেজ মূল্যের উপর ভিত্তি করে ইনভয়েস তৈরি হবে।
+                  Invoices will be generated for active customers based on their package price.
                 </p>
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsGenerateDialogOpen(false)}>
-                বাতিল
+                Cancel
               </Button>
               <Button 
                 onClick={handleGenerateBills}
@@ -305,7 +305,7 @@ export default function Billing() {
                 {generateBills.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                বিল তৈরি করুন
+                Generate Bills
               </Button>
             </DialogFooter>
           </DialogContent>

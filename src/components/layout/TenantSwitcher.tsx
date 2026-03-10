@@ -16,12 +16,7 @@ export function TenantSwitcher() {
   const { currentTenant, allTenants, setCurrentTenant, isSuperAdmin, isLoading } =
     useTenantContext();
 
-  // Only show for super admin
-  // Note: we still show it when there is only 1 tenant so the UI is visible and
-  // it becomes a consistent place to switch once more tenants are created.
-  if (!isSuperAdmin) {
-    return null;
-  }
+  if (!isSuperAdmin) return null;
 
   return (
     <DropdownMenu>
@@ -35,17 +30,17 @@ export function TenantSwitcher() {
           <Building2 className="h-4 w-4 shrink-0" />
           <span className="truncate">
             {isLoading
-              ? "লোড হচ্ছে..."
-              : currentTenant?.name || (allTenants.length === 0 ? "কোন টেন্যান্ট নেই" : "টেন্যান্ট নির্বাচন করুন")}
+              ? "Loading..."
+              : currentTenant?.name || (allTenants.length === 0 ? "No tenants" : "Select tenant")}
           </span>
           <ChevronDown className="h-4 w-4 shrink-0" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[250px]">
-        <DropdownMenuLabel>টেন্যান্ট/ISP সুইচ করুন</DropdownMenuLabel>
+        <DropdownMenuLabel>Switch Tenant/ISP</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {allTenants.length === 0 ? (
-          <DropdownMenuItem disabled>কোন টেন্যান্ট পাওয়া যায়নি</DropdownMenuItem>
+          <DropdownMenuItem disabled>No tenants found</DropdownMenuItem>
         ) : (
           allTenants.map((tenant) => (
             <DropdownMenuItem
@@ -71,10 +66,10 @@ export function TenantSwitcher() {
                   className="text-xs"
                 >
                   {tenant.subscription_status === "active"
-                    ? "সক্রিয়"
+                    ? "Active"
                     : tenant.subscription_status === "trial"
-                      ? "ট্রায়াল"
-                      : "স্থগিত"}
+                      ? "Trial"
+                      : "Suspended"}
                 </Badge>
                 {currentTenant?.id === tenant.id && (
                   <Check className="h-4 w-4 text-primary" />

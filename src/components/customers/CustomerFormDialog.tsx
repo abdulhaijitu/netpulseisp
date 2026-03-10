@@ -82,23 +82,23 @@ export function CustomerFormDialog({
     const newErrors: Partial<Record<keyof CustomerFormData, string>> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "নাম আবশ্যক";
+      newErrors.name = "Name is required";
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = "নাম কমপক্ষে ২ অক্ষরের হতে হবে";
+      newErrors.name = "Name must be at least 2 characters";
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = "ফোন নম্বর আবশ্যক";
+      newErrors.phone = "Phone number is required";
     } else if (!/^01[3-9]\d{8}$/.test(formData.phone.replace(/\s/g, ""))) {
-      newErrors.phone = "সঠিক বাংলাদেশি ফোন নম্বর দিন";
+      newErrors.phone = "Enter a valid Bangladeshi phone number";
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "সঠিক ইমেইল ঠিকানা দিন";
+      newErrors.email = "Enter a valid email address";
     }
 
     if (!formData.packageId) {
-      newErrors.packageId = "প্যাকেজ নির্বাচন করুন";
+      newErrors.packageId = "Please select a package";
     }
 
     setErrors(newErrors);
@@ -135,12 +135,12 @@ export function CustomerFormDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            {mode === "add" ? "নতুন কাস্টমার যোগ করুন" : "কাস্টমার সম্পাদনা"}
+            {mode === "add" ? "Add New Customer" : "Edit Customer"}
           </DialogTitle>
           <DialogDescription>
             {mode === "add"
-              ? "আপনার নেটওয়ার্কে নতুন কাস্টমার যোগ করতে তথ্য পূরণ করুন।"
-              : "কাস্টমারের তথ্য ও সংযোগ সেটিংস আপডেট করুন।"}
+              ? "Fill in the details to add a new customer to your network."
+              : "Update the customer's details and connection settings."}
           </DialogDescription>
         </DialogHeader>
 
@@ -149,11 +149,11 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="name" className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
-              পূর্ণ নাম *
+              Full Name *
             </Label>
             <Input
               id="name"
-              placeholder="কাস্টমারের নাম লিখুন"
+              placeholder="Enter customer name"
               value={formData.name}
               onChange={(e) => handleChange("name", e.target.value)}
               className={errors.name ? "border-destructive" : ""}
@@ -167,7 +167,7 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="phone" className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
-              ফোন নম্বর *
+              Phone Number *
             </Label>
             <Input
               id="phone"
@@ -185,7 +185,7 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="email" className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              ইমেইল
+              Email
             </Label>
             <Input
               id="email"
@@ -204,11 +204,11 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="address" className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
-              ঠিকানা
+              Address
             </Label>
             <Textarea
               id="address"
-              placeholder="পূর্ণ ঠিকানা লিখুন"
+              placeholder="Enter full address"
               value={formData.address}
               onChange={(e) => handleChange("address", e.target.value)}
               rows={2}
@@ -219,7 +219,7 @@ export function CustomerFormDialog({
           <div className="space-y-2">
             <Label htmlFor="package" className="flex items-center gap-2">
               <Package className="h-4 w-4 text-muted-foreground" />
-              ইন্টারনেট প্যাকেজ *
+              Internet Package *
             </Label>
             <Select
               value={formData.packageId}
@@ -227,7 +227,7 @@ export function CustomerFormDialog({
               disabled={packagesLoading}
             >
               <SelectTrigger className={errors.packageId ? "border-destructive" : ""}>
-                <SelectValue placeholder={packagesLoading ? "লোড হচ্ছে..." : "প্যাকেজ নির্বাচন করুন"} />
+                <SelectValue placeholder={packagesLoading ? "Loading..." : "Select a package"} />
               </SelectTrigger>
               <SelectContent>
                 {packages?.filter(p => p.is_active).map((pkg) => (
@@ -235,14 +235,14 @@ export function CustomerFormDialog({
                     <div className="flex items-center justify-between w-full gap-4">
                       <span>{pkg.name} ({pkg.speed_label})</span>
                       <span className="text-muted-foreground">
-                        ৳{pkg.monthly_price}/মাস
+                        ৳{pkg.monthly_price}/mo
                       </span>
                     </div>
                   </SelectItem>
                 ))}
                 {(!packages || packages.filter(p => p.is_active).length === 0) && !packagesLoading && (
                   <SelectItem value="" disabled>
-                    কোন প্যাকেজ পাওয়া যায়নি
+                    No packages found
                   </SelectItem>
                 )}
               </SelectContent>
@@ -252,7 +252,7 @@ export function CustomerFormDialog({
             )}
             {selectedPackage && (
               <p className="text-xs text-muted-foreground">
-                মাসিক ফি: ৳{selectedPackage.monthly_price.toLocaleString()}
+                Monthly fee: ৳{selectedPackage.monthly_price.toLocaleString()}
               </p>
             )}
           </div>
@@ -262,7 +262,7 @@ export function CustomerFormDialog({
             <div className="space-y-2">
               <Label htmlFor="status" className="flex items-center gap-2">
                 <Wifi className="h-4 w-4 text-muted-foreground" />
-                সংযোগ স্ট্যাটাস
+                Connection Status
               </Label>
               <Select
                 value={formData.connectionStatus}
@@ -274,9 +274,9 @@ export function CustomerFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">সক্রিয়</SelectItem>
-                  <SelectItem value="suspended">স্থগিত</SelectItem>
-                  <SelectItem value="pending">অপেক্ষমান</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,7 +286,7 @@ export function CustomerFormDialog({
           {mode === "edit" && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="dueBalance">বকেয়া (৳)</Label>
+                <Label htmlFor="dueBalance">Due Balance (৳)</Label>
                 <Input
                   id="dueBalance"
                   type="number"
@@ -298,7 +298,7 @@ export function CustomerFormDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="advanceBalance">অগ্রিম (৳)</Label>
+                <Label htmlFor="advanceBalance">Advance (৳)</Label>
                 <Input
                   id="advanceBalance"
                   type="number"
@@ -319,11 +319,11 @@ export function CustomerFormDialog({
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
-            বাতিল
+            Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === "add" ? "কাস্টমার যোগ করুন" : "সংরক্ষণ করুন"}
+            {mode === "add" ? "Add Customer" : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

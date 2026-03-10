@@ -19,7 +19,6 @@ interface TenantSettingsUpdate {
   sender_email?: string | null;
   logo_url?: string | null;
   api_enabled?: boolean;
-  // Reseller branding controls
   allow_reseller_branding?: boolean;
   allow_reseller_logo?: boolean;
   allow_reseller_name?: boolean;
@@ -33,24 +32,22 @@ export function useUpdateTenantSettings(tenantId: string | undefined) {
   return useMutation({
     mutationFn: async (settings: TenantSettingsUpdate) => {
       if (!tenantId) throw new Error("No tenant ID");
-
       const { data, error } = await supabase
         .from("tenants")
         .update(settings)
         .eq("id", tenantId)
         .select()
         .single();
-
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currentTenant", user?.id] });
-      toast.success("সেটিংস সফলভাবে আপডেট হয়েছে");
+      toast.success("Settings updated successfully");
     },
     onError: (error) => {
       console.error("Error updating tenant settings:", error);
-      toast.error("সেটিংস আপডেট করতে সমস্যা হয়েছে");
+      toast.error("Failed to update settings");
     },
   });
 }

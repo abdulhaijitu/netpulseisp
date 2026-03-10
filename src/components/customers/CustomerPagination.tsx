@@ -45,45 +45,28 @@ export function CustomerPagination({
         pages.push(i);
       }
     } else {
-      // Always show first page
       pages.push(1);
-      
-      if (currentPage > 3) {
-        pages.push("ellipsis");
-      }
-      
-      // Show pages around current
+      if (currentPage > 3) pages.push("ellipsis");
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
-      
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-      
-      if (currentPage < totalPages - 2) {
-        pages.push("ellipsis");
-      }
-      
-      // Always show last page
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push("ellipsis");
       pages.push(totalPages);
     }
     
     return pages;
   };
 
-  if (totalItems === 0) {
-    return null;
-  }
+  if (totalItems === 0) return null;
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      {/* Left: Items info and page size */}
       <div className="flex items-center gap-4">
         <p className="text-sm text-muted-foreground">
-          {startItem}-{endItem} দেখানো হচ্ছে মোট {totalItems} এর মধ্যে
+          Showing {startItem}-{endItem} of {totalItems}
         </p>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">প্রতি পেজে:</span>
+          <span className="text-sm text-muted-foreground">Per page:</span>
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => onPageSizeChange(Number(value))}
@@ -101,7 +84,6 @@ export function CustomerPagination({
         </div>
       </div>
 
-      {/* Right: Pagination controls */}
       {totalPages > 1 && (
         <Pagination>
           <PaginationContent>
@@ -111,7 +93,6 @@ export function CustomerPagination({
                 className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
               />
             </PaginationItem>
-            
             {getPageNumbers().map((page, index) =>
               page === "ellipsis" ? (
                 <PaginationItem key={`ellipsis-${index}`}>
@@ -129,7 +110,6 @@ export function CustomerPagination({
                 </PaginationItem>
               )
             )}
-            
             <PaginationItem>
               <PaginationNext
                 onClick={() => onPageChange(currentPage + 1)}

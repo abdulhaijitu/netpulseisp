@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -11,10 +11,8 @@ import {
   Clock,
   RefreshCw,
   Loader2,
-  Settings2,
 } from "lucide-react";
-import { format, formatDistanceToNow, parseISO } from "date-fns";
-import { bn } from "date-fns/locale";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useTestConnection, useUpdateNetworkIntegration } from "@/hooks/useNetworkIntegration";
 
@@ -35,17 +33,17 @@ const providerLabels: Record<string, string> = {
 };
 
 const syncModeLabels: Record<string, string> = {
-  manual: "ম্যানুয়াল",
-  scheduled: "শিডিউলড",
-  event_driven: "ইভেন্ট-ভিত্তিক",
+  manual: "Manual",
+  scheduled: "Scheduled",
+  event_driven: "Event-driven",
 };
 
 const statusStyles: Record<string, { label: string; className: string; icon: any }> = {
-  success: { label: "সংযুক্ত", className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle },
-  failed: { label: "ব্যর্থ", className: "bg-destructive/10 text-destructive border-destructive/20", icon: XCircle },
-  pending: { label: "অপেক্ষমান", className: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: Clock },
-  in_progress: { label: "চলমান", className: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: RefreshCw },
-  retrying: { label: "পুনরায় চেষ্টা", className: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: RefreshCw },
+  success: { label: "Connected", className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle },
+  failed: { label: "Failed", className: "bg-destructive/10 text-destructive border-destructive/20", icon: XCircle },
+  pending: { label: "Pending", className: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: Clock },
+  in_progress: { label: "In Progress", className: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: RefreshCw },
+  retrying: { label: "Retrying", className: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: RefreshCw },
 };
 
 export function IntegrationCard({ integration }: IntegrationCardProps) {
@@ -93,7 +91,7 @@ export function IntegrationCard({ integration }: IntegrationCardProps) {
                 <span>Sync: {syncModeLabels[integration.sync_mode]}</span>
                 {integration.last_sync_at && (
                   <span>
-                    শেষ সিঙ্ক: {formatDistanceToNow(parseISO(integration.last_sync_at), { addSuffix: true, locale: bn })}
+                    Last sync: {formatDistanceToNow(parseISO(integration.last_sync_at), { addSuffix: true })}
                   </span>
                 )}
               </div>
@@ -121,7 +119,6 @@ export function IntegrationCard({ integration }: IntegrationCardProps) {
           </div>
         </div>
 
-        {/* MikroTik / RADIUS specific info */}
         {integration.provider_type === "mikrotik" && (integration.mikrotik_ppp_profile || integration.mikrotik_address_list) && (
           <div className="flex items-center gap-3 mt-3 pt-3 border-t text-xs text-muted-foreground">
             {integration.mikrotik_ppp_profile && <span>PPP: {integration.mikrotik_ppp_profile}</span>}
