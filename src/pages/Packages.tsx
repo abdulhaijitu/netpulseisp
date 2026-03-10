@@ -39,6 +39,10 @@ import { useTenantContext } from "@/contexts/TenantContext";
 import { useCustomers } from "@/hooks/useCustomers";
 import { PackageFormDialog } from "@/components/packages/PackageFormDialog";
 import { DeletePackageDialog } from "@/components/packages/DeletePackageDialog";
+import { useHasMikrotikIntegration } from "@/hooks/useNetworkIntegrations";
+import { usePackageSync } from "@/hooks/usePackageSync";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 type ViewMode = "cards" | "table";
