@@ -11,7 +11,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Loader2 } from "lucide-react";
+import { Loader2, Router } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import type { Package } from "@/hooks/usePackages";
 
 interface PackageFormDialogProps {
@@ -24,8 +25,13 @@ interface PackageFormDialogProps {
     monthly_price: number;
     validity_days: number;
     is_active: boolean;
+    mikrotik_profile_name: string | null;
+    mikrotik_rate_limit: string | null;
+    mikrotik_address_pool: string | null;
+    mikrotik_queue_type: string | null;
   }) => void;
   isLoading?: boolean;
+  hasMikrotikIntegration?: boolean;
 }
 
 export function PackageFormDialog({
@@ -34,12 +40,17 @@ export function PackageFormDialog({
   package: pkg,
   onSubmit,
   isLoading,
+  hasMikrotikIntegration = false,
 }: PackageFormDialogProps) {
   const [name, setName] = useState("");
   const [speedLabel, setSpeedLabel] = useState("");
   const [monthlyPrice, setMonthlyPrice] = useState("");
   const [validityDays, setValidityDays] = useState("30");
   const [isActive, setIsActive] = useState(true);
+  const [mikrotikProfileName, setMikrotikProfileName] = useState("");
+  const [mikrotikRateLimit, setMikrotikRateLimit] = useState("");
+  const [mikrotikAddressPool, setMikrotikAddressPool] = useState("");
+  const [mikrotikQueueType, setMikrotikQueueType] = useState("");
 
   useEffect(() => {
     if (pkg) {
@@ -48,12 +59,20 @@ export function PackageFormDialog({
       setMonthlyPrice(pkg.monthly_price.toString());
       setValidityDays((pkg.validity_days ?? 30).toString());
       setIsActive(pkg.is_active ?? true);
+      setMikrotikProfileName(pkg.mikrotik_profile_name ?? "");
+      setMikrotikRateLimit(pkg.mikrotik_rate_limit ?? "");
+      setMikrotikAddressPool(pkg.mikrotik_address_pool ?? "");
+      setMikrotikQueueType(pkg.mikrotik_queue_type ?? "");
     } else {
       setName("");
       setSpeedLabel("");
       setMonthlyPrice("");
       setValidityDays("30");
       setIsActive(true);
+      setMikrotikProfileName("");
+      setMikrotikRateLimit("");
+      setMikrotikAddressPool("");
+      setMikrotikQueueType("");
     }
   }, [pkg, open]);
 
@@ -65,12 +84,16 @@ export function PackageFormDialog({
       monthly_price: parseFloat(monthlyPrice),
       validity_days: parseInt(validityDays),
       is_active: isActive,
+      mikrotik_profile_name: mikrotikProfileName || null,
+      mikrotik_rate_limit: mikrotikRateLimit || null,
+      mikrotik_address_pool: mikrotikAddressPool || null,
+      mikrotik_queue_type: mikrotikQueueType || null,
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>
@@ -142,6 +165,63 @@ export function PackageFormDialog({
                 onCheckedChange={setIsActive}
               />
             </div>
+
+            {/* MikroTik Integration Section */}
+            {hasMikrotikIntegration && (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Router className="h-4 w-4" />
+                    <span>MikroTik Profile Mapping</span>
+                  </div>
+
+                  <div className="grid gap-3">
+                    <div className="grid gap-2">
+                      <Label htmlFor="mikrotik_profile">PPP Profile Name</Label>
+                      <Input
+                        id="mikrotik_profile"
+                        value={mikrotikProfileName}
+                        onChange={(e) => setMikrotikProfileName(e.target.value)}
+                        placeholder="e.g. 20M-Plan"
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label htmlFor="mikrotik_rate">Rate Limit</Label>
+                      <Input
+                        id="mikrotik_rate"
+                        value={mikrotikRateLimit}
+                        onChange={(e) => setMikrotikRateLimit(e.target.value)}
+                        placeholder="e.g. 20M/20M"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="mikrotik_pool">Address Pool</Label>
+                        <Input
+                          id="mikrotik_pool"
+                          value={mikrotikAddressPool}
+                          onChange={(e) => setMikrotikAddressPool(e.target.value)}
+                          placeholder="e.g. pool-20m"
+                        />
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor="mikrotik_queue">Queue Type</Label>
+                        <Input
+                          id="mikrotik_queue"
+                          value={mikrotikQueueType}
+                          onChange={(e) => setMikrotikQueueType(e.target.value)}
+                          placeholder="e.g. pcq-upload-default"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           <DialogFooter>
