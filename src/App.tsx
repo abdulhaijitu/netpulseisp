@@ -241,7 +241,7 @@ const App = () => (
                 <Route path="/dashboard/resellers" element={<Resellers />} />
                 <Route path="/dashboard/resellers/:resellerId" element={<ResellerDetail />} />
                 <Route path="/dashboard/resellers/tariff" element={<ResellerPackageTariffPage />} />
-                <Route path="/dashboard/resellers/funding" element={<PH title="Reseller Funding" />} />
+                <Route path="/dashboard/resellers/funding" element={<ResellerFundingPage />} />
                 <Route path="/dashboard/resellers/pgw" element={<PH title="PGW Settlement" />} />
 
                 {/* SMS Service */}
