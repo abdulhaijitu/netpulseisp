@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { NavLink, NavLinkProps } from "react-router-dom";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 
 interface Links {
   label: string;
@@ -147,7 +147,7 @@ export const SidebarLink = ({
     <NavLink
       to={link.href}
       className={cn(
-        "flex items-center gap-2 rounded-lg px-2 py-2.5 text-sm font-medium transition-all duration-200 group",
+        "flex items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium transition-all duration-200 group",
         "hover:bg-sidebar-accent/80",
         active
           ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
@@ -163,10 +163,101 @@ export const SidebarLink = ({
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
         transition={{ duration: 0.2 }}
-        className="truncate whitespace-nowrap"
+        className="truncate whitespace-nowrap text-[13px]"
       >
         {link.label}
       </motion.span>
     </NavLink>
+  );
+};
+
+export const SidebarGroupLabel = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  const { open, animate } = useSidebar();
+  return (
+    <motion.div
+      animate={{
+        display: animate ? (open ? "block" : "none") : "block",
+        opacity: animate ? (open ? 1 : 0) : 1,
+      }}
+      transition={{ duration: 0.2 }}
+      className={cn(
+        "px-2 pt-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40",
+        className
+      )}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+export const SidebarGroup = ({
+  label,
+  icon,
+  children,
+  defaultOpen = false,
+  className,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  className?: string;
+}) => {
+  const [expanded, setExpanded] = useState(defaultOpen);
+  const { open: sidebarOpen, animate } = useSidebar();
+
+  const isExpanded = sidebarOpen ? expanded : false;
+
+  return (
+    <div className={cn("", className)}>
+      <button
+        onClick={() => sidebarOpen && setExpanded(!expanded)}
+        className={cn(
+          "flex items-center gap-2 w-full rounded-lg px-2 py-2 text-sm font-medium transition-all duration-200",
+          "hover:bg-sidebar-accent/80 text-sidebar-foreground/70 hover:text-sidebar-foreground"
+        )}
+      >
+        <span className="shrink-0">{icon}</span>
+        <motion.span
+          animate={{
+            display: animate ? (sidebarOpen ? "inline-block" : "none") : "inline-block",
+            opacity: animate ? (sidebarOpen ? 1 : 0) : 1,
+          }}
+          transition={{ duration: 0.2 }}
+          className="truncate whitespace-nowrap text-[13px] flex-1 text-left"
+        >
+          {label}
+        </motion.span>
+        <motion.span
+          animate={{
+            display: animate ? (sidebarOpen ? "inline-block" : "none") : "inline-block",
+            opacity: animate ? (sidebarOpen ? 1 : 0) : 1,
+            rotate: isExpanded ? 180 : 0,
+          }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown className="h-3.5 w-3.5" />
+        </motion.span>
+      </button>
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="overflow-hidden pl-4"
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
