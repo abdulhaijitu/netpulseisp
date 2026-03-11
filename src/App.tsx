@@ -176,7 +176,7 @@ const App = () => (
                 <Route path="/dashboard/accounting/journal" element={<JournalVoucherPage />} />
                 <Route path="/dashboard/accounting/balance-sheet" element={<BalanceSheetPage />} />
                 <Route path="/dashboard/accounting/profit-loss" element={<ProfitLossPage />} />
-                <Route path="/dashboard/accounting/trial-balance" element={<PH title="Trial Balance" />} />
+                <Route path="/dashboard/accounting/trial-balance" element={<TrialBalancePage />} />
 
                 {/* Network */}
                 <Route path="/dashboard/network" element={<NetworkPage />} />
