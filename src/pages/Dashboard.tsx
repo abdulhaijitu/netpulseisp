@@ -13,7 +13,7 @@ import { useBills } from "@/hooks/useBills";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertBanner } from "@/components/shared/AlertBanner";
+
 import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 import { useDemoMode } from "@/contexts/DemoModeContext";
 import { demoMetrics } from "@/data/demoData";
