@@ -1,7 +1,4 @@
-import { 
-  Plus,
-  FileText,
-} from "lucide-react";
+import { Calculator } from "lucide-react";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { CustomerTable } from "@/components/dashboard/CustomerTable";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
@@ -84,16 +81,10 @@ export default function Dashboard() {
             {now.toLocaleDateString("en-US", { month: "long", year: "numeric" })} — your ISP at a glance
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate("/dashboard/billing")}>
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Generate Bills</span>
-          </Button>
-          <Button size="sm" className="gap-1.5" onClick={() => navigate("/dashboard/customers")}>
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Add Customer</span>
-          </Button>
-        </div>
+        <Button size="sm" className="gap-1.5" onClick={() => navigate("/dashboard/finance/accounting")}>
+          <Calculator className="h-4 w-4" />
+          <span className="hidden sm:inline">Accounting Dashboard</span>
+        </Button>
       </div>
 
       {/* Onboarding Checklist */}
