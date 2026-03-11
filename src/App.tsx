@@ -273,7 +273,7 @@ const App = () => (
                 <Route path="/dashboard/system/system-setup" element={<PH title="System Setup" />} />
                 <Route path="/dashboard/system/processing-fee" element={<PaymentProcessingFeePage />} />
                 <Route path="/dashboard/system/vat-setup" element={<VatSetupPage />} />
-                <Route path="/dashboard/system/activity-loggers" element={<PH title="Activity Loggers" />} />
+                <Route path="/dashboard/system/activity-loggers" element={<ActivityLoggersPage />} />
                 <Route path="/dashboard/system/automatic-process" element={<PH title="Automatic Process" />} />
 
                 {/* Reseller self-service */}
