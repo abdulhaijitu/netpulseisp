@@ -1,25 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { 
-  Plus, Edit, Trash2, MoreHorizontal, Zap, Loader2, 
-  LayoutGrid, List, Users, TrendingUp, Package as PackageIcon,
-  ToggleLeft, ToggleRight, Eye, RefreshCw
+  Plus, Edit, Trash2, Loader2, Search, Package as PackageIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -29,10 +17,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
-import { Progress } from "@/components/ui/progress";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { usePackages, useCreatePackage, useUpdatePackage, useDeletePackage, type Package } from "@/hooks/usePackages";
 import { useTenantContext } from "@/contexts/TenantContext";
@@ -45,8 +35,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type ViewMode = "cards" | "table";
-
 export default function Packages() {
   const { currentTenant } = useTenantContext();
   const { data: packages = [], isLoading } = usePackages(currentTenant?.id);
@@ -57,7 +45,6 @@ export default function Packages() {
   const updatePackage = useUpdatePackage();
   const deletePackage = useDeletePackage();
 
-  // Get the first active mikrotik integration id for sync
   const { data: mikrotikIntegration } = useQuery({
     queryKey: ["mikrotik-integration-id", currentTenant?.id],
     queryFn: async () => {
@@ -75,33 +62,62 @@ export default function Packages() {
     enabled: !!currentTenant?.id && hasMikrotik,
   });
 
-  const [viewMode, setViewMode] = useState<ViewMode>("cards");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPackage, setEditingPackage] = useState<Package | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingPackage, setDeletingPackage] = useState<Package | null>(null);
-
-  const activePackages = packages.filter((p) => p.is_active);
-  const inactivePackages = packages.filter((p) => !p.is_active);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const getCustomerCount = (packageId: string) => {
     return customers.filter((c) => c.package_id === packageId).length;
   };
 
-  const totalSubscriptions = packages.reduce((sum, p) => sum + getCustomerCount(p.id), 0);
-  const totalMonthlyRevenue = activePackages.reduce(
-    (sum, p) => sum + p.monthly_price * getCustomerCount(p.id), 
-    0
-  );
-  const avgRevenuePerPackage = totalSubscriptions > 0
-    ? Math.round(totalMonthlyRevenue / totalSubscriptions)
-    : 0;
+  // Filter packages by search
+  const filteredPackages = useMemo(() => {
+    if (!searchQuery.trim()) return packages;
+    const q = searchQuery.toLowerCase();
+    return packages.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.speed_label.toLowerCase().includes(q) ||
+        p.monthly_price.toString().includes(q)
+    );
+  }, [packages, searchQuery]);
 
-  const mostPopularPackageId = activePackages.length > 0
-    ? activePackages.reduce((a, b) => 
-        getCustomerCount(a.id) > getCustomerCount(b.id) ? a : b
-      ).id
-    : null;
+  // Pagination
+  const totalItems = filteredPackages.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedPackages = filteredPackages.slice(
+    (safeCurrentPage - 1) * pageSize,
+    safeCurrentPage * pageSize
+  );
+  const startItem = totalItems === 0 ? 0 : (safeCurrentPage - 1) * pageSize + 1;
+  const endItem = Math.min(safeCurrentPage * pageSize, totalItems);
+
+  const getPageNumbers = () => {
+    const pages: (number | "ellipsis")[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (safeCurrentPage > 3) pages.push("ellipsis");
+      const start = Math.max(2, safeCurrentPage - 1);
+      const end = Math.min(totalPages - 1, safeCurrentPage + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (safeCurrentPage < totalPages - 2) pages.push("ellipsis");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  // Extract bandwidth from speed_label (e.g., "20 Mbps" → "20")
+  const extractBandwidth = (speedLabel: string) => {
+    const match = speedLabel.match(/(\d+)/);
+    return match ? match[1] : "-";
+  };
 
   const handleCreatePackage = () => {
     setEditingPackage(null);
@@ -149,34 +165,6 @@ export default function Packages() {
     }
   };
 
-  const handleSyncPackage = async (pkg: Package) => {
-    if (!mikrotikIntegration?.id) {
-      toast.error("No active MikroTik integration found");
-      return;
-    }
-    if (!pkg.mikrotik_profile_name) {
-      toast.error("এই প্যাকেজে MikroTik profile কনফিগার করা নেই");
-      return;
-    }
-    packageSync.mutate({
-      integrationId: mikrotikIntegration.id,
-      packageId: pkg.id,
-    });
-  };
-
-  const handleToggleActive = async (pkg: Package) => {
-    try {
-      await updatePackage.mutateAsync({
-        id: pkg.id,
-        updates: { is_active: !pkg.is_active },
-      });
-      toast.success(pkg.is_active ? "Package deactivated" : "Package activated");
-    } catch (error) {
-      toast.error("Something went wrong");
-      console.error(error);
-    }
-  };
-
   const handleDeletePackage = (pkg: Package) => {
     setDeletingPackage(pkg);
     setDeleteDialogOpen(true);
@@ -204,452 +192,242 @@ export default function Packages() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Packages</h1>
-          <p className="text-muted-foreground">
-            Manage your internet service packages
-          </p>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+            <span>Configuration</span>
+            <span>/</span>
+            <span className="text-foreground font-medium">Package</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Package — Configure Package</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <ToggleGroup 
-            type="single" 
-            value={viewMode} 
-            onValueChange={(value) => value && setViewMode(value as ViewMode)}
-            className="bg-muted p-1 rounded-lg"
-          >
-            <ToggleGroupItem 
-              value="cards" 
-              aria-label="Card view"
-              className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="table" 
-              aria-label="Table view"
-              className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3"
-            >
-              <List className="h-4 w-4" />
-            </ToggleGroupItem>
-          </ToggleGroup>
-          
-          <Button className="gap-2" onClick={handleCreatePackage}>
-            <Plus className="h-4 w-4" />
-            New Package
-          </Button>
-        </div>
+        <Button className="gap-2" onClick={handleCreatePackage}>
+          <Plus className="h-4 w-4" />
+          Package
+        </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full -mr-10 -mt-10" />
-          <CardHeader className="pb-2">
+      {/* Table Card */}
+      <Card>
+        <CardContent className="p-0">
+          {/* Controls Row */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border-b">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <PackageIcon className="h-4 w-4 text-primary" />
-              </div>
-              <CardDescription>Active Packages</CardDescription>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Show</span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => {
+                  setPageSize(Number(value));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-muted-foreground">entries</span>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{activePackages.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Out of {packages.length} total packages
-            </p>
-          </CardContent>
-        </Card>
 
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -mr-10 -mt-10" />
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Users className="h-4 w-4 text-blue-500" />
-              </div>
-              <CardDescription>Total Subscriptions</CardDescription>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="pl-9 h-8"
+              />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{totalSubscriptions.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Active customer count
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full -mr-10 -mt-10" />
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <TrendingUp className="h-4 w-4 text-green-500" />
-              </div>
-              <CardDescription>Monthly Revenue</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">৳{totalMonthlyRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Expected from packages
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/10 rounded-full -mr-10 -mt-10" />
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-orange-500/10 rounded-lg">
-                <Zap className="h-4 w-4 text-orange-500" />
-              </div>
-              <CardDescription>Avg. Revenue/Customer</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">৳{avgRevenuePerPackage.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Per month
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Packages Content */}
-      {viewMode === "cards" ? (
-        <div className="space-y-6">
-          {/* Active Packages */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-lg font-semibold">Active Packages</h2>
-              <Badge variant="secondary">{activePackages.length}</Badge>
-            </div>
-            
-            {activePackages.length === 0 ? (
-              <Card className="p-8 text-center border-dashed">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="p-3 bg-muted rounded-full">
-                    <PackageIcon className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Create packages to assign customers</p>
-                    <p className="text-sm text-muted-foreground">
-                      Define internet plans with speed and pricing so you can start billing
-                    </p>
-                  </div>
-                  <Button className="mt-2" onClick={handleCreatePackage}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create First Package
-                  </Button>
-                </div>
-              </Card>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {activePackages.map((pkg, index) => {
-                  const customerCount = getCustomerCount(pkg.id);
-                  const isPopular = mostPopularPackageId === pkg.id && customerCount > 0;
-                  const revenuePercentage = totalMonthlyRevenue > 0 
-                    ? Math.round((pkg.monthly_price * customerCount / totalMonthlyRevenue) * 100)
-                    : 0;
-                  
-                  return (
-                    <Card
-                      key={pkg.id}
-                      className={cn(
-                        "relative animate-fade-in group transition-all duration-200 hover:shadow-lg hover:-translate-y-1",
-                        isPopular && "ring-2 ring-primary shadow-primary/20"
-                      )}
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      {isPopular && (
-                        <div className="absolute -top-3 left-4 z-10">
-                          <Badge className="bg-primary text-primary-foreground shadow-lg">
-                            ⭐ Most Popular
-                          </Badge>
-                        </div>
-                      )}
-                      
-                      <div className={cn(
-                        "absolute top-0 left-0 right-0 h-1 rounded-t-lg",
-                        isPopular ? "bg-gradient-to-r from-primary to-primary/50" : "bg-gradient-to-r from-muted-foreground/20 to-transparent"
-                      )} />
-
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <CardTitle className="text-xl">{pkg.name}</CardTitle>
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-1.5 text-muted-foreground bg-muted px-2 py-1 rounded-md">
-                                <Zap className="h-3.5 w-3.5" />
-                                <span className="text-sm font-medium">{pkg.speed_label}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEditPackage(pkg)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              {hasMikrotik && pkg.mikrotik_profile_name && (
-                                <DropdownMenuItem onClick={() => handleSyncPackage(pkg)}>
-                                  <RefreshCw className={cn("mr-2 h-4 w-4", packageSync.isPending && "animate-spin")} />
-                                  Sync to MikroTik
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem onClick={() => handleToggleActive(pkg)}>
-                                <ToggleLeft className="mr-2 h-4 w-4" />
-                                Deactivate
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                className="text-destructive focus:text-destructive"
-                                onClick={() => handleDeletePackage(pkg)}
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="space-y-4">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-bold">৳{pkg.monthly_price.toLocaleString()}</span>
-                          <span className="text-muted-foreground text-sm">/month</span>
-                        </div>
-
-                        <div className="space-y-3 pt-2 border-t">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Users className="h-4 w-4" />
-                              <span>Active Customers</span>
-                            </div>
-                            <span className="font-semibold">{customerCount.toLocaleString()}</span>
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <TrendingUp className="h-4 w-4" />
-                              <span>Monthly Revenue</span>
-                            </div>
-                            <span className="font-semibold text-green-600">
-                              ৳{(pkg.monthly_price * customerCount).toLocaleString()}
-                            </span>
-                          </div>
-
-                          {revenuePercentage > 0 && (
-                            <div className="space-y-1.5">
-                              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                <span>Revenue Share</span>
-                                <span>{revenuePercentage}%</span>
-                              </div>
-                              <Progress value={revenuePercentage} className="h-1.5" />
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
-          {/* Inactive Packages */}
-          {inactivePackages.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-lg font-semibold text-muted-foreground">Inactive Packages</h2>
-                <Badge variant="outline">{inactivePackages.length}</Badge>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {inactivePackages.map((pkg) => (
-                  <Card key={pkg.id} className="opacity-60 hover:opacity-80 transition-opacity">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <CardTitle className="text-lg">{pkg.name}</CardTitle>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Zap className="h-3.5 w-3.5" />
-                            <span className="text-sm">{pkg.speed_label}</span>
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="text-muted-foreground">
-                          Inactive
-                        </Badge>
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="w-[60px]">Serial</TableHead>
+                  <TableHead>Package Name</TableHead>
+                  <TableHead>Package Type</TableHead>
+                  <TableHead className="text-right">B. Allocated MB</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead>VAS</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="w-[90px] text-center">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedPackages.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-32 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <PackageIcon className="h-8 w-8 text-muted-foreground" />
+                        <p className="text-muted-foreground">
+                          {searchQuery ? "No packages match your search" : "No packages found"}
+                        </p>
+                        {!searchQuery && (
+                          <Button size="sm" onClick={handleCreatePackage}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Package
+                          </Button>
+                        )}
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-baseline gap-1 mb-4">
-                        <span className="text-2xl font-bold text-muted-foreground">
-                          ৳{pkg.monthly_price.toLocaleString()}
-                        </span>
-                        <span className="text-muted-foreground text-sm">/month</span>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        className="w-full gap-2" 
-                        size="sm"
-                        onClick={() => handleToggleActive(pkg)}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginatedPackages.map((pkg, index) => {
+                    const serial = (safeCurrentPage - 1) * pageSize + index + 1;
+                    const isPersonal = index % 2 === 0;
+                    const bandwidth = extractBandwidth(pkg.speed_label);
+                    const description = [
+                      pkg.mikrotik_rate_limit,
+                      pkg.mikrotik_profile_name ? `Profile: ${pkg.mikrotik_profile_name}` : null,
+                      pkg.validity_days ? `${pkg.validity_days} days` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" | ") || "-";
+
+                    return (
+                      <TableRow
+                        key={pkg.id}
+                        className={cn(
+                          "transition-colors",
+                          !pkg.is_active && "opacity-50"
+                        )}
                       >
-                        <ToggleRight className="h-4 w-4" />
-                        Reactivate
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <TableCell className="font-medium text-muted-foreground">
+                          {serial}
+                        </TableCell>
+                        <TableCell className="font-medium">{pkg.name}</TableCell>
+                        <TableCell>
+                          <span
+                            className={cn(
+                              "inline-flex items-center rounded-md px-2 py-1 text-xs font-semibold",
+                              isPersonal
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                            )}
+                          >
+                            {isPersonal ? "Personal" : "Business"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {bandwidth}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          ৳{pkg.monthly_price.toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {pkg.mikrotik_address_pool || "-"}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm max-w-[200px] truncate">
+                          {description}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-primary hover:text-primary hover:bg-primary/10"
+                              onClick={() => handleEditPackage(pkg)}
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDeletePackage(pkg)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination Footer */}
+          {totalItems > 0 && (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Showing {startItem} to {endItem} of {totalItems} entries
+              </p>
+
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  disabled={safeCurrentPage === 1}
+                  onClick={() => setCurrentPage(1)}
+                >
+                  First
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  disabled={safeCurrentPage === 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                >
+                  Previous
+                </Button>
+
+                {getPageNumbers().map((page, idx) =>
+                  page === "ellipsis" ? (
+                    <span key={`e-${idx}`} className="px-2 text-muted-foreground text-sm">
+                      …
+                    </span>
+                  ) : (
+                    <Button
+                      key={page}
+                      variant={safeCurrentPage === page ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 w-8 text-xs p-0"
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </Button>
+                  )
+                )}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  disabled={safeCurrentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  Next
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  disabled={safeCurrentPage === totalPages}
+                  onClick={() => setCurrentPage(totalPages)}
+                >
+                  Last
+                </Button>
               </div>
             </div>
           )}
-        </div>
-      ) : (
-        // Table View
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Package</TableHead>
-                <TableHead>Speed</TableHead>
-                <TableHead className="text-right">Monthly Price</TableHead>
-                <TableHead className="text-right">Customers</TableHead>
-                <TableHead className="text-right">Monthly Revenue</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-[80px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {packages.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-32 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <PackageIcon className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-muted-foreground">No packages found</p>
-                      <Button size="sm" onClick={handleCreatePackage}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Package
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                packages.map((pkg, index) => {
-                  const customerCount = getCustomerCount(pkg.id);
-                  const isPopular = mostPopularPackageId === pkg.id && customerCount > 0;
-                  
-                  return (
-                    <TableRow 
-                      key={pkg.id} 
-                      className={cn(
-                        "animate-fade-in",
-                        !pkg.is_active && "opacity-60"
-                      )}
-                      style={{ animationDelay: `${index * 30}ms` }}
-                    >
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className={cn(
-                            "w-2 h-2 rounded-full",
-                            pkg.is_active ? "bg-green-500" : "bg-muted-foreground"
-                          )} />
-                          <span className="font-medium">{pkg.name}</span>
-                          {isPopular && (
-                            <Badge variant="secondary" className="text-xs">
-                              ⭐ Popular
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Zap className="h-3.5 w-3.5" />
-                          <span>{pkg.speed_label}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        ৳{pkg.monthly_price.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {customerCount.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right font-medium text-green-600">
-                        ৳{(pkg.monthly_price * customerCount).toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={pkg.is_active ? "default" : "outline"}
-                          className={cn(
-                            pkg.is_active 
-                              ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" 
-                              : "text-muted-foreground"
-                          )}
-                        >
-                          {pkg.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEditPackage(pkg)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            {hasMikrotik && pkg.mikrotik_profile_name && (
-                              <DropdownMenuItem onClick={() => handleSyncPackage(pkg)}>
-                                <RefreshCw className={cn("mr-2 h-4 w-4", packageSync.isPending && "animate-spin")} />
-                                Sync to MikroTik
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={() => handleToggleActive(pkg)}>
-                              {pkg.is_active ? (
-                                <>
-                                  <ToggleLeft className="mr-2 h-4 w-4" />
-                                  Deactivate
-                                </>
-                              ) : (
-                                <>
-                                  <ToggleRight className="mr-2 h-4 w-4" />
-                                  Activate
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => handleDeletePackage(pkg)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </Card>
-      )}
+        </CardContent>
+      </Card>
 
       <PackageFormDialog
         open={dialogOpen}
