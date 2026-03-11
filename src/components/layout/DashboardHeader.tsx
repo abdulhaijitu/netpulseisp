@@ -1,7 +1,6 @@
 import { forwardRef } from "react";
-import { Bell, Search, LogOut, User, Settings, HelpCircle, ChevronDown, Menu } from "lucide-react";
+import { Bell, Search, LogOut, User, Settings, HelpCircle, ChevronDown, Menu, Mail, Monitor, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TenantSwitcher } from "./TenantSwitcher";
-import { DemoModeToggle } from "@/components/demo/DemoModeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -19,11 +17,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSidebar } from "@/components/ui/animated-sidebar";
+import { useTenantContext } from "@/contexts/TenantContext";
 
 export function DashboardHeader() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { setOpen } = useSidebar();
+  const { currentTenant, isSuperAdmin } = useTenantContext();
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["header-profile", user?.id],
@@ -42,9 +42,7 @@ export function DashboardHeader() {
 
   const { data: notificationCount = 0 } = useQuery({
     queryKey: ["notification-count", user?.id],
-    queryFn: async () => {
-      return 3;
-    },
+    queryFn: async () => 3,
     enabled: !!user?.id,
   });
 
@@ -62,48 +60,114 @@ export function DashboardHeader() {
     .slice(0, 2);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 md:px-6">
+    <header className="sticky top-0 z-30 flex h-12 items-center gap-3 bg-primary text-primary-foreground px-3 md:px-4">
       {/* Mobile menu trigger */}
       <Button
         variant="ghost"
         size="icon"
-        className="h-9 w-9 shrink-0 md:hidden"
+        className="h-8 w-8 shrink-0 md:hidden text-primary-foreground hover:bg-primary-foreground/10"
         onClick={() => setOpen(true)}
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="h-4 w-4" />
       </Button>
-      
-      {/* Tenant Switcher */}
-      <TenantSwitcher />
-      
-      {/* Search - Desktop */}
-      <div className="hidden md:flex md:flex-1 md:max-w-md">
-        <div className="relative w-full group">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-          <Input
-            placeholder="Search customers, bills..."
-            className="pl-10 h-10 bg-muted/40 border-transparent hover:bg-muted/60 focus:bg-background focus:border-primary/20 transition-all duration-200"
-          />
-          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-            ⌘K
-          </kbd>
-        </div>
+
+      {/* Left: Company Name / Tenant Switcher */}
+      <div className="flex items-center gap-3 shrink-0">
+        {isSuperAdmin ? (
+          <TenantSwitcher />
+        ) : (
+          <span className="text-sm font-semibold truncate max-w-[160px]">
+            {currentTenant?.name || "ISP Manager"}
+          </span>
+        )}
       </div>
 
+      {/* Search Customer dropdown */}
+      <div className="hidden md:flex">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-2 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 border border-primary-foreground/20 rounded-md px-3"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span className="text-xs">Search Customer</span>
+              <ChevronDown className="h-3 w-3 opacity-60" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-64">
+            <DropdownMenuLabel className="text-xs">Quick Search</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate("/dashboard/customers")}>
+              <Search className="mr-2 h-4 w-4" />
+              Browse All Customers
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
       {/* Right side actions */}
-      <div className="flex flex-1 items-center justify-end gap-2">
-        <DemoModeToggle />
-        <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
+      <div className="flex items-center gap-1.5">
+        {/* Quick action buttons - desktop only */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="hidden lg:inline-flex h-8 gap-1.5 text-xs text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+          onClick={() => navigate("/dashboard/notifications")}
+        >
+          <Mail className="h-3.5 w-3.5" />
+          <span>Support Ticket</span>
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="hidden lg:inline-flex h-8 gap-1.5 text-xs text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+          onClick={() => navigate("/dashboard/network")}
+        >
+          <Monitor className="h-3.5 w-3.5" />
+          <span>Online Monitor</span>
+        </Button>
+
+        {/* Divider - desktop only */}
+        <div className="hidden lg:block h-5 w-px bg-primary-foreground/20 mx-1" />
+
+        {/* Mobile search */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+        >
           <Search className="h-4 w-4" />
+        </Button>
+
+        {/* Info icon with badge */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+        >
+          <Info className="h-4 w-4" />
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
+            6
+          </span>
         </Button>
 
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative h-9 w-9 hover:bg-muted transition-colors">
-              <Bell className="h-[18px] w-[18px]" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-8 w-8 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <Bell className="h-4 w-4" />
               {notificationCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground animate-scale-in">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground animate-scale-in">
                   {notificationCount > 9 ? "9+" : notificationCount}
                 </span>
               )}
@@ -123,24 +187,23 @@ export function DashboardHeader() {
               <NotificationItem title="Auto-Suspend Alert" description="5 customers due for suspension tomorrow" time="3 hours ago" />
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="justify-center text-primary cursor-pointer">
+            <DropdownMenuItem className="justify-center text-primary cursor-pointer" onClick={() => navigate("/dashboard/notifications")}>
               View all notifications
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* User menu */}
+        {/* User avatar menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-9 gap-2 px-2 hover:bg-muted transition-colors">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-sm">
+            <Button variant="ghost" className="h-8 w-8 p-0 rounded-full hover:bg-primary-foreground/10">
+              <div className="h-7 w-7 rounded-full bg-primary-foreground/20 flex items-center justify-center ring-1 ring-primary-foreground/30">
                 {profileLoading ? (
                   <Skeleton className="h-full w-full rounded-full" />
                 ) : (
-                  <span className="text-xs font-semibold text-primary-foreground">{initials}</span>
+                  <span className="text-[10px] font-semibold text-primary-foreground">{initials}</span>
                 )}
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56" sideOffset={8}>
