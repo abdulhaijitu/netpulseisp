@@ -58,14 +58,14 @@
     /* Radius */
     --radius: 0.5rem;
 
-    /* Sidebar - Dashboard navigation */
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 214 32% 91%;
+    /* Sidebar - Dashboard navigation (Light) */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 18%;
-    --sidebar-accent-foreground: 214 32% 91%;
-    --sidebar-border: 222 47% 18%;
+    --sidebar-accent: 214 32% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
     --sidebar-ring: 221 83% 53%;
 
     /* Dashboard Specific */

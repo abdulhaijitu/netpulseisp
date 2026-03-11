@@ -85,7 +85,7 @@ export const DesktopSidebar = ({
       {/* Toggle button */}
       <button
         onClick={() => setOpen(!open)}
-        className="absolute top-14 right-0 translate-x-1/2 z-30 h-6 w-6 rounded-full border border-sidebar-border bg-sidebar flex items-center justify-center hover:bg-sidebar-accent transition-colors shadow-sm"
+        className="absolute top-14 right-0 translate-x-1/2 z-30 h-6 w-6 rounded-full border border-border bg-background flex items-center justify-center hover:bg-accent transition-colors shadow-md"
       >
         {open ? (
           <ChevronLeft className="h-3.5 w-3.5 text-sidebar-foreground/70" />
