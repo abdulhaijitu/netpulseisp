@@ -1,6 +1,8 @@
+import { useState, useRef, useMemo } from "react";
 import {
   LayoutDashboard,
   Users,
+  Search,
   Package,
   Receipt,
   CreditCard,
@@ -331,9 +333,11 @@ const roleDisplayNames: Record<string, string> = {
 };
 
 export function DashboardSidebar() {
+  const [menuSearch, setMenuSearch] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { open } = useSidebar();
+  const { open, setOpen } = useSidebar();
   const { user, signOut } = useAuth();
   const { data: role, isLoading: roleLoading } = useUserRole();
   const { isImpersonatingReseller } = useResellerImpersonation();
@@ -430,12 +434,68 @@ export function DashboardSidebar() {
           </motion.span>
         </div>
 
+        {/* Menu Search */}
+        {open ? (
+          <div className="relative mb-3">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-sidebar-foreground/40" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={menuSearch}
+              onChange={(e) => setMenuSearch(e.target.value)}
+              placeholder="Search menu..."
+              className="w-full h-8 pl-8 pr-3 rounded-md bg-sidebar-accent/50 border border-sidebar-border/50 text-xs text-sidebar-foreground placeholder:text-sidebar-foreground/40 focus:outline-none focus:ring-1 focus:ring-sidebar-primary/50 transition-colors"
+            />
+          </div>
+        ) : (
+          <button
+            onClick={() => { setOpen(true); setTimeout(() => searchInputRef.current?.focus(), 350); }}
+            className="flex items-center justify-center h-8 w-8 mx-auto mb-3 rounded-md hover:bg-sidebar-accent/80 transition-colors"
+          >
+            <Search className="h-4 w-4 text-sidebar-foreground/60" />
+          </button>
+        )}
+
         {isReseller ? (
           // Reseller self-service nav
           <div className="flex flex-col gap-1">
-            {resellerSelfNavItems.map((item) => (
+            {resellerSelfNavItems.filter(item => !menuSearch || item.title.toLowerCase().includes(menuSearch.toLowerCase())).map((item) => (
               <SidebarLink key={item.href} link={toLink(item)} active={isActive(item.href)} />
             ))}
+          </div>
+        ) : menuSearch.trim() ? (
+          // Filtered search results
+          <div className="flex flex-col gap-0.5">
+            {(() => {
+              const term = menuSearch.toLowerCase();
+              const allItems: NavItem[] = [
+                dashboardItem,
+                ...navGroups.flatMap(g => g.children),
+                packagesItem,
+                ...financeGroups.flatMap(g => g.children),
+                paymentsItem,
+                reportsItem,
+                ...financeGroups2.flatMap(g => g.children),
+                ...networkGroups.flatMap(g => g.children),
+                networkDiagramItem,
+                ...operationGroups.flatMap(g => g.children),
+                ...resellerGroup.children,
+                ...smsGroup.children,
+                ...systemStandaloneItems,
+                ...systemGroup.children,
+              ];
+              const filtered = allItems.filter(item => canAccess(item) && item.title.toLowerCase().includes(term));
+              if (filtered.length === 0) {
+                return (
+                  <div className="px-2 py-4 text-xs text-sidebar-foreground/40 text-center">
+                    No menu items found
+                  </div>
+                );
+              }
+              return filtered.map(item => (
+                <SidebarLink key={item.href} link={toLink(item)} active={isActive(item.href)} />
+              ));
+            })()}
           </div>
         ) : (
           // Full ISP nav
