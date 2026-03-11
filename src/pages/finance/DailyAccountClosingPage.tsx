@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useTenant } from "@/hooks/useTenant";
+import { useCurrentTenant } from "@/hooks/useTenant";
 import { useBills } from "@/hooks/useBills";
 import { usePayments } from "@/hooks/usePayments";
 import { useDemoMode } from "@/contexts/DemoModeContext";
