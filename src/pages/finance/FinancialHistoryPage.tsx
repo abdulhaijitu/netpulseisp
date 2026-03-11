@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { usePayments } from "@/hooks/usePayments";
-import { useTenant } from "@/hooks/useTenant";
+import { useTenantContext } from "@/contexts/TenantContext";
 import { useDemoMode } from "@/contexts/DemoModeContext";
 
 const demoTransactions = [
