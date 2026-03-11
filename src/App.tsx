@@ -213,7 +213,7 @@ const App = () => (
 
                 {/* HR & Payroll */}
                 <Route path="/dashboard/hr/employees" element={<EmployeeListPage />} />
-                <Route path="/dashboard/hr/department" element={<PH title="Department" />} />
+                <Route path="/dashboard/hr/department" element={<DepartmentPage />} />
                 <Route path="/dashboard/hr/salary" element={<PH title="Salary Sheet" />} />
                 <Route path="/dashboard/hr/attendance" element={<PH title="Attendance" />} />
 
