@@ -94,8 +94,7 @@ const ChangeRequestPage = () => {
   );
 
   return (
-    <PageContainer>
-      <SectionHeader title="Change Request (Package & Exp. Date)" subtitle="Manage package change and bill date change requests" />
+    <PageContainer title="Change Request (Package & Exp. Date)" description="Manage package change and bill date change requests">
 
       {/* Info Banner */}
       <Card className="mb-4 border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20">
