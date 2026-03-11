@@ -65,7 +65,7 @@ export default function MikrotikServersPage() {
 
   const getStatusInfo = (server: (typeof servers)[0]) => {
     if (!server.is_enabled) return { text: "Mikrotik Is InActive", color: "text-destructive", icon: WifiOff };
-    if (server.last_sync_status === "synced") return { text: "Mikrotik Connected", color: "text-success", icon: Wifi };
+    if (server.last_sync_status === "success") return { text: "Mikrotik Connected", color: "text-success", icon: Wifi };
     if (server.last_sync_status === "pending") return { text: "Checking...", color: "text-warning", icon: Loader2 };
     return { text: "Mikrotik Is InActive", color: "text-destructive", icon: WifiOff };
   };
