@@ -45,6 +45,7 @@ import AreaManagementPage from "@/pages/config/AreaManagementPage";
 import BillingStatusPage from "@/pages/config/BillingStatusPage";
 import NewRequestPage from "@/pages/clients/NewRequestPage";
 import AddNewClientPage from "@/pages/clients/AddNewClientPage";
+import LeftClientsPage from "@/pages/clients/LeftClientsPage";
 
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
@@ -129,7 +130,7 @@ const App = () => (
                 <Route path="/dashboard/customers/:customerId" element={<CustomerDetail />} />
                 <Route path="/dashboard/clients/new-request" element={<NewRequestPage />} />
                 <Route path="/dashboard/clients/add" element={<AddNewClientPage />} />
-                <Route path="/dashboard/clients/left" element={<PH title="Left Clients" />} />
+                <Route path="/dashboard/clients/left" element={<LeftClientsPage />} />
                 <Route path="/dashboard/clients/change-request" element={<PH title="Change Request" />} />
 
                 {/* Configuration */}
