@@ -415,9 +415,9 @@ export function DashboardSidebar() {
   };
 
   return (
-    <SidebarBody className="justify-between gap-4 overflow-hidden">
+    <SidebarBody className="gap-0 overflow-hidden">
       {/* Top section */}
-      <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+      <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden min-h-0">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-4">
           {branding.logoUrl ? (
@@ -550,7 +550,7 @@ export function DashboardSidebar() {
       </div>
 
       {/* Footer - Compact */}
-      <div className="border-t border-sidebar-border pt-2 pb-1">
+      <div className="mt-auto shrink-0 border-t border-sidebar-border pt-2 pb-1">
         <div className="flex items-center gap-2">
           <div className="relative h-7 w-7 shrink-0 rounded-full bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 flex items-center justify-center">
             {profileLoading || roleLoading ? (
