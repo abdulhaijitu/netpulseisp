@@ -37,7 +37,7 @@ interface IncomeEntry {
 }
 
 export default function DailyIncomePage() {
-  const { currentTenant } = useTenant();
+  const { currentTenant } = useTenantContext();
   const { data: payments } = usePayments(currentTenant?.id);
 
   const [categoryFilter, setCategoryFilter] = useState("all");
