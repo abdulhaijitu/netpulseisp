@@ -126,7 +126,7 @@ const App = () => (
                 <Route path="/dashboard/clients/change-request" element={<PH title="Change Request" />} />
 
                 {/* Configuration */}
-                <Route path="/dashboard/config/zones" element={<PH title="Zone / Sub Zone / Box" />} />
+                <Route path="/dashboard/config/zones" element={<ZonesPage />} />
                 <Route path="/dashboard/config/connection-type" element={<PH title="Connection Type" />} />
                 <Route path="/dashboard/config/client-type" element={<PH title="Client Type" />} />
                 <Route path="/dashboard/config/protocol-type" element={<PH title="Protocol Type" />} />
