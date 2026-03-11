@@ -196,7 +196,7 @@ const App = () => (
 
                 {/* Support & Ticketing */}
                 <Route path="/dashboard/support" element={<PH title="Client Support" />} />
-                <Route path="/dashboard/support/category" element={<PH title="Support Category" />} />
+                <Route path="/dashboard/support/category" element={<SupportCategoryPage />} />
                 <Route path="/dashboard/support/history" element={<PH title="Support History" />} />
 
                 {/* Task Management */}
