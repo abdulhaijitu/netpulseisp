@@ -30,6 +30,7 @@ import NetworkPage from "@/pages/NetworkPage";
 import MikrotikServersPage from "@/pages/network/MikrotikServersPage";
 import MikrotikBackupPage from "@/pages/network/MikrotikBackupPage";
 import MikrotikImportPage from "@/pages/network/MikrotikImportPage";
+import BulkClientsImportPage from "@/pages/network/BulkClientsImportPage";
 import OltDevicesPage from "@/pages/OltDevicesPage";
 import Notifications from "@/pages/Notifications";
 import Resellers from "@/pages/Resellers";
