@@ -11,13 +11,45 @@ import {
   LogOut,
   Network,
   UserPlus,
-  Wallet,
   Server,
+  Cog,
+  MapPin,
+  Wifi,
+  UserCheck,
+  FileText,
+  DollarSign,
+  BookOpen,
+  HardDrive,
+  Download,
+  Upload,
+  Router,
+  Map,
+  Wrench,
+  ClipboardList,
+  Briefcase,
+  Boxes,
+  ShoppingCart,
+  MessageSquare,
+  Wallet,
+  CalendarDays,
+  Ticket,
+  ListTodo,
+  Banknote,
+  Store,
+  PiggyBank,
+  Scale,
+  TrendingUp,
+  Building2,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { SidebarBody, SidebarLink, useSidebar } from "@/components/ui/animated-sidebar";
-import { Separator } from "@/components/ui/separator";
+import {
+  SidebarBody,
+  SidebarLink,
+  SidebarGroup,
+  SidebarGroupLabel,
+  useSidebar,
+} from "@/components/ui/animated-sidebar";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useResellerImpersonation } from "@/contexts/ResellerImpersonationContext";
@@ -37,24 +69,230 @@ type NavItem = {
   roles?: AppRole[];
 };
 
-const mainNavItems: NavItem[] = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["super_admin", "isp_owner", "admin", "manager", "staff", "accountant", "marketing"] },
-  { title: "Customers", href: "/dashboard/customers", icon: Users, roles: ["super_admin", "isp_owner", "admin", "manager", "staff"] },
-  { title: "Packages", href: "/dashboard/packages", icon: Package, roles: ["super_admin", "isp_owner", "admin"] },
-  { title: "Billing", href: "/dashboard/billing", icon: Receipt, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant"] },
-  { title: "Payments", href: "/dashboard/payments", icon: CreditCard, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant", "staff"] },
-  { title: "Reports", href: "/dashboard/reports", icon: BarChart3, roles: ["super_admin", "isp_owner", "admin", "manager", "accountant"] },
+type NavGroup = {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles?: AppRole[];
+  children: NavItem[];
+};
+
+// ── STANDALONE NAV ITEMS ──
+const dashboardItem: NavItem = {
+  title: "Dashboard",
+  href: "/dashboard",
+  icon: LayoutDashboard,
+  roles: ["super_admin", "isp_owner", "admin", "manager", "staff", "accountant", "marketing"],
+};
+
+// ── GROUPED NAV ──
+const navGroups: NavGroup[] = [
+  {
+    label: "Clients",
+    icon: Users,
+    roles: ["super_admin", "isp_owner", "admin", "manager", "staff"],
+    children: [
+      { title: "Client List", href: "/dashboard/customers", icon: Users },
+      { title: "New Request", href: "/dashboard/clients/new-request", icon: UserPlus },
+      { title: "Add New", href: "/dashboard/clients/add", icon: UserPlus },
+      { title: "Left Clients", href: "/dashboard/clients/left", icon: Users },
+      { title: "Change Request", href: "/dashboard/clients/change-request", icon: FileText },
+    ],
+  },
+  {
+    label: "Configuration",
+    icon: Cog,
+    roles: ["super_admin", "isp_owner", "admin"],
+    children: [
+      { title: "Zone / Sub Zone", href: "/dashboard/config/zones", icon: MapPin },
+      { title: "Connection Type", href: "/dashboard/config/connection-type", icon: Wifi },
+      { title: "Client Type", href: "/dashboard/config/client-type", icon: UserCheck },
+      { title: "Protocol Type", href: "/dashboard/config/protocol-type", icon: Network },
+      { title: "District / Upazilla", href: "/dashboard/config/district", icon: MapPin },
+      { title: "Billing Status", href: "/dashboard/config/billing-status", icon: FileText },
+    ],
+  },
 ];
 
-const systemNavItems: NavItem[] = [
-  { title: "Resellers", href: "/dashboard/resellers", icon: UserPlus, roles: ["super_admin", "isp_owner", "admin", "manager"] },
-  { title: "Network", href: "/dashboard/network", icon: Network, roles: ["super_admin", "isp_owner", "admin"] },
-  { title: "OLT Devices", href: "/dashboard/olt", icon: Server, roles: ["super_admin", "isp_owner", "admin"] },
+const packagesItem: NavItem = {
+  title: "Packages",
+  href: "/dashboard/packages",
+  icon: Package,
+  roles: ["super_admin", "isp_owner", "admin"],
+};
+
+// ── BILLING & FINANCE ──
+const financeGroups: NavGroup[] = [
+  {
+    label: "Billing",
+    icon: Receipt,
+    roles: ["super_admin", "isp_owner", "admin", "manager", "accountant"],
+    children: [
+      { title: "Billing List", href: "/dashboard/billing", icon: Receipt },
+      { title: "Daily Collection", href: "/dashboard/billing/daily", icon: DollarSign },
+      { title: "Monthly Report", href: "/dashboard/billing/monthly", icon: BarChart3 },
+    ],
+  },
+];
+
+const paymentsItem: NavItem = {
+  title: "Payments",
+  href: "/dashboard/payments",
+  icon: CreditCard,
+  roles: ["super_admin", "isp_owner", "admin", "manager", "accountant", "staff"],
+};
+
+const reportsItem: NavItem = {
+  title: "Reports",
+  href: "/dashboard/reports",
+  icon: BarChart3,
+  roles: ["super_admin", "isp_owner", "admin", "manager", "accountant"],
+};
+
+const financeGroups2: NavGroup[] = [
+  {
+    label: "Income & Expense",
+    icon: DollarSign,
+    roles: ["super_admin", "isp_owner", "admin", "accountant"],
+    children: [
+      { title: "Daily Income", href: "/dashboard/finance/income", icon: TrendingUp },
+      { title: "Daily Expense", href: "/dashboard/finance/expense", icon: Banknote },
+      { title: "Account Closing", href: "/dashboard/finance/closing", icon: Scale },
+      { title: "History", href: "/dashboard/finance/history", icon: FileText },
+    ],
+  },
+  {
+    label: "Accounting",
+    icon: BookOpen,
+    roles: ["super_admin", "isp_owner", "admin", "accountant"],
+    children: [
+      { title: "Dashboard", href: "/dashboard/accounting", icon: LayoutDashboard },
+      { title: "Chart of Accounts", href: "/dashboard/accounting/chart", icon: BookOpen },
+      { title: "Journal", href: "/dashboard/accounting/journal", icon: FileText },
+      { title: "Balance Sheet", href: "/dashboard/accounting/balance-sheet", icon: Scale },
+      { title: "Profit & Loss", href: "/dashboard/accounting/profit-loss", icon: TrendingUp },
+      { title: "Trial Balance", href: "/dashboard/accounting/trial-balance", icon: BarChart3 },
+    ],
+  },
+];
+
+// ── NETWORK ──
+const networkGroups: NavGroup[] = [
+  {
+    label: "MikroTik Server",
+    icon: Server,
+    roles: ["super_admin", "isp_owner", "admin"],
+    children: [
+      { title: "Servers", href: "/dashboard/network", icon: Server },
+      { title: "Server Backup", href: "/dashboard/mikrotik/backup", icon: HardDrive },
+      { title: "Import from MikroTik", href: "/dashboard/mikrotik/import", icon: Download },
+      { title: "Bulk Import", href: "/dashboard/mikrotik/bulk-import", icon: Upload },
+    ],
+  },
+  {
+    label: "OLT Management",
+    icon: Router,
+    roles: ["super_admin", "isp_owner", "admin"],
+    children: [
+      { title: "OLT Devices", href: "/dashboard/olt", icon: Router },
+      { title: "OLT Users", href: "/dashboard/olt/users", icon: Users },
+    ],
+  },
+];
+
+const networkDiagramItem: NavItem = {
+  title: "Network Diagram",
+  href: "/dashboard/network-diagram",
+  icon: Map,
+  roles: ["super_admin", "isp_owner", "admin"],
+};
+
+// ── OPERATIONS ──
+const operationGroups: NavGroup[] = [
+  {
+    label: "Support & Ticketing",
+    icon: Ticket,
+    roles: ["super_admin", "isp_owner", "admin", "manager", "staff"],
+    children: [
+      { title: "Client Support", href: "/dashboard/support", icon: Ticket },
+      { title: "Support Category", href: "/dashboard/support/category", icon: ClipboardList },
+      { title: "Support History", href: "/dashboard/support/history", icon: FileText },
+    ],
+  },
+  {
+    label: "Task Management",
+    icon: ListTodo,
+    roles: ["super_admin", "isp_owner", "admin", "manager", "staff"],
+    children: [
+      { title: "Tasks", href: "/dashboard/tasks", icon: ListTodo },
+      { title: "Task Category", href: "/dashboard/tasks/category", icon: ClipboardList },
+      { title: "Task History", href: "/dashboard/tasks/history", icon: FileText },
+    ],
+  },
+  {
+    label: "HR & Payroll",
+    icon: Briefcase,
+    roles: ["super_admin", "isp_owner", "admin"],
+    children: [
+      { title: "Employee List", href: "/dashboard/hr/employees", icon: Users },
+      { title: "Department", href: "/dashboard/hr/department", icon: Building2 },
+      { title: "Salary Sheet", href: "/dashboard/hr/salary", icon: DollarSign },
+      { title: "Attendance", href: "/dashboard/hr/attendance", icon: CalendarDays },
+    ],
+  },
+  {
+    label: "Inventory & Assets",
+    icon: Boxes,
+    roles: ["super_admin", "isp_owner", "admin"],
+    children: [
+      { title: "Items", href: "/dashboard/inventory/items", icon: Boxes },
+      { title: "Stock", href: "/dashboard/inventory/stock", icon: Store },
+      { title: "Assets", href: "/dashboard/inventory/assets", icon: HardDrive },
+    ],
+  },
+  {
+    label: "Purchase & Vendors",
+    icon: ShoppingCart,
+    roles: ["super_admin", "isp_owner", "admin", "accountant"],
+    children: [
+      { title: "Vendors", href: "/dashboard/purchase/vendors", icon: Store },
+      { title: "Purchase", href: "/dashboard/purchase", icon: ShoppingCart },
+      { title: "Purchase Bill", href: "/dashboard/purchase/bill", icon: Receipt },
+    ],
+  },
+];
+
+// ── RESELLER ──
+const resellerGroup: NavGroup = {
+  label: "MAC Reseller",
+  icon: UserPlus,
+  roles: ["super_admin", "isp_owner", "admin", "manager"],
+  children: [
+    { title: "Reseller List", href: "/dashboard/resellers", icon: Users },
+    { title: "Package / Tariff", href: "/dashboard/resellers/tariff", icon: Package },
+    { title: "Funding", href: "/dashboard/resellers/funding", icon: PiggyBank },
+    { title: "PGW Settlement", href: "/dashboard/resellers/pgw", icon: Wallet },
+  ],
+};
+
+// ── SYSTEM ──
+const smsGroup: NavGroup = {
+  label: "SMS Service",
+  icon: MessageSquare,
+  roles: ["super_admin", "isp_owner", "admin"],
+  children: [
+    { title: "Send SMS", href: "/dashboard/sms/send", icon: MessageSquare },
+    { title: "SMS Template", href: "/dashboard/sms/template", icon: FileText },
+    { title: "SMS Gateway", href: "/dashboard/sms/gateway", icon: Cog },
+  ],
+};
+
+const systemStandaloneItems: NavItem[] = [
   { title: "Notifications", href: "/dashboard/notifications", icon: Bell, roles: ["super_admin", "isp_owner", "admin", "manager", "staff", "accountant", "marketing"] },
   { title: "Settings", href: "/dashboard/settings", icon: Settings, roles: ["super_admin", "isp_owner", "admin"] },
 ];
 
-const resellerNavItems: NavItem[] = [
+// ── RESELLER SELF-SERVICE NAV ──
+const resellerSelfNavItems: NavItem[] = [
   { title: "Dashboard", href: "/dashboard/reseller", icon: LayoutDashboard },
   { title: "My Customers", href: "/dashboard/reseller/customers", icon: Users },
   { title: "Payments", href: "/dashboard/reseller/payments", icon: CreditCard },
@@ -113,14 +351,18 @@ export function DashboardSidebar() {
     return item.roles.includes(role);
   };
 
+  const canAccessGroup = (group: NavGroup) => {
+    if (!group.roles) return true;
+    if (!role) return false;
+    return group.roles.includes(role);
+  };
+
   const isReseller = role === ("reseller" as AppRole) || isImpersonatingReseller;
-  const filteredMainNavItems = isReseller ? resellerNavItems : mainNavItems.filter(canAccess);
-  const filteredSystemNavItems = isReseller ? [] : systemNavItems.filter(canAccess);
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
     .split(" ")
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
@@ -132,12 +374,29 @@ export function DashboardSidebar() {
     icon: <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive(item.href) && "text-sidebar-primary")} />,
   });
 
+  const renderGroup = (group: NavGroup) => {
+    if (!canAccessGroup(group)) return null;
+    const hasActiveChild = group.children.some((c) => isActive(c.href));
+    return (
+      <SidebarGroup
+        key={group.label}
+        label={group.label}
+        icon={<group.icon className={cn("h-[18px] w-[18px] shrink-0", hasActiveChild && "text-sidebar-primary")} />}
+        defaultOpen={hasActiveChild}
+      >
+        {group.children.filter(canAccess).map((item) => (
+          <SidebarLink key={item.href} link={toLink(item)} active={isActive(item.href)} />
+        ))}
+      </SidebarGroup>
+    );
+  };
+
   return (
     <SidebarBody className="justify-between gap-4 overflow-hidden">
       {/* Top section */}
       <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-4">
           {branding.logoUrl ? (
             <img src={branding.logoUrl} alt={branding.brandName} className="h-8 w-8 shrink-0 rounded-lg object-contain" />
           ) : (
@@ -152,21 +411,60 @@ export function DashboardSidebar() {
           </motion.span>
         </div>
 
-        {/* Main nav */}
-        <div className="flex flex-col gap-1">
-          {filteredMainNavItems.map((item) => (
-            <SidebarLink key={item.href} link={toLink(item)} active={isActive(item.href)} />
-          ))}
-        </div>
-
-        {filteredSystemNavItems.length > 0 && (
+        {isReseller ? (
+          // Reseller self-service nav
+          <div className="flex flex-col gap-1">
+            {resellerSelfNavItems.map((item) => (
+              <SidebarLink key={item.href} link={toLink(item)} active={isActive(item.href)} />
+            ))}
+          </div>
+        ) : (
+          // Full ISP nav
           <>
-            <Separator className="my-4 bg-sidebar-border/50" />
-            <div className="flex flex-col gap-1">
-              {filteredSystemNavItems.map((item) => (
-                <SidebarLink key={item.href} link={toLink(item)} active={isActive(item.href)} />
-              ))}
-            </div>
+            {/* Dashboard */}
+            {canAccess(dashboardItem) && (
+              <SidebarLink link={toLink(dashboardItem)} active={isActive(dashboardItem.href)} />
+            )}
+
+            {/* Client Management */}
+            <SidebarGroupLabel>Client Management</SidebarGroupLabel>
+            {navGroups.map(renderGroup)}
+            {canAccess(packagesItem) && (
+              <SidebarLink link={toLink(packagesItem)} active={isActive(packagesItem.href)} />
+            )}
+
+            {/* Billing & Finance */}
+            <SidebarGroupLabel>Billing & Finance</SidebarGroupLabel>
+            {financeGroups.map(renderGroup)}
+            {canAccess(paymentsItem) && (
+              <SidebarLink link={toLink(paymentsItem)} active={isActive(paymentsItem.href)} />
+            )}
+            {canAccess(reportsItem) && (
+              <SidebarLink link={toLink(reportsItem)} active={isActive(reportsItem.href)} />
+            )}
+            {financeGroups2.map(renderGroup)}
+
+            {/* Network */}
+            <SidebarGroupLabel>Network</SidebarGroupLabel>
+            {networkGroups.map(renderGroup)}
+            {canAccess(networkDiagramItem) && (
+              <SidebarLink link={toLink(networkDiagramItem)} active={isActive(networkDiagramItem.href)} />
+            )}
+
+            {/* Operations */}
+            <SidebarGroupLabel>Operations</SidebarGroupLabel>
+            {operationGroups.map(renderGroup)}
+
+            {/* Reseller */}
+            <SidebarGroupLabel>Reseller</SidebarGroupLabel>
+            {renderGroup(resellerGroup)}
+
+            {/* System */}
+            <SidebarGroupLabel>System</SidebarGroupLabel>
+            {renderGroup(smsGroup)}
+            {systemStandaloneItems.filter(canAccess).map((item) => (
+              <SidebarLink key={item.href} link={toLink(item)} active={isActive(item.href)} />
+            ))}
           </>
         )}
       </div>

@@ -15,6 +15,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import { ResellerImpersonationProvider } from "@/contexts/ResellerImpersonationContext";
 import { DemoModeProvider } from "@/contexts/DemoModeContext";
+import React, { lazy, Suspense } from "react";
 
 // Dashboard Pages
 import Dashboard from "@/pages/Dashboard";
@@ -35,6 +36,7 @@ import ResellerCustomersPage from "@/pages/reseller/ResellerCustomersPage";
 import ResellerPaymentsPage from "@/pages/reseller/ResellerPaymentsPage";
 import ResellerWalletPage from "@/pages/reseller/ResellerWalletPage";
 import NotFound from "@/pages/NotFound";
+import PlaceholderPage from "@/pages/placeholder/PlaceholderPage";
 
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
@@ -80,6 +82,9 @@ import AdminAuditLogs from "@/pages/admin/AdminAuditLogs";
 
 const queryClient = new QueryClient();
 
+// Helper for placeholder routes
+const PH = ({ title }: { title: string }) => <PlaceholderPage title={title} />;
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -110,23 +115,103 @@ const App = () => (
                 }
               >
                 <Route path="/dashboard" element={<Dashboard />} />
+                
+                {/* Client Management */}
                 <Route path="/dashboard/customers" element={<Customers />} />
                 <Route path="/dashboard/customers/:customerId" element={<CustomerDetail />} />
+                <Route path="/dashboard/clients/new-request" element={<PH title="New Request" />} />
+                <Route path="/dashboard/clients/add" element={<PH title="Add New Client" />} />
+                <Route path="/dashboard/clients/left" element={<PH title="Left Clients" />} />
+                <Route path="/dashboard/clients/change-request" element={<PH title="Change Request" />} />
+
+                {/* Configuration */}
+                <Route path="/dashboard/config/zones" element={<PH title="Zone / Sub Zone / Box" />} />
+                <Route path="/dashboard/config/connection-type" element={<PH title="Connection Type" />} />
+                <Route path="/dashboard/config/client-type" element={<PH title="Client Type" />} />
+                <Route path="/dashboard/config/protocol-type" element={<PH title="Protocol Type" />} />
+                <Route path="/dashboard/config/district" element={<PH title="District / Upazilla" />} />
+                <Route path="/dashboard/config/billing-status" element={<PH title="Billing Status" />} />
+
+                {/* Packages */}
                 <Route path="/dashboard/packages" element={<Packages />} />
+
+                {/* Billing & Finance */}
                 <Route path="/dashboard/billing" element={<Billing />} />
+                <Route path="/dashboard/billing/daily" element={<PH title="Daily Bill Collection" />} />
+                <Route path="/dashboard/billing/monthly" element={<PH title="Monthly Billing Report" />} />
                 <Route path="/dashboard/payments" element={<Payments />} />
                 <Route path="/dashboard/reports" element={<Reports />} />
+
+                {/* Income & Expense */}
+                <Route path="/dashboard/finance/income" element={<PH title="Daily Income" />} />
+                <Route path="/dashboard/finance/expense" element={<PH title="Daily Expense" />} />
+                <Route path="/dashboard/finance/closing" element={<PH title="Account Closing" />} />
+                <Route path="/dashboard/finance/history" element={<PH title="Financial History" />} />
+
+                {/* Accounting */}
+                <Route path="/dashboard/accounting" element={<PH title="Accounting Dashboard" />} />
+                <Route path="/dashboard/accounting/chart" element={<PH title="Chart of Accounts" />} />
+                <Route path="/dashboard/accounting/journal" element={<PH title="Journal" />} />
+                <Route path="/dashboard/accounting/balance-sheet" element={<PH title="Balance Sheet" />} />
+                <Route path="/dashboard/accounting/profit-loss" element={<PH title="Profit & Loss" />} />
+                <Route path="/dashboard/accounting/trial-balance" element={<PH title="Trial Balance" />} />
+
+                {/* Network */}
                 <Route path="/dashboard/network" element={<NetworkPage />} />
+                <Route path="/dashboard/mikrotik/backup" element={<PH title="Server Backup" />} />
+                <Route path="/dashboard/mikrotik/import" element={<PH title="Import from MikroTik" />} />
+                <Route path="/dashboard/mikrotik/bulk-import" element={<PH title="Bulk Clients Import" />} />
                 <Route path="/dashboard/olt" element={<OltDevicesPage />} />
-                <Route path="/dashboard/notifications" element={<Notifications />} />
+                <Route path="/dashboard/olt/users" element={<PH title="OLT Users" />} />
+                <Route path="/dashboard/network-diagram" element={<PH title="Network Diagram" />} />
+
+                {/* Support & Ticketing */}
+                <Route path="/dashboard/support" element={<PH title="Client Support" />} />
+                <Route path="/dashboard/support/category" element={<PH title="Support Category" />} />
+                <Route path="/dashboard/support/history" element={<PH title="Support History" />} />
+
+                {/* Task Management */}
+                <Route path="/dashboard/tasks" element={<PH title="Tasks" />} />
+                <Route path="/dashboard/tasks/category" element={<PH title="Task Category" />} />
+                <Route path="/dashboard/tasks/history" element={<PH title="Task History" />} />
+
+                {/* HR & Payroll */}
+                <Route path="/dashboard/hr/employees" element={<PH title="Employee List" />} />
+                <Route path="/dashboard/hr/department" element={<PH title="Department" />} />
+                <Route path="/dashboard/hr/salary" element={<PH title="Salary Sheet" />} />
+                <Route path="/dashboard/hr/attendance" element={<PH title="Attendance" />} />
+
+                {/* Inventory & Assets */}
+                <Route path="/dashboard/inventory/items" element={<PH title="Items" />} />
+                <Route path="/dashboard/inventory/stock" element={<PH title="Stock" />} />
+                <Route path="/dashboard/inventory/assets" element={<PH title="Assets" />} />
+
+                {/* Purchase & Vendors */}
+                <Route path="/dashboard/purchase/vendors" element={<PH title="Vendors" />} />
+                <Route path="/dashboard/purchase" element={<PH title="Purchase" />} />
+                <Route path="/dashboard/purchase/bill" element={<PH title="Purchase Bill" />} />
+
+                {/* Resellers */}
                 <Route path="/dashboard/resellers" element={<Resellers />} />
                 <Route path="/dashboard/resellers/:resellerId" element={<ResellerDetail />} />
-                {/* Reseller self-service routes (inside StaffRoute since reseller is a staff role) */}
+                <Route path="/dashboard/resellers/tariff" element={<PH title="Package / Tariff Config" />} />
+                <Route path="/dashboard/resellers/funding" element={<PH title="Reseller Funding" />} />
+                <Route path="/dashboard/resellers/pgw" element={<PH title="PGW Settlement" />} />
+
+                {/* SMS Service */}
+                <Route path="/dashboard/sms/send" element={<PH title="Send SMS" />} />
+                <Route path="/dashboard/sms/template" element={<PH title="SMS Template" />} />
+                <Route path="/dashboard/sms/gateway" element={<PH title="SMS Gateway" />} />
+
+                {/* System */}
+                <Route path="/dashboard/notifications" element={<Notifications />} />
+                <Route path="/dashboard/settings" element={<Settings />} />
+
+                {/* Reseller self-service */}
                 <Route path="/dashboard/reseller" element={<ResellerDashboardPage />} />
                 <Route path="/dashboard/reseller/customers" element={<ResellerCustomersPage />} />
                 <Route path="/dashboard/reseller/payments" element={<ResellerPaymentsPage />} />
                 <Route path="/dashboard/reseller/wallet" element={<ResellerWalletPage />} />
-                <Route path="/dashboard/settings" element={<Settings />} />
               </Route>
 
               {/* Customer Portal Routes (Web) */}
@@ -170,32 +255,21 @@ const App = () => (
                   </SuperAdminRoute>
                 }
               >
-                {/* Platform Overview */}
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/health" element={<AdminSystemHealth />} />
                 <Route path="/admin/activity" element={<AdminActivityLogs />} />
-                
-                {/* ISP Management */}
                 <Route path="/admin/tenants" element={<AdminTenants />} />
                 <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
                 <Route path="/admin/addons" element={<AdminAddons />} />
-                
-                {/* Financials */}
                 <Route path="/admin/revenue" element={<AdminRevenue />} />
                 <Route path="/admin/wallets" element={<AdminWallets />} />
                 <Route path="/admin/payouts" element={<AdminPayouts />} />
-                
-                {/* Infrastructure */}
                 <Route path="/admin/payments" element={<AdminPaymentInfra />} />
                 <Route path="/admin/notifications" element={<AdminNotifications />} />
                 <Route path="/admin/network" element={<AdminNetworkIntegrations />} />
-                
-                {/* Governance */}
                 <Route path="/admin/users" element={<AdminUsersRoles />} />
                 <Route path="/admin/api" element={<AdminApiUsage />} />
                 <Route path="/admin/audit" element={<AdminAuditLogs />} />
-                
-                {/* Settings */}
                 <Route path="/admin/settings" element={<AdminSettings />} />
                 <Route path="/admin/pricing" element={<AdminPricing />} />
               </Route>
