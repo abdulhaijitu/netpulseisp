@@ -107,7 +107,7 @@ const navGroups: NavGroup[] = [
       { title: "Connection Type", href: "/dashboard/config/connection-type", icon: Wifi },
       { title: "Client Type", href: "/dashboard/config/client-type", icon: UserCheck },
       { title: "Protocol Type", href: "/dashboard/config/protocol-type", icon: Network },
-      { title: "District / Upazilla", href: "/dashboard/config/district", icon: MapPin },
+      { title: "Area Management", href: "/dashboard/config/district", icon: MapPin },
       { title: "Billing Status", href: "/dashboard/config/billing-status", icon: FileText },
     ],
   },
