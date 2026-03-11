@@ -217,7 +217,7 @@ const App = () => (
                 <Route path="/dashboard/hr/employees" element={<EmployeeListPage />} />
                 <Route path="/dashboard/hr/department" element={<DepartmentPage />} />
                 <Route path="/dashboard/hr/salary" element={<SalarySheetPage />} />
-                <Route path="/dashboard/hr/attendance" element={<PH title="Attendance" />} />
+                <Route path="/dashboard/hr/attendance" element={<AttendancePage />} />
 
                 {/* Inventory & Assets */}
                 <Route path="/dashboard/inventory/items" element={<PH title="Items" />} />
