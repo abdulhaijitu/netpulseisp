@@ -549,43 +549,42 @@ export function DashboardSidebar() {
         )}
       </div>
 
-      {/* Footer */}
-      <div className="border-t border-sidebar-border/50 pt-4">
-        <div className="flex items-center gap-3">
-          <div className="relative h-8 w-8 shrink-0 rounded-full bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 flex items-center justify-center">
+      {/* Footer - Compact */}
+      <div className="border-t border-sidebar-border pt-2 pb-1">
+        <div className="flex items-center gap-2">
+          <div className="relative h-7 w-7 shrink-0 rounded-full bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 flex items-center justify-center">
             {profileLoading || roleLoading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-sidebar-primary-foreground" />
+              <Loader2 className="h-3 w-3 animate-spin text-sidebar-primary-foreground" />
             ) : (
-              <span className="text-[11px] font-semibold text-sidebar-primary-foreground">{initials}</span>
+              <span className="text-[10px] font-semibold text-sidebar-primary-foreground">{initials}</span>
             )}
-            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-sidebar bg-success" />
+            <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-[1.5px] border-sidebar bg-success" />
           </div>
           <motion.div
             animate={{ display: open ? "flex" : "none", opacity: open ? 1 : 0 }}
             transition={{ duration: 0.2 }}
             className="flex-col min-w-0 flex-1"
           >
-            <span className="text-sm font-medium text-sidebar-foreground truncate">
-              {profileLoading ? "Loading..." : displayName}
+            <span className="text-xs font-medium text-sidebar-foreground truncate leading-tight">
+              {profileLoading ? "..." : displayName}
             </span>
-            <span className="text-[11px] text-sidebar-foreground/50 truncate">
+            <span className="text-[10px] text-muted-foreground truncate leading-tight">
               {roleLoading ? "..." : roleLabel}
             </span>
           </motion.div>
+          <motion.div
+            animate={{ display: open ? "flex" : "none", opacity: open ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              title="Logout"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          </motion.div>
         </div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "mt-2 w-full text-sidebar-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors",
-            !open ? "justify-center px-0" : "justify-start"
-          )}
-          onClick={handleLogout}
-        >
-          <LogOut className="h-4 w-4" />
-          {open && <span className="ml-2">Logout</span>}
-        </Button>
       </div>
     </SidebarBody>
   );
