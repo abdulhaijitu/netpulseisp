@@ -58,6 +58,7 @@ import ChartOfAccountsPage from "@/pages/finance/ChartOfAccountsPage";
 import JournalVoucherPage from "@/pages/finance/JournalVoucherPage";
 import BalanceSheetPage from "@/pages/finance/BalanceSheetPage";
 import ProfitLossPage from "@/pages/finance/ProfitLossPage";
+import TrialBalancePage from "@/pages/finance/TrialBalancePage";
 
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
@@ -175,7 +176,7 @@ const App = () => (
                 <Route path="/dashboard/accounting/journal" element={<JournalVoucherPage />} />
                 <Route path="/dashboard/accounting/balance-sheet" element={<BalanceSheetPage />} />
                 <Route path="/dashboard/accounting/profit-loss" element={<ProfitLossPage />} />
-                <Route path="/dashboard/accounting/trial-balance" element={<PH title="Trial Balance" />} />
+                <Route path="/dashboard/accounting/trial-balance" element={<TrialBalancePage />} />
 
                 {/* Network */}
                 <Route path="/dashboard/network" element={<NetworkPage />} />
