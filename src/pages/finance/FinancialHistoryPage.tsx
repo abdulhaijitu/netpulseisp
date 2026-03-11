@@ -25,9 +25,9 @@ const demoTransactions = [
 ];
 
 export default function FinancialHistoryPage() {
-  const { currentTenantId } = useTenantContext();
+  const { currentTenant } = useTenantContext();
   const { isDemoMode } = useDemoMode();
-  const { data: payments } = usePayments(currentTenantId);
+  const { data: payments } = usePayments(currentTenant?.id);
 
   const [transactionFor, setTransactionFor] = useState("all");
   const [paymentMethod, setPaymentMethod] = useState("all");
