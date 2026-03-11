@@ -22,7 +22,13 @@ const SidebarContext = createContext<SidebarContextProps | undefined>(undefined)
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider");
+    // Return safe defaults when used outside SidebarProvider
+    return {
+      open: true,
+      setOpen: (() => {}) as React.Dispatch<React.SetStateAction<boolean>>,
+      expandedGroup: null,
+      setExpandedGroup: (() => {}) as React.Dispatch<React.SetStateAction<string | null>>,
+    };
   }
   return context;
 };
