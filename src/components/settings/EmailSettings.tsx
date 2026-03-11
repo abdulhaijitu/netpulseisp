@@ -1,205 +1,205 @@
-import { useState, useEffect } from "react";
-import { Mail, Eye, EyeOff, ExternalLink, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { Mail, Eye, EyeOff, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useUpdateTenantSettings } from "@/hooks/useTenantSettings";
-import { useCurrentTenant } from "@/hooks/useTenant";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export function EmailSettings() {
-  const { data: currentTenant, isLoading: tenantLoading } = useCurrentTenant();
-  const updateSettings = useUpdateTenantSettings(currentTenant?.id);
-  
-  const [apiKey, setApiKey] = useState("");
-  const [senderEmail, setSenderEmail] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
+  const [protocol, setProtocol] = useState("smtp");
+  const [host, setHost] = useState("");
+  const [port, setPort] = useState("587");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [fromName, setFromName] = useState("");
+  const [fromEmail, setFromEmail] = useState("");
+  const [encryption, setEncryption] = useState("tls");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load existing values when tenant loads
-  useEffect(() => {
-    if (currentTenant) {
-      // Only show masked version if key exists
-      setApiKey(currentTenant.resend_api_key ? "••••••••••••••••" : "");
-      setSenderEmail(currentTenant.sender_email || "");
-    }
-  }, [currentTenant]);
-
   const handleSave = async () => {
-    if (!currentTenant) return;
-    
-    // Validate sender email format
-    if (senderEmail && !senderEmail.includes("@")) {
-      toast.error("সঠিক ইমেইল এড্রেস দিন");
+    if (!host || !username || !fromEmail) {
+      toast.error("Host, Username এবং Mail From Email আবশ্যক");
       return;
     }
-
     setIsSaving(true);
-    try {
-      const updates: { resend_api_key?: string; sender_email?: string } = {};
-      
-      // Only update API key if it's not the masked placeholder
-      if (apiKey && !apiKey.includes("•")) {
-        updates.resend_api_key = apiKey;
-      }
-      
-      updates.sender_email = senderEmail || null;
-
-      await updateSettings.mutateAsync(updates);
-      
-      // Reset API key field to masked version after save
-      if (apiKey && !apiKey.includes("•")) {
-        setApiKey("••••••••••••••••");
-      }
-      setShowApiKey(false);
-    } catch (error) {
-      console.error("Error saving email settings:", error);
-    } finally {
-      setIsSaving(false);
-    }
+    // Simulate save
+    await new Promise((r) => setTimeout(r, 600));
+    toast.success("Email সেটিংস সেভ হয়েছে");
+    setIsSaving(false);
   };
-
-  const hasApiKey = currentTenant?.resend_api_key || (apiKey && !apiKey.includes("•"));
-
-  if (tenantLoading) {
-    return (
-      <Card>
-        <CardContent className="py-10 text-center text-muted-foreground">
-          লোড হচ্ছে...
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Resend Email Configuration
-          </CardTitle>
-          <CardDescription>
-            ইনভয়েস এবং বিলিং নোটিফিকেশন ইমেইল পাঠাতে Resend API সেটআপ করুন
-          </CardDescription>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Mail className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Email Setup</CardTitle>
+              <p className="text-sm text-muted-foreground">Email Settings / Configuration</p>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Setup Instructions */}
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="space-y-2">
-              <p className="font-medium">Resend সেটআপ করতে:</p>
-              <ol className="list-decimal list-inside space-y-1 text-sm">
-                <li>
-                  <a 
-                    href="https://resend.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    resend.com <ExternalLink className="h-3 w-3" />
-                  </a> 
-                  {" "}এ অ্যাকাউন্ট তৈরি করুন
-                </li>
-                <li>
-                  <a 
-                    href="https://resend.com/domains" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    Domain verify <ExternalLink className="h-3 w-3" />
-                  </a>
-                  {" "}করুন
-                </li>
-                <li>
-                  <a 
-                    href="https://resend.com/api-keys" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    API Key তৈরি করুন <ExternalLink className="h-3 w-3" />
-                  </a>
-                </li>
-              </ol>
-            </AlertDescription>
-          </Alert>
+      </Card>
 
-          {/* API Key Input */}
+      {/* SMTP Configuration Card */}
+      <Card className="overflow-hidden">
+        {/* Dark header bar */}
+        <div className="bg-foreground/90 px-6 py-3">
+          <h3 className="text-sm font-semibold text-background">SMTP Configuration</h3>
+        </div>
+
+        <CardContent className="p-6 space-y-6">
+          {/* Mail Protocol */}
           <div className="space-y-2">
-            <Label htmlFor="resendApiKey">Resend API Key</Label>
-            <div className="relative">
+            <Label className="text-sm font-medium">Mail Protocol</Label>
+            <RadioGroup
+              value={protocol}
+              onValueChange={setProtocol}
+              className="flex gap-6"
+            >
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="mail" id="protocol-mail" />
+                <Label htmlFor="protocol-mail" className="cursor-pointer font-normal">Mail</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="smtp" id="protocol-smtp" />
+                <Label htmlFor="protocol-smtp" className="cursor-pointer font-normal">SMTP</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* 2-column grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Host */}
+            <div className="space-y-1.5">
+              <Label htmlFor="smtp-host">Host</Label>
               <Input
-                id="resendApiKey"
-                type={showApiKey ? "text" : "password"}
-                placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxx"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="pr-10"
+                id="smtp-host"
+                placeholder="smtp.example.com"
+                value={host}
+                onChange={(e) => setHost(e.target.value)}
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0 h-full px-3"
-                onClick={() => setShowApiKey(!showApiKey)}
-              >
-                {showApiKey ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-              </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Resend ড্যাশবোর্ড থেকে API key কপি করুন
-            </p>
+
+            {/* Port */}
+            <div className="space-y-1.5">
+              <Label htmlFor="smtp-port">Port</Label>
+              <Input
+                id="smtp-port"
+                placeholder="587"
+                value={port}
+                onChange={(e) => setPort(e.target.value)}
+              />
+            </div>
+
+            {/* Username */}
+            <div className="space-y-1.5">
+              <Label htmlFor="smtp-username">Username</Label>
+              <Input
+                id="smtp-username"
+                placeholder="user@example.com"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+
+            {/* Password */}
+            <div className="space-y-1.5">
+              <Label htmlFor="smtp-password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="smtp-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Mail From Name */}
+            <div className="space-y-1.5">
+              <Label htmlFor="smtp-from-name">Mail From Name</Label>
+              <Input
+                id="smtp-from-name"
+                placeholder="ISP Billing"
+                value={fromName}
+                onChange={(e) => setFromName(e.target.value)}
+              />
+            </div>
+
+            {/* Mail From Email */}
+            <div className="space-y-1.5">
+              <Label htmlFor="smtp-from-email">Mail From Email</Label>
+              <Input
+                id="smtp-from-email"
+                type="email"
+                placeholder="billing@example.com"
+                value={fromEmail}
+                onChange={(e) => setFromEmail(e.target.value)}
+              />
+            </div>
           </div>
 
-          {/* Sender Email Input */}
-          <div className="space-y-2">
-            <Label htmlFor="senderEmail">Sender Email Address</Label>
-            <Input
-              id="senderEmail"
-              type="email"
-              placeholder="billing@yourdomain.com"
-              value={senderEmail}
-              onChange={(e) => setSenderEmail(e.target.value)}
-            />
-            <p className="text-sm text-muted-foreground">
-              Resend এ verified domain এর ইমেইল এড্রেস দিন
-            </p>
+          {/* Encryption */}
+          <div className="space-y-1.5 max-w-xs">
+            <Label>Encryption</Label>
+            <Select value={encryption} onValueChange={setEncryption}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ssl">SSL</SelectItem>
+                <SelectItem value="tls">TLS</SelectItem>
+                <SelectItem value="none">None</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-
-          {/* Status Indicator */}
-          {hasApiKey && (
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle2 className="h-4 w-4 text-success" />
-              <span className="text-success">API Key কনফিগার করা আছে</span>
-            </div>
-          )}
 
           {/* Save Button */}
-          <Button 
-            onClick={handleSave} 
-            disabled={isSaving || (!apiKey && !senderEmail)}
-            className="w-full sm:w-auto"
-          >
-            {isSaving ? "সেভ হচ্ছে..." : "সেটিংস সেভ করুন"}
-          </Button>
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+              <Save className="h-4 w-4" />
+              {isSaving ? "সেভ হচ্ছে..." : "Save"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Usage Info Card */}
+      {/* Email Features */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Email Features</CardTitle>
