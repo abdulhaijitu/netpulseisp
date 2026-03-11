@@ -182,7 +182,7 @@ export function CurrentPlanSummary({
             <div className="flex items-center justify-between text-sm font-bold">
               <span>Estimated Total</span>
               <span className="tabular-nums">
-                ৳{billingEstimate.total_cost.toLocaleString()}
+                ৳{(billingEstimate.total_cost ?? 0).toLocaleString()}
               </span>
             </div>
 
