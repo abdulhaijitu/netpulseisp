@@ -223,7 +223,7 @@ const App = () => (
 
                 {/* Inventory & Assets */}
                 <Route path="/dashboard/inventory/items" element={<ItemsPage />} />
-                <Route path="/dashboard/inventory/stock" element={<PH title="Stock" />} />
+                <Route path="/dashboard/inventory/stock" element={<StockPage />} />
                 <Route path="/dashboard/inventory/assets" element={<PH title="Assets" />} />
 
                 {/* Purchase & Vendors */}
