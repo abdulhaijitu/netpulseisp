@@ -207,7 +207,7 @@ const App = () => (
                 {/* Task Management */}
                 <Route path="/dashboard/tasks" element={<TaskManagementPage />} />
                 <Route path="/dashboard/tasks/category" element={<TaskCategoryPage />} />
-                <Route path="/dashboard/tasks/history" element={<PH title="Task History" />} />
+                <Route path="/dashboard/tasks/history" element={<TaskHistoryPage />} />
 
                 {/* HR & Payroll */}
                 <Route path="/dashboard/hr/employees" element={<PH title="Employee List" />} />
