@@ -94,6 +94,7 @@ import SmsGatewayPage from "@/pages/sms/SmsGatewayPage";
 import PaymentProcessingFeePage from "@/pages/system/PaymentProcessingFeePage";
 import VatSetupPage from "@/pages/system/VatSetupPage";
 import ActivityLoggersPage from "@/pages/system/ActivityLoggersPage";
+import AutomaticProcessPage from "@/pages/system/AutomaticProcessPage";
 
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
@@ -274,7 +275,7 @@ const App = () => (
                 <Route path="/dashboard/system/processing-fee" element={<PaymentProcessingFeePage />} />
                 <Route path="/dashboard/system/vat-setup" element={<VatSetupPage />} />
                 <Route path="/dashboard/system/activity-loggers" element={<ActivityLoggersPage />} />
-                <Route path="/dashboard/system/automatic-process" element={<PH title="Automatic Process" />} />
+                <Route path="/dashboard/system/automatic-process" element={<AutomaticProcessPage />} />
 
                 {/* Reseller self-service */}
                 <Route path="/dashboard/reseller" element={<ResellerDashboardPage />} />
