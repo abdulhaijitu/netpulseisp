@@ -38,6 +38,7 @@ import ResellerWalletPage from "@/pages/reseller/ResellerWalletPage";
 import NotFound from "@/pages/NotFound";
 import PlaceholderPage from "@/pages/placeholder/PlaceholderPage";
 import ZonesPage from "@/pages/config/ZonesPage";
+import ConnectionTypePage from "@/pages/config/ConnectionTypePage";
 
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
