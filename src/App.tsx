@@ -79,6 +79,7 @@ import StockPage from "@/pages/inventory/StockPage";
 import AssetsPage from "@/pages/inventory/AssetsPage";
 import VendorsPage from "@/pages/purchase/VendorsPage";
 import PurchasePage from "@/pages/purchase/PurchasePage";
+import PurchaseBillPage from "@/pages/purchase/PurchaseBillPage";
 
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
@@ -232,7 +233,7 @@ const App = () => (
                 {/* Purchase & Vendors */}
                 <Route path="/dashboard/purchase/vendors" element={<VendorsPage />} />
                 <Route path="/dashboard/purchase" element={<PurchasePage />} />
-                <Route path="/dashboard/purchase/bill" element={<PH title="Purchase Bill" />} />
+                <Route path="/dashboard/purchase/bill" element={<PurchaseBillPage />} />
 
                 {/* Resellers */}
                 <Route path="/dashboard/resellers" element={<Resellers />} />
