@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
-import { Plus, Download, Loader2 } from "lucide-react";
+import { Plus, Download, Loader2, FileSpreadsheet, FileText, Users, UserPlus, RefreshCw, ArrowRightLeft, Wifi, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { CustomerTable, type CustomerTableData } from "@/components/customers/CustomerTable";
 import { CustomerFormDialog, type CustomerFormData } from "@/components/customers/CustomerFormDialog";
 import { ConnectionStatusDialog } from "@/components/customers/ConnectionStatusDialog";
@@ -11,6 +12,14 @@ import { useCustomers, useCreateCustomer, useUpdateCustomer } from "@/hooks/useC
 import { usePackages } from "@/hooks/usePackages";
 import { useTenantContext } from "@/contexts/TenantContext";
 import type { ConnectionStatus } from "@/types";
+
+interface StatCard {
+  title: string;
+  count: number;
+  description: string;
+  icon: React.ReactNode;
+  bgClass: string;
+}
 
 export default function Customers() {
   const { toast } = useToast();
@@ -52,18 +61,62 @@ export default function Customers() {
       address: c.address ?? "",
       package: c.package?.name ?? "No package",
       packageId: c.package_id ?? "",
+      speed: c.package?.speed_label ?? "",
       status: c.connection_status ?? "pending",
       dueAmount: c.due_balance ?? 0,
       advanceAmount: c.advance_balance ?? 0,
       joinDate: c.join_date,
       lastPayment: c.last_payment_date ?? c.join_date,
+      networkUsername: c.network_username ?? "",
+      monthlyPrice: c.package?.monthly_price ?? 0,
     })), [customers]
   );
+
+  // Stats
+  const stats: StatCard[] = useMemo(() => {
+    const active = tableData.filter((c) => c.status === "active").length;
+    const newThisMonth = tableData.filter((c) => {
+      const joinDate = new Date(c.joinDate);
+      const now = new Date();
+      return joinDate.getMonth() === now.getMonth() && joinDate.getFullYear() === now.getFullYear();
+    }).length;
+    const suspended = tableData.filter((c) => c.status === "suspended").length;
+    const pending = tableData.filter((c) => c.status === "pending").length;
+    return [
+      {
+        title: "Running Clients",
+        count: active,
+        description: "Number of clients without LeftOut status",
+        icon: <Users className="h-7 w-7" />,
+        bgClass: "bg-[hsl(var(--primary))]",
+      },
+      {
+        title: "New Clients",
+        count: newThisMonth,
+        description: "Monthly number of clients those are new",
+        icon: <UserPlus className="h-7 w-7" />,
+        bgClass: "bg-[hsl(var(--success))]",
+      },
+      {
+        title: "Suspended Clients",
+        count: suspended,
+        description: "Number of currently suspended clients",
+        icon: <Shield className="h-7 w-7" />,
+        bgClass: "bg-[hsl(var(--destructive))]",
+      },
+      {
+        title: "Pending Clients",
+        count: pending,
+        description: "Number of clients awaiting activation",
+        icon: <Wifi className="h-7 w-7" />,
+        bgClass: "bg-[hsl(var(--warning))]",
+      },
+    ];
+  }, [tableData]);
 
   // Filter customers
   const filteredCustomers = useMemo(() => {
     return tableData.filter((customer) => {
-      // Search filter
       const searchLower = filters.search.toLowerCase();
       const matchesSearch =
         !filters.search ||
@@ -71,32 +124,20 @@ export default function Customers() {
         customer.phone.includes(filters.search) ||
         customer.email.toLowerCase().includes(searchLower) ||
         customer.id.toLowerCase().includes(searchLower);
-
-      // Status filter
-      const matchesStatus =
-        filters.status === "all" || customer.status === filters.status;
-
-      // Package filter
+      const matchesStatus = filters.status === "all" || customer.status === filters.status;
       const matchesPackage =
         filters.packageId === "all" ||
         (filters.packageId === "none" && !customer.packageId) ||
         customer.packageId === filters.packageId;
-
-      // Balance type filter
       let matchesBalance = true;
-      if (filters.balanceType === "due") {
-        matchesBalance = customer.dueAmount > 0;
-      } else if (filters.balanceType === "advance") {
-        matchesBalance = customer.advanceAmount > 0;
-      } else if (filters.balanceType === "clear") {
-        matchesBalance = customer.dueAmount === 0 && customer.advanceAmount === 0;
-      }
-
+      if (filters.balanceType === "due") matchesBalance = customer.dueAmount > 0;
+      else if (filters.balanceType === "advance") matchesBalance = customer.advanceAmount > 0;
+      else if (filters.balanceType === "clear") matchesBalance = customer.dueAmount === 0 && customer.advanceAmount === 0;
       return matchesSearch && matchesStatus && matchesPackage && matchesBalance;
     });
   }, [tableData, filters]);
 
-  // Paginate customers
+  // Paginate
   const paginatedCustomers = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     return filteredCustomers.slice(startIndex, startIndex + pageSize);
@@ -104,7 +145,6 @@ export default function Customers() {
 
   const totalPages = Math.ceil(filteredCustomers.length / pageSize);
 
-  // Reset to page 1 when filters change
   const handleFiltersChange = (newFilters: CustomerFilters) => {
     setFilters(newFilters);
     setCurrentPage(1);
@@ -139,14 +179,9 @@ export default function Customers() {
 
   const handleFormSubmit = async (data: CustomerFormData) => {
     if (!currentTenant?.id) {
-      toast({
-        title: "Error",
-        description: "Tenant information not found.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Tenant information not found.", variant: "destructive" });
       return;
     }
-
     try {
       if (formMode === "add") {
         await createCustomer.mutateAsync({
@@ -160,10 +195,7 @@ export default function Customers() {
           due_balance: 0,
           advance_balance: 0,
         });
-        toast({
-          title: "Customer added",
-          description: `${data.name} was added successfully.`,
-        });
+        toast({ title: "Customer added", description: `${data.name} was added successfully.` });
       } else {
         await updateCustomer.mutateAsync({
           id: data.id!,
@@ -178,18 +210,11 @@ export default function Customers() {
             advance_balance: data.advanceBalance,
           },
         });
-        toast({
-          title: "Customer updated",
-          description: `${data.name} details were updated.`,
-        });
+        toast({ title: "Customer updated", description: `${data.name} details were updated.` });
       }
     } catch (err) {
       console.error("Error saving customer:", err);
-      toast({
-        title: "Error",
-        description: "Failed to save customer.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to save customer.", variant: "destructive" });
       throw err;
     }
   };
@@ -206,16 +231,9 @@ export default function Customers() {
     setStatusDialogOpen(true);
   };
 
-  const handleStatusChange = async (
-    customerId: string,
-    newStatus: ConnectionStatus,
-    reason?: string
-  ) => {
+  const handleStatusChange = async (customerId: string, newStatus: ConnectionStatus, reason?: string) => {
     try {
-      await updateCustomer.mutateAsync({
-        id: customerId,
-        updates: { connection_status: newStatus },
-      });
+      await updateCustomer.mutateAsync({ id: customerId, updates: { connection_status: newStatus } });
       const customer = tableData.find((c) => c.id === customerId);
       toast({
         title: newStatus === "active" ? "Connection activated" : "Connection suspended",
@@ -223,46 +241,13 @@ export default function Customers() {
       });
     } catch (err) {
       console.error("Error updating status:", err);
-      toast({
-        title: "Error",
-        description: "Failed to update connection status.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update connection status.", variant: "destructive" });
     }
   };
 
-  const handleViewDetails = (customer: CustomerTableData) => {
-    window.location.href = `/dashboard/customers/${customer.id}`;
-  };
-
-  const handleRecordPayment = (customer: CustomerTableData) => {
-    toast({
-      title: "Coming soon",
-      description: "Payment recording will be added soon.",
-    });
-  };
-
-  const handleGenerateBill = (customer: CustomerTableData) => {
-    toast({
-      title: "Coming soon",
-      description: "Bill generation will be added soon.",
-    });
-  };
-
   const handleExport = () => {
-    // Export filtered data as CSV
     const headers = ["ID", "Name", "Phone", "Email", "Package", "Status", "Due", "Advance"];
-    const rows = filteredCustomers.map((c) => [
-      c.id,
-      c.name,
-      c.phone,
-      c.email,
-      c.package,
-      c.status,
-      c.dueAmount,
-      c.advanceAmount,
-    ]);
-
+    const rows = filteredCustomers.map((c) => [c.id, c.name, c.phone, c.email, c.package, c.status, c.dueAmount, c.advanceAmount]);
     const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -271,44 +256,77 @@ export default function Customers() {
     a.download = `customers-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    toast({ title: "Export complete", description: `${filteredCustomers.length} customers exported.` });
+  };
 
-    toast({
-      title: "Export complete",
-      description: `${filteredCustomers.length} customers exported.`,
-    });
+  const handleBulkAction = (action: string) => {
+    toast({ title: "Coming soon", description: `${action} feature will be added soon.` });
   };
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-destructive">Failed to load customer data.</p>
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          Try Again
-        </Button>
+        <Button variant="outline" onClick={() => window.location.reload()}>Try Again</Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Customers</h1>
-          <p className="text-muted-foreground">
-            Manage your customers and their connections
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Client List</h1>
+          <p className="text-muted-foreground">View All Client</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={handleExport}>
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-          <Button className="gap-2" onClick={handleAddCustomer}>
-            <Plus className="h-4 w-4" />
-            New Customer
-          </Button>
-        </div>
+        <Button className="gap-2" onClick={handleAddCustomer}>
+          <Plus className="h-4 w-4" />
+          Add New Client
+        </Button>
+      </div>
+
+      {/* Action Buttons Bar */}
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => handleBulkAction("Assign To Employee")}>
+          <Users className="h-3.5 w-3.5" /> Assign To Employee
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-success/10 border-success/30 text-success hover:bg-success/20" onClick={handleExport}>
+          <FileSpreadsheet className="h-3.5 w-3.5" /> Generate Excel
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-destructive/10 border-destructive/30 text-destructive hover:bg-destructive/20" onClick={() => handleBulkAction("Generate PDF")}>
+          <FileText className="h-3.5 w-3.5" /> Generate Pdf
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => handleBulkAction("Bulk Profile Change")}>
+          <ArrowRightLeft className="h-3.5 w-3.5" /> Bulk Profile Change
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => handleBulkAction("Bulk Package Change")}>
+          <ArrowRightLeft className="h-3.5 w-3.5" /> Bulk Package Change
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => handleBulkAction("Bulk Status Change")}>
+          <ArrowRightLeft className="h-3.5 w-3.5" /> Bulk Status Change
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => handleBulkAction("Sync Clients")}>
+          <RefreshCw className="h-3.5 w-3.5" /> Sync Clients & Servers
+        </Button>
+      </div>
+
+      {/* Summary Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <Card key={stat.title} className={`${stat.bgClass} border-0 text-primary-foreground overflow-hidden`}>
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-background/15 flex items-center justify-center shrink-0">
+                {stat.icon}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium opacity-90 truncate">{stat.title}</p>
+                <p className="text-2xl font-bold">{stat.count}</p>
+                <p className="text-[10px] opacity-75 truncate">{stat.description}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Filters */}
@@ -329,11 +347,11 @@ export default function Customers() {
         <CustomerTable
           customers={paginatedCustomers}
           onEdit={handleEditCustomer}
-          onViewDetails={handleViewDetails}
+          onViewDetails={(c) => { window.location.href = `/dashboard/customers/${c.id}`; }}
           onSuspend={handleSuspendConnection}
           onActivate={handleActivateConnection}
-          onRecordPayment={handleRecordPayment}
-          onGenerateBill={handleGenerateBill}
+          onRecordPayment={(c) => toast({ title: "Coming soon", description: "Payment recording will be added soon." })}
+          onGenerateBill={(c) => toast({ title: "Coming soon", description: "Bill generation will be added soon." })}
         />
       )}
 
