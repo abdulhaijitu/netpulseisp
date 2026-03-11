@@ -97,15 +97,15 @@ const ChangeRequestPage = () => {
     <PageContainer title="Change Request (Package & Exp. Date)" description="Manage package change and bill date change requests">
 
       {/* Info Banner */}
-      <Card className="mb-4 border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20">
+      <Card className="mb-4 border-primary/30 bg-primary/5">
         <CardContent className="p-3">
-          <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-400 w-full">
+          <button onClick={() => setShowInfo(!showInfo)} className="flex items-center gap-2 text-sm font-medium text-primary w-full">
             <Info className="h-4 w-4" />
             Learn what will happen after changes request approval?
             {showInfo ? <ChevronUp className="h-4 w-4 ml-auto" /> : <ChevronDown className="h-4 w-4 ml-auto" />}
           </button>
           {showInfo && (
-            <div className="mt-2 text-xs text-blue-600 dark:text-blue-300 space-y-1 pl-6">
+            <div className="mt-2 text-xs text-primary/80 space-y-1 pl-6">
               <p>• <strong>Package Change:</strong> After approval, the customer's package will be updated on the occurring date.</p>
               <p>• <strong>Bill Date Change:</strong> After approval, the billing cycle will shift to the new requested date.</p>
               <p>• <strong>Auto Sync:</strong> If network integration is enabled, changes will auto-sync to your router/NAS.</p>
