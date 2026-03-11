@@ -42,6 +42,7 @@ import ResellerPaymentsPage from "@/pages/reseller/ResellerPaymentsPage";
 import ResellerWalletPage from "@/pages/reseller/ResellerWalletPage";
 import NotFound from "@/pages/NotFound";
 import PlaceholderPage from "@/pages/placeholder/PlaceholderPage";
+import SupportCategoryPage from "@/pages/support/SupportCategoryPage";
 import ZonesPage from "@/pages/config/ZonesPage";
 import ConnectionTypePage from "@/pages/config/ConnectionTypePage";
 import ClientTypePage from "@/pages/config/ClientTypePage";
@@ -195,7 +196,7 @@ const App = () => (
 
                 {/* Support & Ticketing */}
                 <Route path="/dashboard/support" element={<PH title="Client Support" />} />
-                <Route path="/dashboard/support/category" element={<PH title="Support Category" />} />
+                <Route path="/dashboard/support/category" element={<SupportCategoryPage />} />
                 <Route path="/dashboard/support/history" element={<PH title="Support History" />} />
 
                 {/* Task Management */}
