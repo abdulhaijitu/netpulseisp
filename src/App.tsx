@@ -42,6 +42,7 @@ import ResellerPaymentsPage from "@/pages/reseller/ResellerPaymentsPage";
 import ResellerWalletPage from "@/pages/reseller/ResellerWalletPage";
 import ResellerPackageTariffPage from "@/pages/reseller/ResellerPackageTariffPage";
 import ResellerFundingPage from "@/pages/reseller/ResellerFundingPage";
+import ResellerPgwSettlementPage from "@/pages/reseller/ResellerPgwSettlementPage";
 import NotFound from "@/pages/NotFound";
 import PlaceholderPage from "@/pages/placeholder/PlaceholderPage";
 import TaskManagementPage from "@/pages/support/TaskManagementPage";
@@ -242,7 +243,7 @@ const App = () => (
                 <Route path="/dashboard/resellers/:resellerId" element={<ResellerDetail />} />
                 <Route path="/dashboard/resellers/tariff" element={<ResellerPackageTariffPage />} />
                 <Route path="/dashboard/resellers/funding" element={<ResellerFundingPage />} />
-                <Route path="/dashboard/resellers/pgw" element={<PH title="PGW Settlement" />} />
+                <Route path="/dashboard/resellers/pgw" element={<ResellerPgwSettlementPage />} />
 
                 {/* SMS Service */}
                 <Route path="/dashboard/sms/send" element={<PH title="Send SMS" />} />
