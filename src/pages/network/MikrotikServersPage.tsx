@@ -14,7 +14,8 @@ import { useCurrentTenant } from "@/hooks/useTenant";
 import { toast } from "sonner";
 
 export default function MikrotikServersPage() {
-  const { tenantId } = useTenant();
+  const { data: tenant } = useCurrentTenant();
+  const tenantId = tenant?.id;
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [entriesPerPage, setEntriesPerPage] = useState("10");
