@@ -269,7 +269,7 @@ const App = () => (
                 <Route path="/dashboard/system/payment-gateways" element={<PaymentGatewaysPage />} />
                 <Route path="/dashboard/system/email-setup" element={<PH title="Email Setup" />} />
                 <Route path="/dashboard/system/system-setup" element={<PH title="System Setup" />} />
-                <Route path="/dashboard/system/processing-fee" element={<PH title="P. Processing Fee" />} />
+                <Route path="/dashboard/system/processing-fee" element={<PaymentProcessingFeePage />} />
                 <Route path="/dashboard/system/vat-setup" element={<PH title="VAT Setup" />} />
                 <Route path="/dashboard/system/activity-loggers" element={<PH title="Activity Loggers" />} />
                 <Route path="/dashboard/system/automatic-process" element={<PH title="Automatic Process" />} />
