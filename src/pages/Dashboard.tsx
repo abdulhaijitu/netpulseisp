@@ -1,7 +1,4 @@
-import { 
-  Plus,
-  FileText,
-} from "lucide-react";
+import { Calculator } from "lucide-react";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { CustomerTable } from "@/components/dashboard/CustomerTable";
 import { RevenueChart } from "@/components/dashboard/RevenueChart";
