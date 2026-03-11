@@ -40,6 +40,7 @@ import PlaceholderPage from "@/pages/placeholder/PlaceholderPage";
 import ZonesPage from "@/pages/config/ZonesPage";
 import ConnectionTypePage from "@/pages/config/ConnectionTypePage";
 import ClientTypePage from "@/pages/config/ClientTypePage";
+import ProtocolTypePage from "@/pages/config/ProtocolTypePage";
 
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
