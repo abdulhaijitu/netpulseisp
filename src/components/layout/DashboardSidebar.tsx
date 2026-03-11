@@ -484,6 +484,7 @@ export function DashboardSidebar() {
             {systemStandaloneItems.filter(canAccess).map((item) => (
               <SidebarLink key={item.href} link={toLink(item)} active={isActive(item.href)} />
             ))}
+            {renderGroup(systemGroup)}
           </>
         )}
       </div>

@@ -256,6 +256,17 @@ const App = () => (
                 {/* System */}
                 <Route path="/dashboard/notifications" element={<Notifications />} />
                 <Route path="/dashboard/settings" element={<Settings />} />
+                <Route path="/dashboard/system/app-users" element={<PH title="App Users" />} />
+                <Route path="/dashboard/system/company-setup" element={<PH title="Company Setup" />} />
+                <Route path="/dashboard/system/invoice-setup" element={<PH title="Invoice Setup" />} />
+                <Route path="/dashboard/system/periods-setup" element={<PH title="Periods Setup" />} />
+                <Route path="/dashboard/system/payment-gateways" element={<PH title="Payment Gateways" />} />
+                <Route path="/dashboard/system/email-setup" element={<PH title="Email Setup" />} />
+                <Route path="/dashboard/system/system-setup" element={<PH title="System Setup" />} />
+                <Route path="/dashboard/system/processing-fee" element={<PH title="P. Processing Fee" />} />
+                <Route path="/dashboard/system/vat-setup" element={<PH title="VAT Setup" />} />
+                <Route path="/dashboard/system/activity-loggers" element={<PH title="Activity Loggers" />} />
+                <Route path="/dashboard/system/automatic-process" element={<PH title="Automatic Process" />} />
 
                 {/* Reseller self-service */}
                 <Route path="/dashboard/reseller" element={<ResellerDashboardPage />} />
