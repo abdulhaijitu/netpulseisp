@@ -46,7 +46,7 @@ export default function Dashboard() {
   const billedCount = isDemoMode ? demoMetrics.monthlyBillsCount : thisMonthBills.length;
   const paidCount = isDemoMode ? 0 : thisMonthBills.filter(b => b.status === "paid").length;
   const partiallyPaidCount = isDemoMode ? 0 : thisMonthBills.filter(b => b.status === "partial").length;
-  const unpaidCount = isDemoMode ? 0 : thisMonthBills.filter(b => b.status === "unpaid" || b.status === "pending").length;
+  const unpaidCount = isDemoMode ? 0 : thisMonthBills.filter(b => b.status === "due").length;
   const billExpiredCount = isDemoMode ? 0 : thisMonthBills.filter(b => b.status === "overdue").length;
 
   // Revenue
