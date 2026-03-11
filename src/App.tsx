@@ -55,6 +55,7 @@ import DailyAccountClosingPage from "@/pages/finance/DailyAccountClosingPage";
 import FinancialHistoryPage from "@/pages/finance/FinancialHistoryPage";
 import AccountingDashboardPage from "@/pages/finance/AccountingDashboardPage";
 import ChartOfAccountsPage from "@/pages/finance/ChartOfAccountsPage";
+import JournalVoucherPage from "@/pages/finance/JournalVoucherPage";
 
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
