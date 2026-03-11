@@ -51,6 +51,7 @@ import DailyCollectionPage from "@/pages/billing/DailyCollectionPage";
 import MonthlyBillingReport from "@/pages/billing/MonthlyBillingReport";
 import DailyIncomePage from "@/pages/finance/DailyIncomePage";
 import DailyExpensePage from "@/pages/finance/DailyExpensePage";
+import DailyAccountClosingPage from "@/pages/finance/DailyAccountClosingPage";
 
 // Auth Pages
 import StaffLogin from "@/pages/auth/StaffLogin";
