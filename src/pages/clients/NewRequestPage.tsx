@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Plus, Pencil, Trash2, Search, FileText, CalendarIcon, UserCheck, Filter, RotateCcw } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, FileText, CalendarIcon, UserCheck, Filter, RotateCcw, User, Phone, Network, Settings, ChevronLeft, ChevronRight, X } from "lucide-react";
 
 interface ClientRequest {
   id: string;
