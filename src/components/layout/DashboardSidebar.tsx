@@ -543,6 +543,7 @@ export function DashboardSidebar() {
             {/* HR */}
             <SidebarGroupLabel>HR</SidebarGroupLabel>
             {renderGroup(operationGroups[2])}
+            {renderGroup(operationGroups[3])}
 
             {/* Support */}
             <SidebarGroupLabel>Support</SidebarGroupLabel>
@@ -562,7 +563,6 @@ export function DashboardSidebar() {
             {/* Purchase */}
             <SidebarGroupLabel>Purchase</SidebarGroupLabel>
             {renderGroup(operationGroups[4])}
-            {renderGroup(operationGroups[3])}
 
             {/* System */}
             <SidebarGroupLabel>System</SidebarGroupLabel>
