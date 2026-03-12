@@ -146,25 +146,34 @@ export default function NewRequestPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / pp));
   const paginated = filtered.slice((page - 1) * pp, page * pp);
 
+  const defaultForm = {
+    customerName: "", mobile: "", address: "", zone: "", subzone: "",
+    customerType: "Home User", connectionType: "Fiber", packageName: "",
+    monthlyBill: 0, billingDate: "", otc: 0, physicalConnectivity: "FTTH",
+    gender: "", occupation: "", dateOfBirth: "", fatherName: "", motherName: "",
+    nidNo: "", regFormNo: "", remarks: "",
+    email: "", division: "", district: "", thana: "", altMobile: "",
+    oltDevice: "", onuMac: "",
+  };
+
   const openAdd = () => {
     setEditItem(null);
-    setForm({
-      customerName: "", mobile: "", address: "", zone: "", subzone: "",
-      customerType: "Home User", connectionType: "Fiber", packageName: "",
-      monthlyBill: 0, billingDate: "", otc: 0, physicalConnectivity: "FTTH",
-    });
+    setForm(defaultForm);
+    setStep(0);
     setDialogOpen(true);
   };
 
   const openEdit = (item: ClientRequest) => {
     setEditItem(item);
     setForm({
+      ...defaultForm,
       customerName: item.customerName, mobile: item.mobile, address: item.address,
       zone: item.zone, subzone: item.subzone, customerType: item.customerType,
       connectionType: item.connectionType, packageName: item.packageName,
       monthlyBill: item.monthlyBill, billingDate: item.billingDate,
       otc: item.otc, physicalConnectivity: item.physicalConnectivity,
     });
+    setStep(0);
     setDialogOpen(true);
   };
 
