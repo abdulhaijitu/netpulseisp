@@ -186,6 +186,7 @@ const App = () => (
                 <Route path="/dashboard/clients/add" element={<AddNewClientPage />} />
                 <Route path="/dashboard/clients/left" element={<LeftClientsPage />} />
                 <Route path="/dashboard/clients/change-request" element={<ChangeRequestPage />} />
+                <Route path="/dashboard/portal-manage" element={<PortalManagePage />} />
 
                 {/* Configuration */}
                 <Route path="/dashboard/config/zones" element={<ZonesPage />} />
