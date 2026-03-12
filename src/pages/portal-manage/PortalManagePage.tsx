@@ -281,11 +281,28 @@ function MediaServersTab() {
   const [categoryName, setCategoryName] = useState("");
   const [categoryDetails, setCategoryDetails] = useState("");
 
+  const [serverDialogOpen, setServerDialogOpen] = useState(false);
+  const [serverCategory, setServerCategory] = useState("");
+  const [serverName, setServerName] = useState("");
+  const [serverLogo, setServerLogo] = useState<File | null>(null);
+  const [serverLink, setServerLink] = useState("");
+  const [serverDetails, setServerDetails] = useState("");
+
   const handleCategorySubmit = () => {
     console.log("Category submitted:", { categoryName, categoryDetails });
     setCategoryName("");
     setCategoryDetails("");
     setCategoryDialogOpen(false);
+  };
+
+  const handleServerSubmit = () => {
+    console.log("Server submitted:", { serverCategory, serverName, serverLogo, serverLink, serverDetails });
+    setServerCategory("");
+    setServerName("");
+    setServerLogo(null);
+    setServerLink("");
+    setServerDetails("");
+    setServerDialogOpen(false);
   };
 
   return (
@@ -386,8 +403,103 @@ function MediaServersTab() {
 
         <TabsContent value="servers" className="space-y-4">
           <div className="flex justify-end">
-            <Button size="sm"><Plus className="h-4 w-4 mr-1.5" />Add Media Server</Button>
+            <Button size="sm" onClick={() => setServerDialogOpen(true)}><Plus className="h-4 w-4 mr-1.5" />Add Media Server</Button>
           </div>
+
+          {/* Add Media Server Dialog */}
+          <Dialog open={serverDialogOpen} onOpenChange={setServerDialogOpen}>
+            <DialogContent className="sm:max-w-[520px] p-0 gap-0 overflow-hidden">
+              <DialogHeader className="bg-primary text-primary-foreground px-5 py-4">
+                <DialogTitle className="text-base font-bold text-primary-foreground">Add Media Server</DialogTitle>
+              </DialogHeader>
+
+              <div className="p-5 space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wide">
+                    Media Category <span className="text-destructive">*</span>
+                  </Label>
+                  <Select value={serverCategory} onValueChange={setServerCategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {demoMediaCategories.map((c) => (
+                        <SelectItem key={c.id} value={c.category}>{c.category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wide">
+                    Media Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    placeholder="Enter media server name"
+                    value={serverName}
+                    onChange={(e) => setServerName(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wide">
+                    Media Logo <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setServerLogo(e.target.files?.[0] || null)}
+                    className="cursor-pointer"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wide">
+                    Media Link <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    placeholder="Enter media server link"
+                    value={serverLink}
+                    onChange={(e) => setServerLink(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wide">
+                    Details (Optional)
+                  </Label>
+                  <Textarea
+                    placeholder="Enter details..."
+                    value={serverDetails}
+                    onChange={(e) => setServerDetails(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <DialogFooter className="border-t px-5 py-3 flex-row justify-between sm:justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-destructive text-destructive hover:bg-destructive/10"
+                  onClick={() => setServerDialogOpen(false)}
+                >
+                  <X className="h-4 w-4 mr-1.5" />
+                  Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleServerSubmit}
+                  disabled={!serverCategory || !serverName.trim() || !serverLink.trim() || !serverLogo}
+                >
+                  <Check className="h-4 w-4 mr-1.5" />
+                  Submit
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
             No media servers added yet.
           </div>
