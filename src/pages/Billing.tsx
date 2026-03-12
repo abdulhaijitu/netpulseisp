@@ -23,7 +23,7 @@ import {
   DollarSign,
   Wallet,
   TrendingUp,
-  Checkbox,
+  
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
