@@ -554,7 +554,7 @@ function MediaServersTab() {
             </Table>
           </div>
 
-          <PaginationInfo totalItems={demoMediaServers.length} pageSize={parseInt(mediaPageSize)} />
+          <PaginationInfo total={demoMediaServers.length} pageSize={parseInt(mediaPageSize)} />
         </TabsContent>
       </Tabs>
     </div>
