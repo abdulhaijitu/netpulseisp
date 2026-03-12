@@ -55,8 +55,9 @@ export default function ZonesPage() {
   const [formName, setFormName] = useState("");
   const [formDetails, setFormDetails] = useState("");
   const [formParentId, setFormParentId] = useState("");
+  const [formZoneId, setFormZoneId] = useState("");
 
-  const resetForm = () => { setFormName(""); setFormDetails(""); setFormParentId(""); setEditItem(null); };
+  const resetForm = () => { setFormName(""); setFormDetails(""); setFormParentId(""); setFormZoneId(""); setEditItem(null); };
 
   const openAdd = () => { resetForm(); setDialogOpen(true); };
   const openEdit = (item: any) => {
@@ -64,6 +65,12 @@ export default function ZonesPage() {
     setFormName(item.name);
     setFormDetails(item.details);
     setFormParentId(item.zoneId || item.subZoneId || "");
+    if (activeTab === "box" && item.subZoneId) {
+      const sz = subZones.find(s => s.id === item.subZoneId);
+      setFormZoneId(sz?.zoneId || "");
+    } else {
+      setFormZoneId("");
+    }
     setDialogOpen(true);
   };
 
@@ -308,15 +315,26 @@ export default function ZonesPage() {
               </div>
             )}
             {activeTab === "box" && (
-              <div className="space-y-2">
-                <Label>Sub Zone</Label>
-                <Select value={formParentId} onValueChange={setFormParentId}>
-                  <SelectTrigger><SelectValue placeholder="Select sub zone" /></SelectTrigger>
-                  <SelectContent>
-                    {subZones.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label>Zone</Label>
+                  <Select value={formZoneId} onValueChange={v => { setFormZoneId(v); setFormParentId(""); }}>
+                    <SelectTrigger><SelectValue placeholder="Select zone" /></SelectTrigger>
+                    <SelectContent>
+                      {zones.map(z => <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Sub Zone</Label>
+                  <Select value={formParentId} onValueChange={setFormParentId}>
+                    <SelectTrigger><SelectValue placeholder="Select sub zone" /></SelectTrigger>
+                    <SelectContent>
+                      {subZones.filter(s => s.zoneId === formZoneId).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
             )}
             <div className="space-y-2">
               <Label>Details</Label>
