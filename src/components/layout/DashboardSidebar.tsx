@@ -511,6 +511,7 @@ export function DashboardSidebar() {
             {canAccess(packagesItem) && (
               <SidebarLink link={toLink(packagesItem)} active={isActive(packagesItem.href)} />
             )}
+            {financeGroups.map(renderGroup)}
 
             {/* Corporate Client */}
             <SidebarGroupLabel>Corporate Client</SidebarGroupLabel>
