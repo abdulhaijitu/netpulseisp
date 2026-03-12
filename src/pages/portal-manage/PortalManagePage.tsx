@@ -510,9 +510,51 @@ function MediaServersTab() {
             </DialogContent>
           </Dialog>
 
-          <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
-            No media servers added yet.
+          <EntriesSearchBar search={mediaSearch} setSearch={setMediaSearch} pageSize={mediaPageSize} setPageSize={setMediaPageSize} />
+
+          <div className="rounded-md border overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-primary hover:bg-primary">
+                  <TableHead className="text-primary-foreground font-bold text-xs">SR.</TableHead>
+                  <TableHead className="text-primary-foreground font-bold text-xs">PHOTO</TableHead>
+                  <TableHead className="text-primary-foreground font-bold text-xs">TITLE</TableHead>
+                  <TableHead className="text-primary-foreground font-bold text-xs">CATEGORY</TableHead>
+                  <TableHead className="text-primary-foreground font-bold text-xs">MEDIA LINK</TableHead>
+                  <TableHead className="text-primary-foreground font-bold text-xs">DETAILS</TableHead>
+                  <TableHead className="text-primary-foreground font-bold text-xs text-center">ACTION</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {demoMediaServers
+                  .filter((s) => !mediaSearch || s.title.toLowerCase().includes(mediaSearch.toLowerCase()) || s.category.toLowerCase().includes(mediaSearch.toLowerCase()))
+                  .map((s, i) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="text-xs">{i + 1}</TableCell>
+                    <TableCell>
+                      <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
+                        <Image className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs font-medium">{s.title}</TableCell>
+                    <TableCell className="text-xs">{s.category}</TableCell>
+                    <TableCell className="text-xs">
+                      <a href={s.mediaLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{s.mediaLink}</a>
+                    </TableCell>
+                    <TableCell className="text-xs max-w-[200px] truncate">{s.details}</TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-600"><Pencil className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
+
+          <PaginationInfo totalItems={demoMediaServers.length} pageSize={parseInt(mediaPageSize)} />
         </TabsContent>
       </Tabs>
     </div>
