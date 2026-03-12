@@ -277,6 +277,17 @@ function NoticesTab({ search, setSearch, pageSize, setPageSize }: { search: stri
 // ════════════════════════════════════
 function MediaServersTab() {
   const [subTab, setSubTab] = useState("categories");
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryDetails, setCategoryDetails] = useState("");
+
+  const handleCategorySubmit = () => {
+    console.log("Category submitted:", { categoryName, categoryDetails });
+    setCategoryName("");
+    setCategoryDetails("");
+    setCategoryDialogOpen(false);
+  };
+
   return (
     <div className="space-y-4">
       <Tabs value={subTab} onValueChange={setSubTab}>
@@ -287,8 +298,63 @@ function MediaServersTab() {
 
         <TabsContent value="categories" className="space-y-4">
           <div className="flex justify-end">
-            <Button size="sm"><Plus className="h-4 w-4 mr-1.5" />Add Server Category</Button>
+            <Button size="sm" onClick={() => setCategoryDialogOpen(true)}><Plus className="h-4 w-4 mr-1.5" />Add Server Category</Button>
           </div>
+
+          {/* Add Media Server Category Dialog */}
+          <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+            <DialogContent className="sm:max-w-[520px] p-0 gap-0 overflow-hidden">
+              <DialogHeader className="bg-primary text-primary-foreground px-5 py-4">
+                <DialogTitle className="text-base font-bold text-primary-foreground">Add Media Server Category</DialogTitle>
+              </DialogHeader>
+
+              <div className="p-5 space-y-5">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wide">
+                    Media Server Category <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    placeholder="Enter category name"
+                    value={categoryName}
+                    onChange={(e) => setCategoryName(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wide">
+                    Details (Optional)
+                  </Label>
+                  <Textarea
+                    placeholder="Enter category details..."
+                    value={categoryDetails}
+                    onChange={(e) => setCategoryDetails(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+              </div>
+
+              <DialogFooter className="border-t px-5 py-3 flex-row justify-between sm:justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-destructive text-destructive hover:bg-destructive/10"
+                  onClick={() => setCategoryDialogOpen(false)}
+                >
+                  <X className="h-4 w-4 mr-1.5" />
+                  Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCategorySubmit}
+                  disabled={!categoryName.trim()}
+                >
+                  <Check className="h-4 w-4 mr-1.5" />
+                  Submit
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <div className="rounded-md border overflow-auto">
             <Table>
               <TableHeader>
