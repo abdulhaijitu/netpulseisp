@@ -113,12 +113,17 @@ export default function NewRequestPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<ClientRequest | null>(null);
   const [deleteItem, setDeleteItem] = useState<ClientRequest | null>(null);
+  const [step, setStep] = useState(0);
 
   // Form
   const [form, setForm] = useState({
     customerName: "", mobile: "", address: "", zone: "", subzone: "",
     customerType: "Home User", connectionType: "Fiber", packageName: "",
     monthlyBill: 0, billingDate: "", otc: 0, physicalConnectivity: "FTTH",
+    gender: "", occupation: "", dateOfBirth: "", fatherName: "", motherName: "",
+    nidNo: "", regFormNo: "", remarks: "",
+    email: "", division: "", district: "", thana: "", altMobile: "",
+    oltDevice: "", onuMac: "",
   });
 
   const uniqueCreatedBy = [...new Set(items.map((i) => i.createdBy))];
