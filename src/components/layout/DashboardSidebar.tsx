@@ -243,6 +243,17 @@ const operationGroups: NavGroup[] = [
     ],
   },
   {
+    label: "Leave Management",
+    icon: CalendarDays,
+    roles: ["super_admin", "isp_owner", "admin"],
+    children: [
+      { title: "Category", href: "/dashboard/hr/leave/category", icon: ClipboardList },
+      { title: "Setup", href: "/dashboard/hr/leave/setup", icon: Cog },
+      { title: "Apply", href: "/dashboard/hr/leave/apply", icon: FileText },
+      { title: "Approval", href: "/dashboard/hr/leave/approval", icon: UserCheck },
+    ],
+  },
+  {
     label: "Inventory & Assets",
     icon: Boxes,
     roles: ["super_admin", "isp_owner", "admin"],

@@ -60,6 +60,10 @@ import EmployeeListPage from "@/pages/hr/EmployeeListPage";
 import DepartmentPage from "@/pages/hr/DepartmentPage";
 import SalarySheetPage from "@/pages/hr/SalarySheetPage";
 import AttendancePage from "@/pages/hr/AttendancePage";
+import LeaveCategoryPage from "@/pages/hr/LeaveCategoryPage";
+import LeaveSetupPage from "@/pages/hr/LeaveSetupPage";
+import LeaveApplyPage from "@/pages/hr/LeaveApplyPage";
+import LeaveApprovalPage from "@/pages/hr/LeaveApprovalPage";
 import ZonesPage from "@/pages/config/ZonesPage";
 import ConnectionTypePage from "@/pages/config/ConnectionTypePage";
 import ClientTypePage from "@/pages/config/ClientTypePage";
@@ -239,6 +243,10 @@ const App = () => (
                 <Route path="/dashboard/hr/department" element={<DepartmentPage />} />
                 <Route path="/dashboard/hr/salary" element={<SalarySheetPage />} />
                 <Route path="/dashboard/hr/attendance" element={<AttendancePage />} />
+                <Route path="/dashboard/hr/leave/category" element={<LeaveCategoryPage />} />
+                <Route path="/dashboard/hr/leave/setup" element={<LeaveSetupPage />} />
+                <Route path="/dashboard/hr/leave/apply" element={<LeaveApplyPage />} />
+                <Route path="/dashboard/hr/leave/approval" element={<LeaveApprovalPage />} />
 
                 {/* Inventory & Assets */}
                 <Route path="/dashboard/inventory/items" element={<ItemsPage />} />
