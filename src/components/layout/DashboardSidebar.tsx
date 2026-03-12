@@ -112,6 +112,7 @@ const navGroups: NavGroup[] = [
       { title: "Add New", href: "/dashboard/clients/add", icon: UserPlus },
       { title: "Left Clients", href: "/dashboard/clients/left", icon: Users },
       { title: "Change Request", href: "/dashboard/clients/change-request", icon: FileText },
+      { title: "Portal Manage", href: "/dashboard/portal-manage", icon: Globe },
     ],
   },
 ];
