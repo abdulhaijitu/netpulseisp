@@ -565,6 +565,17 @@ function MediaServersTab() {
 // NEWS & EVENTS TAB
 // ════════════════════════════════════
 function NewsEventsTab({ search, setSearch, pageSize, setPageSize }: { search: string; setSearch: (v: string) => void; pageSize: string; setPageSize: (v: string) => void }) {
+  const [newsDialogOpen, setNewsDialogOpen] = useState(false);
+  const [newsTitle, setNewsTitle] = useState("");
+  const [newsDetails, setNewsDetails] = useState("");
+
+  const handleNewsSubmit = () => {
+    if (!newsTitle.trim() || !newsDetails.trim()) return;
+    setNewsDialogOpen(false);
+    setNewsTitle("");
+    setNewsDetails("");
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -572,7 +583,7 @@ function NewsEventsTab({ search, setSearch, pageSize, setPageSize }: { search: s
           <Button variant="outline" size="sm"><FileText className="h-4 w-4 mr-1.5" />Generate PDF</Button>
           <Button variant="outline" size="sm"><FileSpreadsheet className="h-4 w-4 mr-1.5" />Generate CSV</Button>
         </div>
-        <Button size="sm"><Plus className="h-4 w-4 mr-1.5" />News & Events</Button>
+        <Button size="sm" onClick={() => setNewsDialogOpen(true)}><Plus className="h-4 w-4 mr-1.5" />News & Events</Button>
       </div>
 
       <EntriesSearchBar search={search} setSearch={setSearch} pageSize={pageSize} setPageSize={setPageSize} />
