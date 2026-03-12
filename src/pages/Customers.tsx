@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
-import { Download, Loader2, FileSpreadsheet, FileText, Users, UserPlus, RefreshCw, ArrowRightLeft, Wifi, Shield } from "lucide-react";
+import { Download, Loader2, FileSpreadsheet, FileText, Users, UserPlus, RefreshCw, ArrowRightLeft, Wifi, Shield, Unlink, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CustomerTable, type CustomerTableData } from "@/components/customers/CustomerTable";
 import { CustomerFormDialog, type CustomerFormData } from "@/components/customers/CustomerFormDialog";
 import { ConnectionStatusDialog } from "@/components/customers/ConnectionStatusDialog";
-import { CustomerFiltersBar, type CustomerFilters } from "@/components/customers/CustomerFilters";
+import { CustomerFiltersBar, type CustomerFilters, defaultFilters } from "@/components/customers/CustomerFilters";
 import { CustomerPagination } from "@/components/customers/CustomerPagination";
 import { useToast } from "@/hooks/use-toast";
 import { useCustomers, useCreateCustomer, useUpdateCustomer } from "@/hooks/useCustomers";
@@ -29,30 +29,19 @@ export default function Customers() {
   const createCustomer = useCreateCustomer();
   const updateCustomer = useUpdateCustomer();
 
-  // Filter state
-  const [filters, setFilters] = useState<CustomerFilters>({
-    search: "",
-    status: "all",
-    packageId: "all",
-    balanceType: "all",
-  });
-
-  // Pagination state
+  const [filters, setFilters] = useState<CustomerFilters>(defaultFilters);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Form dialog state
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [formMode, setFormMode] = useState<"add" | "edit">("add");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerFormData | null>(null);
 
-  // Connection status dialog state
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [statusDialogCustomer, setStatusDialogCustomer] = useState<CustomerTableData | null>(null);
   const [targetStatus, setTargetStatus] = useState<ConnectionStatus>("active");
 
-  // Transform database customers to table format
-  const tableData: CustomerTableData[] = useMemo(() => 
+  const tableData: CustomerTableData[] = useMemo(() =>
     (customers ?? []).map((c) => ({
       id: c.id,
       name: c.name,
@@ -72,7 +61,6 @@ export default function Customers() {
     })), [customers]
   );
 
-  // Stats
   const stats: StatCard[] = useMemo(() => {
     const active = tableData.filter((c) => c.status === "active").length;
     const newThisMonth = tableData.filter((c) => {
@@ -83,38 +71,13 @@ export default function Customers() {
     const suspended = tableData.filter((c) => c.status === "suspended").length;
     const pending = tableData.filter((c) => c.status === "pending").length;
     return [
-      {
-        title: "Running Clients",
-        count: active,
-        description: "Number of clients without LeftOut status",
-        icon: <Users className="h-7 w-7" />,
-        bgClass: "bg-[hsl(var(--primary))]",
-      },
-      {
-        title: "New Clients",
-        count: newThisMonth,
-        description: "Monthly number of clients those are new",
-        icon: <UserPlus className="h-7 w-7" />,
-        bgClass: "bg-[hsl(var(--success))]",
-      },
-      {
-        title: "Suspended Clients",
-        count: suspended,
-        description: "Number of currently suspended clients",
-        icon: <Shield className="h-7 w-7" />,
-        bgClass: "bg-[hsl(var(--destructive))]",
-      },
-      {
-        title: "Pending Clients",
-        count: pending,
-        description: "Number of clients awaiting activation",
-        icon: <Wifi className="h-7 w-7" />,
-        bgClass: "bg-[hsl(var(--warning))]",
-      },
+      { title: "Running Clients", count: active, description: "Number of clients without LeftOut status", icon: <Users className="h-7 w-7" />, bgClass: "bg-[hsl(var(--primary))]" },
+      { title: "New Clients", count: newThisMonth, description: "Monthly number of clients those are new", icon: <UserPlus className="h-7 w-7" />, bgClass: "bg-[hsl(var(--success))]" },
+      { title: "Suspended Clients", count: suspended, description: "Number of currently suspended clients", icon: <Shield className="h-7 w-7" />, bgClass: "bg-[hsl(var(--destructive))]" },
+      { title: "Pending Clients", count: pending, description: "Number of clients awaiting activation", icon: <Wifi className="h-7 w-7" />, bgClass: "bg-[hsl(var(--warning))]" },
     ];
   }, [tableData]);
 
-  // Filter customers
   const filteredCustomers = useMemo(() => {
     return tableData.filter((customer) => {
       const searchLower = filters.search.toLowerCase();
@@ -124,20 +87,19 @@ export default function Customers() {
         customer.phone.includes(filters.search) ||
         customer.email.toLowerCase().includes(searchLower) ||
         customer.id.toLowerCase().includes(searchLower);
-      const matchesStatus = filters.status === "all" || customer.status === filters.status;
+      const matchesStatus = filters.mikrotikStatus === "all" || customer.status === filters.mikrotikStatus;
       const matchesPackage =
         filters.packageId === "all" ||
         (filters.packageId === "none" && !customer.packageId) ||
         customer.packageId === filters.packageId;
       let matchesBalance = true;
-      if (filters.balanceType === "due") matchesBalance = customer.dueAmount > 0;
-      else if (filters.balanceType === "advance") matchesBalance = customer.advanceAmount > 0;
-      else if (filters.balanceType === "clear") matchesBalance = customer.dueAmount === 0 && customer.advanceAmount === 0;
+      if (filters.billingStatus === "due") matchesBalance = customer.dueAmount > 0;
+      else if (filters.billingStatus === "paid") matchesBalance = customer.advanceAmount > 0;
+      else if (filters.billingStatus === "clear") matchesBalance = customer.dueAmount === 0 && customer.advanceAmount === 0;
       return matchesSearch && matchesStatus && matchesPackage && matchesBalance;
     });
   }, [tableData, filters]);
 
-  // Paginate
   const paginatedCustomers = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     return filteredCustomers.slice(startIndex, startIndex + pageSize);
@@ -155,19 +117,12 @@ export default function Customers() {
     setCurrentPage(1);
   };
 
-
   const handleEditCustomer = (customer: CustomerTableData) => {
     setFormMode("edit");
     setSelectedCustomer({
-      id: customer.id,
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone,
-      address: customer.address,
-      packageId: customer.packageId,
-      connectionStatus: customer.status,
-      dueBalance: customer.dueAmount,
-      advanceBalance: customer.advanceAmount,
+      id: customer.id, name: customer.name, email: customer.email, phone: customer.phone,
+      address: customer.address, packageId: customer.packageId, connectionStatus: customer.status,
+      dueBalance: customer.dueAmount, advanceBalance: customer.advanceAmount,
     });
     setFormDialogOpen(true);
   };
@@ -180,28 +135,18 @@ export default function Customers() {
     try {
       if (formMode === "add") {
         await createCustomer.mutateAsync({
-          tenant_id: currentTenant.id,
-          name: data.name,
-          email: data.email || null,
-          phone: data.phone,
-          address: data.address || null,
-          package_id: data.packageId || null,
-          connection_status: "pending",
-          due_balance: 0,
-          advance_balance: 0,
+          tenant_id: currentTenant.id, name: data.name, email: data.email || null,
+          phone: data.phone, address: data.address || null, package_id: data.packageId || null,
+          connection_status: "pending", due_balance: 0, advance_balance: 0,
         });
         toast({ title: "Customer added", description: `${data.name} was added successfully.` });
       } else {
         await updateCustomer.mutateAsync({
           id: data.id!,
           updates: {
-            name: data.name,
-            email: data.email || null,
-            phone: data.phone,
-            address: data.address || null,
-            package_id: data.packageId || null,
-            connection_status: data.connectionStatus,
-            due_balance: data.dueBalance,
+            name: data.name, email: data.email || null, phone: data.phone,
+            address: data.address || null, package_id: data.packageId || null,
+            connection_status: data.connectionStatus, due_balance: data.dueBalance,
             advance_balance: data.advanceBalance,
           },
         });
@@ -300,6 +245,12 @@ export default function Customers() {
         <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => handleBulkAction("Sync Clients")}>
           <RefreshCw className="h-3.5 w-3.5" /> Sync Clients & Servers
         </Button>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-warning/10 border-warning/30 text-warning hover:bg-warning/20" onClick={() => handleBulkAction("Unbind All PPOE MAC")}>
+          <Unlink className="h-3.5 w-3.5" /> Unbind All PPOE MAC Address
+        </Button>
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs bg-info/10 border-info/30 text-info hover:bg-info/20" onClick={() => handleBulkAction("Bind All PPOE MAC")}>
+          <Link className="h-3.5 w-3.5" /> Bind All PPOE MAC Address
+        </Button>
       </div>
 
       {/* Summary Stat Cards */}
@@ -327,6 +278,8 @@ export default function Customers() {
         packages={packages ?? []}
         totalCount={tableData.length}
         filteredCount={filteredCustomers.length}
+        pageSize={pageSize}
+        onPageSizeChange={handlePageSizeChange}
       />
 
       {/* Customer Table */}
@@ -356,7 +309,6 @@ export default function Customers() {
         onPageSizeChange={handlePageSizeChange}
       />
 
-      {/* Add/Edit Customer Dialog */}
       <CustomerFormDialog
         open={formDialogOpen}
         onOpenChange={setFormDialogOpen}
@@ -366,7 +318,6 @@ export default function Customers() {
         tenantId={currentTenant?.id}
       />
 
-      {/* Connection Status Dialog */}
       {statusDialogCustomer && (
         <ConnectionStatusDialog
           open={statusDialogOpen}
